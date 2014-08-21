@@ -3,6 +3,8 @@
 import sys
 import serial
 import numpy as np
+from scipy.signal import remez
+from scipy.signal import lfilter
 
 import roslib; roslib.load_manifest('hrl_autobed_dev')
 import rospy, rosparam
@@ -96,7 +98,7 @@ class ProximitySensorDriver(object):
         cal_data[np.where(cal_data<0)[0]] = 0.
         
         #Optional filtering.
-        if self.current_bin_number == self.bin_numbers:
+        if self.current_bin_number == (self.bin_numbers-1):
             self.current_bin_number = 0
             self.filtered_data = self.filter_data()
         else:
@@ -115,7 +117,7 @@ class ProximitySensorDriver(object):
         lpf = remez(self.bin_numbers, [0, 0.2, 0.25, 0.5], [1.0, 0.0])
         filt_data = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
-            filt_data[i] = lfilter(lpf, 1, self.collated_cal_data[:,i])
+            filt_data[i] = np.dot(lpf, self.collated_cal_data[:,i])
 
         self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
         return filt_data
