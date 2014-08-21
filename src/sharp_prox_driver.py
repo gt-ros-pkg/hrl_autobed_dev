@@ -4,7 +4,7 @@ import sys
 import serial
 import numpy as np
 
-import roslib; roslib.load_manifest('hrl_darpa_arm')
+import roslib; roslib.load_manifest('hrl_autobed_dev')
 import rospy, rosparam
 from std_msgs.msg import Empty
 from geometry_msgs.msg import Transform, Vector3, Quaternion
@@ -31,11 +31,22 @@ class ProximitySensorDriver(object):
                                             self.link_name_cb)
 
         #Initialize arrays for holding sensor data
-        self.cal_coefficients = 1.1214 * np.ones(self.num_sensors) #Default from sensor datasheet
-        self.cal_exponents = -1.072057 * np.ones(self.num_sensors) #Default from sensor datasheet
+        #self.cal_coefficients = 1.1214 * np.ones(self.num_sensors) #Default from sensor datasheet
+        #self.cal_exponents = -1.072057 * np.ones(self.num_sensors) #Default from sensor datasheet
+        
+        #Initialize arrays for holding sensor data
+        self.cal_coefficients = 10.34297387 * np.ones(self.num_sensors) #Computed from calibration experiments. Will output in centimeters
+        self.cal_offsets = -0.20397751 * np.ones(self.num_sensors) #Computed from calibration experiments. Will output in centimeters
+        self.cal_exponents = -0.94007202 * np.ones(self.num_sensors) #Computed from calibration experiments. Will output in centimeters
         self.frames = np.zeros(self.num_sensors)
         self.sensor_positions = np.zeros( [3, self.num_sensors] )
         self.sensor_quats =  np.zeros( [4, self.num_sensors] )
+
+        #Optional filtering initializations
+        self.current_bin_number = 0
+        self.bin_numbers = 21
+        self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
+        self.filtered_data = np.zeros(self.num_sensors)
 
         if param_file is None:
             rospy.logwarn('[prox_sensor_driver] No parameters loaded for Proximity Sensors')
@@ -44,6 +55,7 @@ class ProximitySensorDriver(object):
             for channel, sensor in sensor_config_data.iteritems():
                 self.frames[channel] = sensor['normal_pose']['frame']
                 self.cal_coefficients[channel] = sensor['calibration']['coefficient']
+                self.cal_offsets[channel] = sensor['calibration']['offset']
                 self.cal_exponents[channel] = sensor['calibration']['exponent']
                 self.sensor_positions[:,channel] =  sensor['normal_pose']['position']
                 self.sensor_quats[:,channel] =  sensor['normal_pose']['orientation']
@@ -82,11 +94,31 @@ class ProximitySensorDriver(object):
 
         cal_data = self.calibrate_data(raw_data)
         cal_data[np.where(cal_data<0)[0]] = 0.
-        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, cal_data
+        
+        #Optional filtering.
+        if self.current_bin_number == self.bin_numbers:
+            self.current_bin_number = 0
+            self.filtered_data = self.filter_data()
+        else:
+            self.collated_cal_data[self.current_bin_number,:] += cal_data
+            self.current_bin_number += 1
+
+        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, self.filtered_data
 
     def calibrate_data(self, raw_data):
         data = raw_data[raw_data<=0.]=1.0E-8
-        return self.cal_coefficients * raw_data ** self.cal_exponents
+       #return self.cal_coefficients * raw_data ** self.cal_exponents
+        return self.cal_coefficients * (self.to_voltage(raw_data) + self.cal_offsets) ** self.cal_exponents
+
+    def filter_data(self):
+        '''Creates a low pass filter to filter out high frequency noise'''
+        lpf = remez(self.bin_numbers, [0, 0.2, 0.25, 0.5], [1.0, 0.0])
+        filt_data = np.zeros(self.num_sensors)
+        for i in range(self.num_sensors):
+            filt_data[i] = lfilter(lpf, 1, self.collated_cal_data[:,i])
+
+        self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
+        return filt_data
 
     def local_coord_frames_cb(self, req):
         tar = None_TransformArrayResponse()
@@ -114,6 +146,11 @@ class ProximitySensorDriver(object):
         assert len(raw_data) == len(self.intercepts), "Cannot re-zero proximity sensor, size of current raw data does not match list of intercepts"
         self.intercepts = np.array(raw_data)
 
+    def to_voltage(self, raw_data):
+        '''Converts ADC values to voltage readings. Assumes 10 bit ADC, and 5V 
+        ADC reference voltage for Vcc = 5Volts'''
+        return 5.0*raw_data/1024.0
+
 
 if __name__=='__main__':
     rospy.init_node('prox_sensor_driver')
@@ -127,14 +164,16 @@ if __name__=='__main__':
     pub6= rospy.Publisher('/pst6', Float32)
     pub7= rospy.Publisher('/pst7', Float32)
     if len(sys.argv) < 3:
-	sys.stderr.write('Usage: rosrun packagename sharp_prox_driver.py  /dev/USBx number_of_sensors param_file_path')
-	sys.exit(1)
+        sys.stderr.write('Usage: rosrun packagename sharp_prox_driver.py  /dev/USBx number_of_sensors param_file_path')
+        sys.exit(1)
+
     prox_driver = ProximitySensorDriver(int(sys.argv[2]), sys.argv[3], dev=sys.argv[1])
+
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         data = prox_driver.get_sensor_data()
-	raw_data = data[-2]
-	cal_data = data[-1]
+        raw_data = data[-2]
+        cal_data = data[-1]
 
         pub0.publish(Float32(cal_data[0]))
         pub1.publish(Float32(cal_data[1]))

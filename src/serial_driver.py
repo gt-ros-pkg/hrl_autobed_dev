@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib
-roslib.load_manifest('hrl_darpa_arm')
+roslib.load_manifest('hrl_autobed_dev')
 import rospy
 
 import serial

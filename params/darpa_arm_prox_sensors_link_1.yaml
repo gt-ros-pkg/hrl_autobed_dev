@@ -1,7 +1,8 @@
 0: { #Each channel on a specific arduino
     calibration:{
-        coefficient: 1.1214,
-        exponent: -1.072057
+        coefficient: 10.34297387,
+        offset: -0.20397751,
+        exponent: -0.94007202
     },
     normal_pose: {
         frame: 1,
@@ -11,9 +12,11 @@
 }
 
 1: {
-    calibration: {
-        coefficient:  1.1214,
-        exponent: -1.072057
+    calibration: {    
+        coefficient: 10.34297387,
+        offset: -0.20397751,
+        exponent: -0.94007202
+ 
     },
     normal_pose: {
         frame: 1,
@@ -23,9 +26,11 @@
 }
 
 2: {
-    calibration: {
-        coefficient: 1.1214,
-        exponent: -1.072057
+    calibration: {    
+        coefficient: 10.34297387,
+        offset: -0.20397751,
+        exponent: -0.94007202
+  
     },
     normal_pose: {
         frame: 1,
@@ -36,8 +41,10 @@
 
 3: {
     calibration: {
-        coefficient: 1.1214,
-        exponent: -1.072057
+        coefficient: 10.34297387,
+        offset: -0.20397751,
+        exponent: -0.94007202
+ 
     },
     normal_pose: {
         frame: 1,
