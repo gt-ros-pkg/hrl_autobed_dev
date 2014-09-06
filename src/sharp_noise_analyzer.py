@@ -23,7 +23,7 @@ from scipy import fft, arange
 def spectrum_analyzer_callback(data):
     '''Accepts incoming data from the SHARP sensor publisher, and throws it back to you.
     Be sure to catch it'''
-    Fs = 100    
+    Fs = 4    
     if spectrum_analyzer_callback.i < spectrum_analyzer_callback.time_slot_for_fft:
         spectrum_analyzer_callback.data_array[spectrum_analyzer_callback.i] = data.data
         spectrum_analyzer_callback.i += 1
@@ -58,12 +58,12 @@ def plotSpectrum(y,Fs):
     show()
 
 spectrum_analyzer_callback.i = 0
-spectrum_analyzer_callback.data_array = np.zeros(1000)
-spectrum_analyzer_callback.time_slot_for_fft = len(spectrum_analyzer_callback.data_array) # Unit : samples. Sampling rate is 100.
+spectrum_analyzer_callback.data_array = np.zeros(40)
+spectrum_analyzer_callback.time_slot_for_fft = len(spectrum_analyzer_callback.data_array) # Unit : samples. Sampling rate is 4.
 
 def prox_driver_listener_for_fft():
     '''Basic listener node that listens into the sharp IR driver code publisher,
-    and publishes an FFT of the whole thing after 100 seconds of recording at 100 Hz'''
+    and publishes an FFT of the whole thing after 10  seconds of recording at 4 Hz'''
 
 
     rospy.init_node('sharp_listener', anonymous = True)

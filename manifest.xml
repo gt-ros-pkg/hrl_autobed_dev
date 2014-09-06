@@ -14,7 +14,7 @@
   <depend package="hrl_lib"/>
   <depend package="robotis"/>
   <depend package="m3skin_ros"/>
-
+  <depend package="hrl_msgs"/>
 </package>
 
 

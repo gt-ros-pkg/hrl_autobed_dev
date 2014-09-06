@@ -20,7 +20,7 @@ class ProximitySensorDriver(object):
     ''' A class for collecting raw data from a Sharp IR Proximity sensor
     attached to an arduino analog input device.
     '''
-    def __init__(self, num_sensors, param_file=None, dev='/dev/ttyUSB0', baudrate=115200):
+    def __init__(self, num_sensors, param_file=None, dev='/dev/ttyUSB0', baudrate=9600):
         self.num_sensors = num_sensors
         self.serial_driver = serial_driver.SerialDriver(self.num_sensors, dev, baudrate)
         self.zero_sensor_sub = rospy.Subscriber('/darpa_arm/zero_prox_sensor', Empty, self.zero_sensor_cb)
@@ -46,7 +46,7 @@ class ProximitySensorDriver(object):
 
         #Optional filtering initializations
         self.current_bin_number = 0
-        self.bin_numbers = 21
+        self.bin_numbers = 25 
         self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
         self.filtered_data = np.zeros(self.num_sensors)
 
@@ -98,14 +98,16 @@ class ProximitySensorDriver(object):
         cal_data[np.where(cal_data<0)[0]] = 0.
         
         #Optional filtering.
-        if self.current_bin_number == (self.bin_numbers-1):
-            self.current_bin_number = 0
-            self.filtered_data = self.filter_data()
+        if self.current_bin_number >= (self.bin_numbers-1):
+            self.collated_cal_data = np.delete(self.collated_cal_data, 0, 0)
+            self.collated_cal_data = np.append(self.collated_cal_data, [cal_data], axis = 0)
+            filtered_data = self.filter_data()
         else:
             self.collated_cal_data[self.current_bin_number,:] += cal_data
+            filtered_data = cal_data
             self.current_bin_number += 1
 
-        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, self.filtered_data
+        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, cal_data
 
     def calibrate_data(self, raw_data):
         data = raw_data[raw_data<=0.]=1.0E-8
@@ -114,12 +116,11 @@ class ProximitySensorDriver(object):
 
     def filter_data(self):
         '''Creates a low pass filter to filter out high frequency noise'''
-        lpf = remez(self.bin_numbers, [0, 0.2, 0.25, 0.5], [1.0, 0.0])
+        lpf = remez(self.bin_numbers, [0, 0.01, 0.1, 0.5], [1.0, 0.0])
         filt_data = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
             filt_data[i] = np.dot(lpf, self.collated_cal_data[:,i])
 
-        self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
         return filt_data
 
     def local_coord_frames_cb(self, req):
@@ -169,9 +170,9 @@ if __name__=='__main__':
         sys.stderr.write('Usage: rosrun packagename sharp_prox_driver.py  /dev/USBx number_of_sensors param_file_path')
         sys.exit(1)
 
-    prox_driver = ProximitySensorDriver(int(sys.argv[2]), sys.argv[3], dev=sys.argv[1])
+    prox_driver = ProximitySensorDriver(int(sys.argv[2]), sys.argv[3], dev=sys.argv[1], baudrate = 9600)
 
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         data = prox_driver.get_sensor_data()
         raw_data = data[-2]
