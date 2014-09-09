@@ -21,15 +21,20 @@ from pylab import plot, show, title, xlabel, ylabel, subplot
 from scipy import fft, arange
 
 """This is the maximum error allowed in our control system."""
-ERROR_OFFSET = [100, 4, 100]#centimeters, degrees , degrees
+ERROR_OFFSET = [5, 2, 1000]#degrees, centimeters , degrees
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'A', 'B'], [0, 'C', 'D'], [0, 'E', 'F']]
+AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Input to the control system."""
 global autobed_u
 autobed_u = np.zeros(NUM_ACTUATORS) 
 
+def positions_in_autobed_units(distances):
+    ''' Accepts position of the obstacle which is placed at 
+    4.92 cm(I tried to keep it 5 cm away) from sensor at 0.0 degrees and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum), and returns value of the head tilt in degrees'''
+    distances[0] = (3.4294*distances[0] - 16.87240)
+    return distances
 
 def autobed_engine_callback(data):
     ''' Accepts incoming position values from the base selection algorithm and assigns it to a
@@ -54,17 +59,17 @@ def autobed_engine():
     #Create a proximity sensor object 
     prox_driver = sharp_prox_driver.ProximitySensorDriver(int(sys.argv[4]), param_file = sys.argv[2], dev = sys.argv[1], baudrate = baudrate)
     #Making sure that we dont travel too much before base selection is done
-    autobed_u =  (prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]
+    autobed_u = positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
     #Start a subscriber to run the autobed engine when we get a command
     rospy.Subscriber("/abdin0", FloatArrayBare, autobed_engine_callback)
     
-    rate = rospy.Rate(10) #10 Hz
+    rate = rospy.Rate(5) #5 Hz
     while not rospy.is_shutdown():
         #Compute error vector
-        autobed_error = np.asarray(autobed_u - (prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
-        rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}'.format(autobed_u, (prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS], autobed_error))
+        autobed_error = np.asarray(autobed_u - positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
+        rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}'.format(autobed_u, positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error))
         #Zero the error if its too small
-        autobed_error[np.absolute(autobed_error) < ERROR_OFFSET] = 0 
+        autobed_error[np.absolute(autobed_error) < ERROR_OFFSET] = 0.0 
              
         for i in range(NUM_ACTUATORS):
             if abs(autobed_error[i]) > 0.0:

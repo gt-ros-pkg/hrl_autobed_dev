@@ -46,7 +46,7 @@ class ProximitySensorDriver(object):
 
         #Optional filtering initializations
         self.current_bin_number = 0
-        self.bin_numbers = 25 
+        self.bin_numbers = 21 
         self.collated_cal_data = np.zeros((self.bin_numbers, self.num_sensors))
         self.filtered_data = np.zeros(self.num_sensors)
 
@@ -107,7 +107,7 @@ class ProximitySensorDriver(object):
             filtered_data = cal_data
             self.current_bin_number += 1
 
-        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, cal_data
+        return self.frames, self.sensor_positions, self.sensor_quats, raw_data, cal_data, filtered_data
 
     def calibrate_data(self, raw_data):
         data = raw_data[raw_data<=0.]=1.0E-8
@@ -116,7 +116,7 @@ class ProximitySensorDriver(object):
 
     def filter_data(self):
         '''Creates a low pass filter to filter out high frequency noise'''
-        lpf = remez(self.bin_numbers, [0, 0.01, 0.1, 0.5], [1.0, 0.0])
+        lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
         filt_data = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
             filt_data[i] = np.dot(lpf, self.collated_cal_data[:,i])
