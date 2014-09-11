@@ -9,6 +9,7 @@ import rospy, rosparam
 import serial_driver
 import sharp_prox_driver
 
+from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import Transform, Vector3, Quaternion
