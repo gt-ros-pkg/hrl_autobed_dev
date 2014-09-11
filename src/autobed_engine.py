@@ -23,7 +23,7 @@ from scipy import fft, arange
 """This is the maximum error allowed in our control system."""
 ERROR_OFFSET = [5, 2, 1000]#degrees, centimeters , degrees
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]
+AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Input to the control system."""
@@ -51,6 +51,8 @@ def autobed_engine():
     and feeds the same as an input to the autobed control system. Further, it listens to the sensor
     position'''
     baudrate = sys.argv[3]
+    reached_destination = False * np.ones(NUM_ACTUATORS)
+
     global autobed_u
     #Initialize listener node to hear command
     rospy.init_node('autobed_engine', anonymous = True)
@@ -60,23 +62,33 @@ def autobed_engine():
     prox_driver = sharp_prox_driver.ProximitySensorDriver(int(sys.argv[4]), param_file = sys.argv[2], dev = sys.argv[1], baudrate = baudrate)
     #Making sure that we dont travel too much before base selection is done
     autobed_u = positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
+    #Start a publisher to publish autobed status and error 
+    rospy.Publisher("/abdout0", FloatArrayBare)
+    rospy.Publisher("/abdstatus0", Bool)
     #Start a subscriber to run the autobed engine when we get a command
     rospy.Subscriber("/abdin0", FloatArrayBare, autobed_engine_callback)
-    
+    #Let the sensors warm up
+    print 'Initializing RoboBed 1.0 ...'
+    rospy.sleep(10.)
+ 
     rate = rospy.Rate(5) #5 Hz
     while not rospy.is_shutdown():
         #Compute error vector
         autobed_error = np.asarray(autobed_u - positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
         rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}'.format(autobed_u, positions_in_autobed_units((prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error))
-        #Zero the error if its too small
-        autobed_error[np.absolute(autobed_error) < ERROR_OFFSET] = 0.0 
-             
+        '''If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''     
         for i in range(NUM_ACTUATORS):
-            if abs(autobed_error[i]) > 0.0:
+            if abs(abs(autobed_error[i])) > ERROR_OFFSET:
                 autobed_sender.write(AUTOBED_COMMANDS[i][int(autobed_error[i]/abs(autobed_error[i]))]) 
+                reached_destination[i] = False
             else:
-                rospy.loginfo('[Autobed engine] At destination with error: {}'.format(autobed_error[i]))
+                reached_destination[i] = True 
+        
 
+        '''If we have reached the destination position at all the actuators, then publish the error and a boolean that says we have reached'''
+        if reached_destination.all() == True:
+            abdstatus0.publish(True)
+            abdout0.publish(autobed_error)
         rate.sleep()
 
 
