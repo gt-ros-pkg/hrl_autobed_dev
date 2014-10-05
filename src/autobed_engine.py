@@ -89,6 +89,7 @@ class AutobedClient():
 
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
+        actuator_number = 0 #Variable that denotes what actuator is presently being controlled
         while not rospy.is_shutdown(): 
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
@@ -96,12 +97,14 @@ class AutobedClient():
         
             if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''
-                for i in range(NUM_ACTUATORS):
-                    if abs(autobed_error[i]) > ERROR_OFFSET[i]:
-                        self.autobed_sender.write(AUTOBED_COMMANDS[i][int(autobed_error[i]/abs(autobed_error[i]))]) 
-                        self.reached_destination[i] = False
+                if actuator_number < (NUM_ACTUATORS):
+                    if abs(autobed_error[actuator_number]) > ERROR_OFFSET[actuator_number]:
+                        self.autobed_sender.write(AUTOBED_COMMANDS[actuator_number][int(autobed_error[actuator_number]/abs(autobed_error[actuator_number]))]) 
+                        self.reached_destination[actuator_number] = False
                     else:
-                        self.reached_destination[i] = True 
+                        self.reached_destination[actuator_number] = True
+                        '''We have reached destination for actuator actuator_number. Upgrade the actuation count'''
+                        actuator_number += 1
             '''If we have reached the destination position at all the actuators, then publish the error and a boolean that says we have reached'''
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
