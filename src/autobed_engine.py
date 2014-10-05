@@ -21,7 +21,7 @@ from pylab import plot, show, title, xlabel, ylabel, subplot
 from scipy import fft, arange
 
 """This is the maximum error allowed in our control system."""
-ERROR_OFFSET = [5, 2, 1000]#degrees, centimeters , degrees
+ERROR_OFFSET = [5, 2, 10]#degrees, centimeters , degrees
 """List of positive movements"""
 AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
@@ -47,7 +47,7 @@ class AutobedClient():
         self.num_of_sensors = num_of_sensors
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         #Create a serial object for the Autobed to communicate with sensors and actuators. 
-        self.autobed_sender = serial.Serial('/dev/ttyUSB0', baudrate = baudrate)
+        self.autobed_sender = serial.Serial(dev, baudrate = baudrate)
         #Create a proximity sensor object 
         self.prox_driver = sharp_prox_driver.ProximitySensorDriver(int(num_of_sensors), param_file = self.param_file, dev = self.dev,  baudrate = self.baudrate)
         # Input to the control system.
@@ -64,10 +64,12 @@ class AutobedClient():
     def positions_in_autobed_units(self, distances):
         ''' Accepts position of the obstacle which is placed at 
         4.92 cm(I tried to keep it 5 cm away) from sensor at 0.0 degrees 
-        and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum), 
+        and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum),
+        For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees.
         and returns value of the head tilt in degrees'''
     
         distances[0] = (3.4294*distances[0] - 16.87240)
+        distances[2] = (-14.023*distances[2] + 211.747)
         return distances
 
     def autobed_engine_callback(self, data):
@@ -78,8 +80,8 @@ class AutobedClient():
         rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data)) 
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
-        u_thresh = np.array([65.0, 40.0, 20.0])
-        l_thresh = np.array([1.0, 9.0, 0.0])
+        u_thresh = np.array([65.0, 40.0, 60.0])
+        l_thresh = np.array([1.0, 9.0, 5.0])
         self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
         self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
         #Make reached_destination boolean flase for all the actuators on the bed.

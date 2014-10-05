@@ -175,7 +175,7 @@ if __name__=='__main__':
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         data = prox_driver.get_sensor_data()
-        raw_data = data[-2]
+        raw_data = data[-3]
         cal_data = data[-1]
 
         pub0.publish(Float32(cal_data[0]))
