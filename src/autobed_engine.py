@@ -45,13 +45,13 @@ class AutobedClient():
         self.param_file = param_file
         self.baudrate = baudrate 
         self.num_of_sensors = num_of_sensors
-        self.reached_destination = False * np.ones(NUM_ACTUATORS)
+        self.reached_destination = True * np.ones(NUM_ACTUATORS)
         #Create a serial object for the Autobed to communicate with sensors and actuators. 
         self.autobed_sender = serial.Serial(dev, baudrate = baudrate)
         #Create a proximity sensor object 
         self.prox_driver = sharp_prox_driver.ProximitySensorDriver(int(num_of_sensors), param_file = self.param_file, dev = self.dev,  baudrate = self.baudrate)
         # Input to the control system.
-        self.autobed_u = np.zeros(NUM_ACTUATORS) 
+        self.autobed_u = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
         #Start a publisher to publish autobed status and error 
         self.abdout0 = rospy.Publisher("/abdout0", FloatArrayBare)
         self.abdstatus0 = rospy.Publisher("/abdstatus0", Bool)
@@ -59,7 +59,7 @@ class AutobedClient():
         rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
-        rospy.sleep(10.)
+        rospy.sleep(1.)
 
     def positions_in_autobed_units(self, distances):
         ''' Accepts position of the obstacle which is placed at 
@@ -77,7 +77,7 @@ class AutobedClient():
         global variable. This variable is then used to guide the autobed to the desired position 
         using the engine'''
 
-        rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data)) 
+        #rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data)) 
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
         u_thresh = np.array([65.0, 40.0, 60.0])
@@ -90,12 +90,15 @@ class AutobedClient():
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
         actuator_number = 0 #Variable that denotes what actuator is presently being controlled
+        '''Initialize the autobed input to the current sensor values, so that the autobed doesn't move unless commanded'''
+        autobed_u =   np.asarray(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
+
         while not rospy.is_shutdown(): 
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error))
         
-            if self.reached_destination.all() == False:
+            if self.reached_destination.any() == False:
                 '''If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''
                 if actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[actuator_number]) > ERROR_OFFSET[actuator_number]:
@@ -109,7 +112,7 @@ class AutobedClient():
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
                 self.abdout0.publish(autobed_error)
- 
+                actuator_number = 0 
             rate.sleep()
 
 
