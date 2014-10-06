@@ -18,14 +18,14 @@ To run the autobed:
 To play with the Autobed: 
 1. Ensure the autobed engine(described above) is running.
 2. Ensure that the Autobed sensor module is plugged in. That's the little box serially connected to the Autobed Motors.
-3. The Autobed Subscribes to topic '\abdin'. 
+3. The Autobed Subscribes to topic '/abdin0'. 
    Format : Array of Floats of length 3 with entries [ head_angle, bed_ht, leg_angle]
    For example : [30.0, 20.0, 0.0] causes the bed to move its head to 30 degrees, height to 20 cm, legs stay down.
 4. Thresholds for the inputs that can be given to the Autobed:
             upper threshold = np.array([65.0, 40.0, 20.0])
             lower threshold = np.array([1.0, 9.0, 0.0])
-5. The Autobed also outputs its status. Subscribe to '\abdstatus0' and '\abdout0'. Status will output a bool True when done. Abd Output will start spitting the error between the commanded position and actual position.
-6. IMPORTANT: Write your code so that once you see true on '\abdstatus0', stop publishing on '\abdin0'.
+5. The Autobed also outputs its status. Subscribe to '/abdstatus0' and '/abdout0'. Status will output a bool True when done. Abd Output will start spitting the error between the commanded position and actual position.
+6. IMPORTANT: Write your code so that once you see true on '/abdstatus0', stop publishing on '/abdin0'.
 
 
 

@@ -99,7 +99,8 @@ class AutobedClient():
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}, reached_destination = {}, self.actuator_number = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error, self.reached_destination, self.actuator_number))
-        
+            #Publish present Autobed sensor readings 
+            self.abdout0.publish(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''
                 if self.actuator_number < (NUM_ACTUATORS):
@@ -114,7 +115,6 @@ class AutobedClient():
             '''If we have reached the destination position at all the actuators, then publish the error and a boolean that says we have reached'''
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
-                self.abdout0.publish(autobed_error)
             rate.sleep()
 
 
