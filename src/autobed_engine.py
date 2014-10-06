@@ -115,7 +115,6 @@ class AutobedClient():
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
                 self.abdout0.publish(autobed_error)
-                self.actuator_number = 0 
             rate.sleep()
 
 
