@@ -46,6 +46,7 @@ class AutobedClient():
         self.baudrate = baudrate 
         self.num_of_sensors = num_of_sensors
         self.reached_destination = True * np.ones(NUM_ACTUATORS)
+        self.actuator_number = 0
         #Create a serial object for the Autobed to communicate with sensors and actuators. 
         self.autobed_sender = serial.Serial(dev, baudrate = baudrate)
         #Create a proximity sensor object 
@@ -86,33 +87,35 @@ class AutobedClient():
         self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
         #Make reached_destination boolean flase for all the actuators on the bed.
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
+        self.actuator_number = 0
 
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
-        actuator_number = 0 #Variable that denotes what actuator is presently being controlled
+        self.actuator_number = 0 #Variable that denotes what actuator is presently being controlled
         '''Initialize the autobed input to the current sensor values, so that the autobed doesn't move unless commanded'''
         autobed_u =   np.asarray(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
 
         while not rospy.is_shutdown(): 
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-            rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error))
+            rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}, reached_destination = {}, self.actuator_number = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error, self.reached_destination, self.actuator_number))
         
-            if self.reached_destination.any() == False:
+            if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''
-                if actuator_number < (NUM_ACTUATORS):
-                    if abs(autobed_error[actuator_number]) > ERROR_OFFSET[actuator_number]:
-                        self.autobed_sender.write(AUTOBED_COMMANDS[actuator_number][int(autobed_error[actuator_number]/abs(autobed_error[actuator_number]))]) 
-                        self.reached_destination[actuator_number] = False
+                if self.actuator_number < (NUM_ACTUATORS):
+                    if abs(autobed_error[self.actuator_number]) > ERROR_OFFSET[self.actuator_number]:
+                        self.autobed_sender.write(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))]) 
+                        self.reached_destination[self.actuator_number] = False
                     else:
-                        self.reached_destination[actuator_number] = True
-                        '''We have reached destination for actuator actuator_number. Upgrade the actuation count'''
-                        actuator_number += 1
+                        self.reached_destination[self.actuator_number] = True
+                        '''We have reached destination for actuator self.actuator_number. Upgrade the actuation count'''
+                        self.actuator_number += 1
+
             '''If we have reached the destination position at all the actuators, then publish the error and a boolean that says we have reached'''
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
                 self.abdout0.publish(autobed_error)
-                actuator_number = 0 
+                self.actuator_number = 0 
             rate.sleep()
 
 
