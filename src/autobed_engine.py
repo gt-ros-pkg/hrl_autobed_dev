@@ -21,7 +21,7 @@ from pylab import plot, show, title, xlabel, ylabel, subplot
 from scipy import fft, arange
 
 """This is the maximum error allowed in our control system."""
-ERROR_OFFSET = [5, 2, 10]#degrees, centimeters , degrees
+ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 """List of positive movements"""
 AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
@@ -69,8 +69,30 @@ class AutobedClient():
         For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees.
         and returns value of the head tilt in degrees'''
     
-        distances[0] = (3.4294*distances[0] - 16.87240)
-        distances[2] = (-14.023*distances[2] + 211.747)
+        if distances[0] <= 12.25:
+            distances[0] = (3.197*distances[0] - 12.56)
+        elif distances[0] > 12.25 and distances[0] <= 19.5:
+            distances[0] = (3.16*distances[0] - 12.11)
+        elif distances[0] > 19.5 and distances[0] <= 22.4:
+            distances[0] = (3.61*distances[0] - 21.02)
+        elif distances[0] > 22.4 and distances[0] <= 27.5:
+            distances[0] = (3.96*distances[0] - 28.70)
+        else:
+            distances[0] = 80
+            
+        
+        if distances[2] >= 23.00:
+            distances[2] = 0
+        elif distances[2] >= 20.4 and distances[2] < 23.00:
+            distances[2] = -5.176*distances[2] + 120.56
+        elif distances[2] >= 17.54 and distances[2] < 20.4:
+            distances[2] = -5.02*distances[2] + 117.459
+        elif distances[2] >= 15.23 and distances[2] <17.54:
+            distances[2] = -5.273*distances[2] + 121.81
+        elif distances[2] >= 13.87 and distances[2] < 15.23:
+            distances[2] = -5.664*distances[2] + 127.77
+        else:
+            distances[2] = -5.664*distances[2] + 127.77
         return distances
 
     def autobed_engine_callback(self, data):
@@ -81,8 +103,8 @@ class AutobedClient():
         #rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data)) 
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
-        u_thresh = np.array([65.0, 40.0, 60.0])
-        l_thresh = np.array([1.0, 9.0, 5.0])
+        u_thresh = np.array([80.0, 30.0, 50.0])
+        l_thresh = np.array([1.0, 9.0, 1.0])
         self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
         self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
         #Make reached_destination boolean flase for all the actuators on the bed.
