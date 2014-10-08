@@ -10,6 +10,7 @@ import sharp_prox_driver
 
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
+from std_msgs.msg import String
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
@@ -58,6 +59,8 @@ class AutobedClient():
         self.abdstatus0 = rospy.Publisher("/abdstatus0", Bool)
         #Start a subscriber to run the autobed engine when we get a command
         rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
+        #Start a subscriber that takes a differential input and just relays it to the autobed.
+        rospy.Subscriber("/abdin1", String, self.differential_control_callback)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
         rospy.sleep(1.)
@@ -94,6 +97,13 @@ class AutobedClient():
         else:
             distances[2] = -5.664*distances[2] + 127.77
         return distances
+
+
+
+    def differential_control_callback(self, data):
+        ''' Accepts incoming differential control values and simply relays them to the Autobed.
+        This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
+        self.autobed_sender.write(data.data)
 
     def autobed_engine_callback(self, data):
         ''' Accepts incoming position values from the base selection algorithm and assigns it to a
