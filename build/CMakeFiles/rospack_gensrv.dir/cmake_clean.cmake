@@ -1,4 +1,7 @@
 FILE(REMOVE_RECURSE
+  "../srv_gen"
+  "../src/hrl_autobed_dev/srv"
+  "../srv_gen"
   "CMakeFiles/rospack_gensrv"
 )
 

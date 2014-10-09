@@ -42,9 +42,65 @@ CMAKE_BINARY_DIR = /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/buil
 # Include the progress variables for this target.
 include CMakeFiles/ROSBUILD_gensrv_lisp.dir/progress.make
 
-CMakeFiles/ROSBUILD_gensrv_lisp:
+CMakeFiles/ROSBUILD_gensrv_lisp: ../srv_gen/lisp/add_bed_config.lisp
+CMakeFiles/ROSBUILD_gensrv_lisp: ../srv_gen/lisp/_package.lisp
+CMakeFiles/ROSBUILD_gensrv_lisp: ../srv_gen/lisp/_package_add_bed_config.lisp
+
+../srv_gen/lisp/add_bed_config.lisp: ../srv/add_bed_config.srv
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roslisp/rosbuild/scripts/genmsg_lisp.py
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roslib/bin/gendeps
+../srv_gen/lisp/add_bed_config.lisp: ../manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roslang/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/rospy/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/geometry_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/std_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/bullet/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/sensor_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roscpp/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/rosconsole/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/geometry/angles/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/rostest/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roswtf/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/message_filters/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/geometry/tf/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/gt-ros-pkg.hrl-kdl/hrl_geom/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/robot_model_py/urdf_parser_py/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/orocos_kdl/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/python_orocos_kdl/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/gt-ros-pkg.hrl-kdl/pykdl_utils/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/std_srvs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/visualization_msgs/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/rosservice/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/dynamic_reconfigure/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/kdl/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/gt-ros-pkg.hrl-lib/hrl_lib/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_hardware_drivers/robotis/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/share/roslib/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/manifest.xml
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/geometry/tf/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/geometry/tf/srv_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/dynamic_reconfigure/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /opt/ros/fuerte/stacks/dynamic_reconfigure/srv_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/gt-ros-pkg.hrl-lib/hrl_lib/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_hardware_drivers/robotis/srv_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/msg_gen/generated
+../srv_gen/lisp/add_bed_config.lisp: /home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/srv_gen/generated
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating ../srv_gen/lisp/add_bed_config.lisp, ../srv_gen/lisp/_package.lisp, ../srv_gen/lisp/_package_add_bed_config.lisp"
+	/opt/ros/fuerte/share/roslisp/rosbuild/scripts/genmsg_lisp.py /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/srv/add_bed_config.srv
+
+../srv_gen/lisp/_package.lisp: ../srv_gen/lisp/add_bed_config.lisp
+
+../srv_gen/lisp/_package_add_bed_config.lisp: ../srv_gen/lisp/add_bed_config.lisp
 
 ROSBUILD_gensrv_lisp: CMakeFiles/ROSBUILD_gensrv_lisp
+ROSBUILD_gensrv_lisp: ../srv_gen/lisp/add_bed_config.lisp
+ROSBUILD_gensrv_lisp: ../srv_gen/lisp/_package.lisp
+ROSBUILD_gensrv_lisp: ../srv_gen/lisp/_package_add_bed_config.lisp
 ROSBUILD_gensrv_lisp: CMakeFiles/ROSBUILD_gensrv_lisp.dir/build.make
 .PHONY : ROSBUILD_gensrv_lisp
 

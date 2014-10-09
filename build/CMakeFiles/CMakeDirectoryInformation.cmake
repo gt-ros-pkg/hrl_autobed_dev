@@ -32,6 +32,7 @@ SET(CMAKE_C_INCLUDE_PATH
   "/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/include"
   "/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/msg_gen/cpp/include"
   "/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/m3skin_ros/srv_gen/cpp/include"
+  "../srv_gen/cpp/include"
   )
 SET(CMAKE_CXX_INCLUDE_PATH ${CMAKE_C_INCLUDE_PATH})
 SET(CMAKE_Fortran_INCLUDE_PATH ${CMAKE_C_INCLUDE_PATH})

@@ -10,12 +10,13 @@ import sharp_prox_driver
 
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
-from std_msgs.msg import String
+from std_msgs.msg import Int32
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
 from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
 from m3skin_ros.srv import None_String, None_StringResponse
+from hrl_autobed_dev.srv import *
 
 from numpy import sin, linspace, pi
 from pylab import plot, show, title, xlabel, ylabel, subplot
@@ -38,7 +39,7 @@ NUM_ACTUATORS = 3
 
 class AutobedClient():
 
-    def __init__(self, dev, param_file, baudrate, num_of_sensors):
+    def __init__(self, dev, autobed_config_file, param_file, baudrate, num_of_sensors):
         '''Autobed engine node that listens into the base selection output data array
         and feeds the same as an input to the autobed control system. Further, it listens to the sensor
         position'''
@@ -60,7 +61,11 @@ class AutobedClient():
         #Start a subscriber to run the autobed engine when we get a command
         rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
         #Start a subscriber that takes a differential input and just relays it to the autobed.
-        rospy.Subscriber("/abdin1", String, self.differential_control_callback)
+        rospy.Subscriber("/abdin1", Int32, self.differential_control_callback)
+        #Load the Autobed positions configuration file
+        self.autobed_config_data = rosparam.load_file(autobed_config_file)[0][0] 
+        #Set up the service that stores present Autobed configuration in the yaml file
+        rospy.Service('update_autobed_config', add_bed_config, self.update_autobed_configuration) 
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
         rospy.sleep(1.)
@@ -103,8 +108,23 @@ class AutobedClient():
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
-        self.autobed_sender.write(data.data)
+        if data.data < 6:
+            self.autobed_sender.write(self.autobed_config_data[data.data])
+        elif data.data < 9:
+            self.autobed_u = np.asarray(self.autobed_config_data[data.data])
+            u_thresh = np.array([80.0, 30.0, 50.0])
+            l_thresh = np.array([1.0, 9.0, 1.0])
+            self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
+            self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
+            #Make reached_destination boolean flase for all the actuators on the bed.
+            self.reached_destination = False * np.ones(NUM_ACTUATORS)
+            self.actuator_number = 0
+        else:
+            return
+            #Do nothing
 
+
+    
     def autobed_engine_callback(self, data):
         ''' Accepts incoming position values from the base selection algorithm and assigns it to a
         global variable. This variable is then used to guide the autobed to the desired position 
@@ -121,6 +141,18 @@ class AutobedClient():
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
 
+    def update_autobed_configuration(self, data):
+        ''' Is the callback from the GUI interaction Service. This service is called when the user wants to 
+        save a position to the Autobed. This function will update the autobed_config_data.yaml file with the input string and the present configuration of the bed. Once this is done, it will output success to the client'''
+        #Get Autobed yaml file from the params directory into a dictionary
+
+        #Append present Autobed positions and angles to the dictionary
+
+        #Set dictionary
+
+        #Update param file
+
+        #Return success if param file correctly updated
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
         self.actuator_number = 0 #Variable that denotes what actuator is presently being controlled
@@ -157,9 +189,11 @@ if __name__ == "__main__":
     param_file = sys.argv[2]
     baudrate = sys.argv[3]
     num_of_sensors = sys.argv[4]
+    autobed_config_file = sys.argv[5]
     #Initialize autobed node
     rospy.init_node('autobed_engine', anonymous = True)
-    autobed = AutobedClient(dev, param_file, baudrate, num_of_sensors) 
+
+    autobed = AutobedClient(dev, autobed_config_file, param_file, baudrate, num_of_sensors) 
     autobed.run()
 
 
