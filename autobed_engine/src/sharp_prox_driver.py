@@ -6,7 +6,7 @@ import numpy as np
 from scipy.signal import remez
 from scipy.signal import lfilter
 
-import roslib; roslib.load_manifest('hrl_autobed_dev')
+import roslib; roslib.load_manifest('autobed_engine')
 import rospy, rosparam
 from std_msgs.msg import Empty
 from geometry_msgs.msg import Transform, Vector3, Quaternion

@@ -1,5 +1,5 @@
 <package>
-  <description brief="hrl_autobed_dev">
+  <description brief="autobed_engine">
 
      hrl_autobed_dev
 
@@ -7,7 +7,7 @@
   <author>Yash Chitalia</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/hrl_autobed_dev</url>
+  <url>http://ros.org/wiki/autobed_engine</url>
   <depend package="rospy"/>
   <depend package="hrl_haptic_manipulation_in_clutter_msgs"/>
   <depend package="pykdl_utils"/>

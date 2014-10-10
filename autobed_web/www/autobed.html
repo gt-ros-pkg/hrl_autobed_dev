@@ -91,15 +91,14 @@
                 //Service to request saving current pose
                 AutoBed.saveServiceClient = new ROSLIB.Service({
                     ros: AutoBed.ros,
-                    name: //Fill Out,
-                    serviceType: //Fill Out
+                    name: '/update_autobed_config',
+                    serviceType: 'autobed_engine/add_autobed_config' 
                 });
 
                 // Process button-click to save pose
                 AutoBed.saveButtonCB = function (event) {
-                    var txtField = 
-                    req = { 'data': document.getElementById('record-name').value) };
-                    if (req['data'] === '') {
+                    req = { 'config': document.getElementById('record-name').value) };
+                    if (req['config'] === '') {
                         alert("Please enter a name for the pose");
                         AutoBed.log("Please enter a name for the pose");
                         return;
@@ -109,7 +108,7 @@
                         alert("Name of pose should not contain ':', '-', or tabs.");
                         AutoBed.log("Name of pose should not contain ':', '-', or tabs.");
                         return;
-                        }
+                    }
                     AutoBed.saveServiceClient.call(req, AutoBed.saveResponseCB);
                 }
 
@@ -118,12 +117,12 @@
                 saveButton.addEventListener('click', AutoBed.saveButtonCB);
    
                 // Callback for subscription to known AutoBed poses
-                AutoBed.posesCB = function (posesMsg) {
+                AutoBed.posesCB = function (stringList) {
                     //TODO: Get the fields right from the actual message
                     // Save pose names and positions
                     AutoBed.poses = {};
-                    for (pose in posesMsg.names) {
-                        AutoBed.poses[pose] = posesMsg.points[pose];//FIX THIS
+                    for (pose in stringList.data) {
+                        AutoBed.poses[pose] = stringList.points[pose];//FIX THIS
                     }
                     var sel = document.getElementById('pose-select');
                     // Clear out existing options
@@ -139,16 +138,16 @@
                 // Subscribe to recorded/known poses
                 AutoBed.posesSub = new ROSLIB.Topic({
                     ros: AutoBed.ros,
-                    name: //FILL OUT
-                    messageType: //FILL OUT});
+                    name: '/abdout1',
+                    messageType: '/hrl_msgs/StringArray'});
                 });
                 AutoBed.posesSub.subscribe();
 
                 // Publish pose commands to bed
                 AutoBed.poseCmdPub = new ROSLIB.Topic({
                     ros: AutoBed.ros,
-                    name: "/abdin0",
-                    messageType: "hrl_msgs/FloatArrayBare"});
+                    name: "/abdin1",
+                    messageType: "std_msgs/String"});
                 });
                 AutoBed.poseCmdPub.advertise()
                 
@@ -206,14 +205,14 @@
         <div id="controls">
             <h3>Controls</h3>
             <div id="controls-toprow">
-                <button id="head-up">Head Up</button>
-                <button id="bed-up">Bed Up</button>
-                <button id="legs-up">Legs Up</button>
+                <button id="head-up" value="headUP" >Head Up</button>
+                <button id="bed-up" value="bedUP" >Bed Up</button>
+                <button id="legs-up" value="legsUP" >Legs Up</button>
             </div>
             <div id="controls-bottomrow">
-                <button id="head-down">Head Down</button>
-                <button id="bed-down">Bed Down</button>
-                <button id="legs-down">Legs Down</button>
+                <button id="head-down" value="headDN" >Head Down</button>
+                <button id="bed-down" value="bedDN" >Bed Down</button>
+                <button id="legs-down" value="legsDN" >Legs Down</button>
             </div>
         </div>
 

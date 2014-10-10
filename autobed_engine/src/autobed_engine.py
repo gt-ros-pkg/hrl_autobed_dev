@@ -3,7 +3,7 @@ import sys
 import serial
 import numpy as np
 
-import roslib; roslib.load_manifest('hrl_autobed_dev')
+import roslib; roslib.load_manifest('autobed_engine')
 import rospy, rosparam
 import serial_driver
 import sharp_prox_driver
@@ -22,7 +22,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 
 from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
 from m3skin_ros.srv import None_String, None_StringResponse
-from hrl_autobed_dev.srv import *
+from autobed_engine.srv import *
 
 from numpy import sin, linspace, pi
 from pylab import plot, show, title, xlabel, ylabel, subplot

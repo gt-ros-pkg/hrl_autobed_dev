@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib
-roslib.load_manifest('hrl_autobed_dev')
+roslib.load_manifest('autobed_engine')
 import rospy
 
 import serial

@@ -4,7 +4,7 @@ import sys
 import serial
 import numpy as np
 
-import roslib; roslib.load_manifest('hrl_autobed_dev')
+import roslib; roslib.load_manifest('autobed_engine')
 import rospy, rosparam
 import serial_driver
 import sharp_prox_driver
