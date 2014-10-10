@@ -7,10 +7,14 @@ import roslib; roslib.load_manifest('hrl_autobed_dev')
 import rospy, rosparam
 import serial_driver
 import sharp_prox_driver
+import pickle as pkl
+roslib.load_manifest('hrl_lib')
+from hrl_lib.util import save_pickle, load_pickle
+
 
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
-from std_msgs.msg import Int32
+from std_msgs.msg import String
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
@@ -47,6 +51,7 @@ class AutobedClient():
         self.param_file = param_file
         self.baudrate = baudrate 
         self.num_of_sensors = num_of_sensors
+        self.autobed_config_file = autobed_config_file
         self.reached_destination = True * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
         #Create a serial object for the Autobed to communicate with sensors and actuators. 
@@ -61,11 +66,12 @@ class AutobedClient():
         #Start a subscriber to run the autobed engine when we get a command
         rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
         #Start a subscriber that takes a differential input and just relays it to the autobed.
-        rospy.Subscriber("/abdin1", Int32, self.differential_control_callback)
-        #Load the Autobed positions configuration file
-        self.autobed_config_data = rosparam.load_file(autobed_config_file)[0][0] 
+        rospy.Subscriber("/abdin1", String, self.differential_control_callback)
         #Set up the service that stores present Autobed configuration in the yaml file
         rospy.Service('update_autobed_config', add_bed_config, self.update_autobed_configuration) 
+        #Initialize Pickle file with dictionary of differential commands
+        #init_autobed_config_data = {'headUP':'A', 'headDN':'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
+        #save_pickle(init_autobed_config_data, self.autobed_config_file)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
         rospy.sleep(1.)
@@ -108,10 +114,12 @@ class AutobedClient():
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
-        if data.data < 6:
-            self.autobed_sender.write(self.autobed_config_data[data.data])
-        elif data.data < 9:
-            self.autobed_u = np.asarray(self.autobed_config_data[data.data])
+        autobed_config_data = load_pickle(self.autobed_config_file) 
+        if data.data == 'headUP' or data.data == 'headDN' or data.data == 'legsUP' or data.data == 'legsDN' or data.data == 'bedUP' or data.data == 'bedDN':
+            self.autobed_sender.write(autobed_config_data[data.data])
+            rospy.loginfo('Diff command given {}'.format(autobed_config_data[data.data]))
+        else:
+            self.autobed_u = np.asarray(autobed_config_data[data.data])
             u_thresh = np.array([80.0, 30.0, 50.0])
             l_thresh = np.array([1.0, 9.0, 1.0])
             self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
@@ -119,9 +127,6 @@ class AutobedClient():
             #Make reached_destination boolean flase for all the actuators on the bed.
             self.reached_destination = False * np.ones(NUM_ACTUATORS)
             self.actuator_number = 0
-        else:
-            return
-            #Do nothing
 
 
     
@@ -141,18 +146,35 @@ class AutobedClient():
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
 
-    def update_autobed_configuration(self, data):
+
+
+
+    def update_autobed_configuration(self, req):
         ''' Is the callback from the GUI interaction Service. This service is called when the user wants to 
         save a position to the Autobed. This function will update the autobed_config_data.yaml file with the input string and the present configuration of the bed. Once this is done, it will output success to the client'''
-        #Get Autobed yaml file from the params directory into a dictionary
+        try:
+            #Get Autobed pickle file from the params directory into a dictionary
+            current_autobed_config_data = load_pickle(self.autobed_config_file)
+        except: 
+            #return zero
+            return add_bed_configResponse(False)
 
-        #Append present Autobed positions and angles to the dictionary
+        if req.config == 'headUP' or req.config == 'headDN' or req.config == 'bedUP' or req.config == 'bedDN' or req.config == 'legsUP' or req.config == 'legsDN':
+            return add_bed_configResponse(False)        
+        else:
+            #Append present Autobed positions and angles to the dictionary
+            current_autobed_config_data[req.config] = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
+        try:
+            #Update param file
+            save_pickle(current_autobed_config_data, self.autobed_config_file) 
+            #Return success if param file correctly updated
+            return add_bed_configResponse(True)
+        except:
+            return add_bed_configResponse(False)
 
-        #Set dictionary
 
-        #Update param file
 
-        #Return success if param file correctly updated
+
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
         self.actuator_number = 0 #Variable that denotes what actuator is presently being controlled
