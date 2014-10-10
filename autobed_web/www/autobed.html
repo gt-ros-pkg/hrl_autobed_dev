@@ -16,7 +16,7 @@
                 logDiv.innerHTML = txt;
             }
             AutoBed.start = function () {
-                AutoBed.SERVER = window.location.host.split(':')[1];//Get server from URL in browser
+                AutoBed.SERVER = window.location.host.split(':')[0];//Get server from URL in browser
                 AutoBed.PORT = '8889';//Must match port on which rosbridge is being served
                 AutoBed.ros = new ROSLIB.Ros({url: 'ws://'+ AutoBed.SERVER + ':'+ AutoBed.PORT});
                 AutoBed.ros.on('close', function(e) {
@@ -43,9 +43,9 @@
                 AutoBed.controlsPub = new ROSLIB.Topic({
                     ros: AutoBed.ros,
                     name: "/abdin1",
-                    messageType: "std_msgs/String"});
+                    messageType: "std_msgs/String"
                 });
-                AutoBed.controlsPub.advertise()
+                AutoBed.controlsPub.advertise();
 
                 AutoBed.sendDiffCmd = function (string) {
                     if (AutoBed.send) {
@@ -59,34 +59,36 @@
                 };
 
                 var setupButtonCBs = function (buttonElement) {
-                    buttonElement.addEventListener("mouseup.abd", function(event){
+                    buttonElement.addEventListener("mouseup", function(event){
                                 AutoBed.send = false;
                                 clearTimeout(AutoBed.diffTimer);
                                 });
-                    buttonElement.addEventListener("blur.abd", function(event){
+                    buttonElement.addEventListener("blur", function(event){
                                 AutoBed.send = false;
                                 clearTimeout(AutoBed.diffTimer);
                                 });
-                    buttonElement.addEventListener("mousedown.abd", function(event){
+                    buttonElement.addEventListener("mousedown", function(event) {
                                 AutoBed.send = true;
-                                AutoBed.diffTimer = setTimeout(function(){AutoBed.sendDiffCmd(buttonElement.value)}, 1);
+                                AutoBed.diffTimer = setTimeout(function () {
+                                    AutoBed.sendDiffCmd(event.target.value)
+                                    }, 1);
                                 });
                 }
                 setupButtonCBs(document.getElementById("head-up"));
-                setupButtonCBs(document.getElementById("bed-up");
-                setupButtonCBs(document.getElementById("legs-up");
-                setupButtonCBs(document.getElementById("head-down");
-                setupButtonCBs(document.getElementById("bed-down");
-                setupButtonCBs(document.getElementById("legs-down");
+                setupButtonCBs(document.getElementById("bed-up"));
+                setupButtonCBs(document.getElementById("legs-up"));
+                setupButtonCBs(document.getElementById("head-down"));
+                setupButtonCBs(document.getElementById("bed-down"));
+                setupButtonCBs(document.getElementById("legs-down"));
 
                 //Handle the success/failure response from saving a pose
                 AutoBed.saveResponseCB = function (resp) {
                     if (resp.success) {
                         AutoBed.log("Pose Saved.");
-                    else {
+                    } else {
                         AutoBed.log("FAILED to save pose.");
                         }
-                }
+                };
 
                 //Service to request saving current pose
                 AutoBed.saveServiceClient = new ROSLIB.Service({
@@ -97,19 +99,19 @@
 
                 // Process button-click to save pose
                 AutoBed.saveButtonCB = function (event) {
-                    req = { 'config': document.getElementById('record-name').value) };
+                    var req = { 'config': document.getElementById('record-name').value };
                     if (req['config'] === '') {
                         alert("Please enter a name for the pose");
                         AutoBed.log("Please enter a name for the pose");
                         return;
-                    } else if (req['data'].indexOf(":") >= 0 ||
-                               req['data'].indexOf("-") >= 0 ||
-                               req['data'].indexOf("\t") >= 0 ) {
+                    } else if (req['config'].indexOf(":") >= 0 ||
+                               req['config'].indexOf("-") >= 0 ||
+                               req['config'].indexOf("\t") >= 0 ) {
                         alert("Name of pose should not contain ':', '-', or tabs.");
                         AutoBed.log("Name of pose should not contain ':', '-', or tabs.");
                         return;
                     }
-                    AutoBed.saveServiceClient.call(req, AutoBed.saveResponseCB);
+                    AutoBed.saveServiceClient.callService(req, AutoBed.saveResponseCB);
                 }
 
                 // Register handler for save pose button
@@ -118,11 +120,10 @@
    
                 // Callback for subscription to known AutoBed poses
                 AutoBed.posesCB = function (stringList) {
-                    //TODO: Get the fields right from the actual message
                     // Save pose names and positions
                     AutoBed.poses = {};
-                    for (pose in stringList.data) {
-                        AutoBed.poses[pose] = stringList.points[pose];//FIX THIS
+                    for (idx in stringList.data) {
+                        AutoBed.poses[idx] = stringList.data[idx];
                     }
                     var sel = document.getElementById('pose-select');
                     // Clear out existing options
@@ -130,8 +131,8 @@
                         sel.remove(i);
                     }
                     // Re-populate select box
-                    for (pose in AutoBed.poses) {
-                        sel.add(Option(pose, pose));
+                    for (idx in AutoBed.poses) {
+                        sel.add(new Option(AutoBed.poses[idx], idx));
                     }
                 }
                 
@@ -139,15 +140,15 @@
                 AutoBed.posesSub = new ROSLIB.Topic({
                     ros: AutoBed.ros,
                     name: '/abdout1',
-                    messageType: '/hrl_msgs/StringArray'});
+                    messageType: '/hrl_msgs/StringArray'
                 });
-                AutoBed.posesSub.subscribe();
+                AutoBed.posesSub.subscribe(AutoBed.posesCB);
 
                 // Publish pose commands to bed
                 AutoBed.poseCmdPub = new ROSLIB.Topic({
                     ros: AutoBed.ros,
                     name: "/abdin1",
-                    messageType: "std_msgs/String"});
+                    messageType: "std_msgs/String"
                 });
                 AutoBed.poseCmdPub.advertise()
                 
