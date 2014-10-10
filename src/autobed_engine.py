@@ -15,7 +15,9 @@ from hrl_lib.util import save_pickle, load_pickle
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from std_msgs.msg import String
+from std_msgs.msg import Int16
 from hrl_msgs.msg import FloatArrayBare
+from hrl_msgs.msg import StringArray
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
 from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
@@ -63,15 +65,21 @@ class AutobedClient():
         #Start a publisher to publish autobed status and error 
         self.abdout0 = rospy.Publisher("/abdout0", FloatArrayBare)
         self.abdstatus0 = rospy.Publisher("/abdstatus0", Bool)
+        
+        self.abdout1 = rospy.Publisher("/abdout1", StringArray) 
         #Start a subscriber to run the autobed engine when we get a command
         rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
         #Start a subscriber that takes a differential input and just relays it to the autobed.
         rospy.Subscriber("/abdin1", String, self.differential_control_callback)
         #Set up the service that stores present Autobed configuration in the yaml file
         rospy.Service('update_autobed_config', add_bed_config, self.update_autobed_configuration) 
-        #Initialize Pickle file with dictionary of differential commands
-        #init_autobed_config_data = {'headUP':'A', 'headDN':'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
-        #save_pickle(init_autobed_config_data, self.autobed_config_file)
+
+        try:
+            init_autobed_config_data = load_pickle(self.autobed_config_file)
+            self.abdout1.publish(init_autobed_config_data.keys())
+        except:
+            init_autobed_config_data = {'headUP': 'A', 'headDN': 'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
+            save_pickle(init_autobed_config_data, self.autobed_config_file)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
         rospy.sleep(1.)
@@ -117,7 +125,6 @@ class AutobedClient():
         autobed_config_data = load_pickle(self.autobed_config_file) 
         if data.data == 'headUP' or data.data == 'headDN' or data.data == 'legsUP' or data.data == 'legsDN' or data.data == 'bedUP' or data.data == 'bedDN':
             self.autobed_sender.write(autobed_config_data[data.data])
-            rospy.loginfo('Diff command given {}'.format(autobed_config_data[data.data]))
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
             u_thresh = np.array([80.0, 30.0, 50.0])
@@ -160,18 +167,21 @@ class AutobedClient():
             return add_bed_configResponse(False)
 
         if req.config == 'headUP' or req.config == 'headDN' or req.config == 'bedUP' or req.config == 'bedDN' or req.config == 'legsUP' or req.config == 'legsDN':
+            self.abdout1.publish(current_autobed_config_data.keys())            
             return add_bed_configResponse(False)        
         else:
             #Append present Autobed positions and angles to the dictionary
             current_autobed_config_data[req.config] = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
-        try:
-            #Update param file
-            save_pickle(current_autobed_config_data, self.autobed_config_file) 
-            #Return success if param file correctly updated
-            return add_bed_configResponse(True)
-        except:
-            return add_bed_configResponse(False)
-
+            try:
+                #Update param file
+                save_pickle(current_autobed_config_data, self.autobed_config_file) 
+                #Publish list of keys to the abdout1 topic
+                self.abdout1.publish(current_autobed_config_data.keys())
+                #Return success if param file correctly updated
+                return add_bed_configResponse(True)
+            except:
+                return add_bed_configResponse(False)
+        
 
 
 
