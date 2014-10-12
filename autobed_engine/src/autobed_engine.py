@@ -105,7 +105,7 @@ class AutobedClient():
         
         if distances[2] >= 21.00:
             distances[2] = 0
-        elif distances[2] >= 20.4 and distances[2] < 23.00:
+        elif distances[2] >= 20.4 and distances[2] < 21.00:
             distances[2] = -5.176*distances[2] + 120.56
         elif distances[2] >= 17.54 and distances[2] < 20.4:
             distances[2] = -5.02*distances[2] + 117.459
