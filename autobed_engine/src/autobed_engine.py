@@ -212,7 +212,7 @@ if __name__ == "__main__":
     parser.add_argument("baudrate", type=int, help="AutoBed Serial Baudrate")
     parser.add_argument("sensor_param_file", type=str, help="The paramter file describing the autobed sensors")
     parser.add_argument("number_of_sensors", type=int, help="Number of sensors on the AutoBed", default=4)
-    parser.add_argument("autobed_config_file", type=sttr, help="Configuration file fo the AutoBed")
+    parser.add_argument("autobed_config_file", type=str, help="Configuration file fo the AutoBed")
     args = parser.parse_args()
     #Initialize autobed node
     rospy.init_node('autobed_engine', anonymous = True)
@@ -220,5 +220,5 @@ if __name__ == "__main__":
                             args.autobed_config_file,
                             args.sensor_param_file,
                             args.baudrate,
-                            args.num_of_sensors)
+                            args.number_of_sensors)
     autobed.run()
