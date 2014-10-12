@@ -103,7 +103,7 @@ class AutobedClient():
             distances[0] = 80
             
         
-        if distances[2] >= 23.00:
+        if distances[2] >= 21.00:
             distances[2] = 0
         elif distances[2] >= 20.4 and distances[2] < 23.00:
             distances[2] = -5.176*distances[2] + 120.56
@@ -128,7 +128,7 @@ class AutobedClient():
             self.autobed_sender.write(autobed_config_data[data.data])
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
-            u_thresh = np.array([80.0, 30.0, 50.0])
+            u_thresh = np.array([80.0, 30.0, 30.0])
             l_thresh = np.array([1.0, 9.0, 1.0])
             self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
             self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]

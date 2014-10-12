@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # license removed for brevity
 import rospy
-import roslib; roslib.load_manifest('hrl_autobed_dev')
+import roslib; roslib.load_manifest('autobed_engine')
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from hrl_msgs.msg import FloatArrayBare
