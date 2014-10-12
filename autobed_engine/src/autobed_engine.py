@@ -31,7 +31,7 @@ from scipy import fft, arange
 """This is the maximum error allowed in our control system."""
 ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
+AUTOBED_COMMANDS = [[0, 'F', 'A'], [0, 'D', 'B'], [0, 'E', 'C']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 
@@ -78,7 +78,7 @@ class AutobedClient():
             init_autobed_config_data = load_pickle(self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
         except:
-            init_autobed_config_data = {'headUP': 'A', 'headDN': 'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
+            init_autobed_config_data = {'headUP': 'F', 'headDN': 'A', 'bedUP':'D', 'bedDN':'B', 'legsUP':'E', 'legsDN':'C'}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
@@ -122,6 +122,7 @@ class AutobedClient():
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
+        print "Got: ", data.data
         autobed_config_data = load_pickle(self.autobed_config_file) 
         if data.data == 'headUP' or data.data == 'headDN' or data.data == 'legsUP' or data.data == 'legsDN' or data.data == 'bedUP' or data.data == 'bedDN':
             self.autobed_sender.write(autobed_config_data[data.data])
