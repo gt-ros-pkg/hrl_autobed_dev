@@ -28,7 +28,7 @@ from numpy import sin, linspace, pi
 from pylab import plot, show, title, xlabel, ylabel, subplot
 from scipy import fft, arange
 
-"""This is the maximum error allowed in our control system."""
+'''This is the maximum error allowed in our control system.'''
 ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 """List of positive movements"""
 AUTOBED_COMMANDS = [[0, 'F', 'A'], [0, 'D', 'B'], [0, 'E', 'C']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
@@ -73,8 +73,10 @@ class AutobedClient():
         #Start a subscriber that takes a differential input and just relays it to the autobed.
         rospy.Subscriber("/abdin1", String, self.differential_control_callback)
         #Set up the service that stores present Autobed configuration in the yaml file
-        rospy.Service('update_autobed_config', add_bed_config, self.update_autobed_configuration) 
-
+        rospy.Service('add_autobed_config', update_bed_config, self.add_autobed_configuration)
+        #Set up the service that deletes specified Autobed configuration  in the yaml file
+        rospy.Service('delete_autobed_config', update_bed_config, self.delete_autobed_configuration)
+        
         try:
             init_autobed_config_data = load_pickle(self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
@@ -152,9 +154,35 @@ class AutobedClient():
         self.actuator_number = 0
 
 
+    def delete_autobed_configuration(self, req):
+        """ Is the callback from the GUI Interaction Service. This service is called when a user wants to delete a saved position. 
+        This function will update the autobed_config_data.yaml file by removing the data corresponding to the string specified. If successful, it will return a boolean value"""
+        try:
+            #Get Autobed pickle file from the params directory into a dictionary
+            current_autobed_config_data = load_pickle(self.autobed_config_file)
+        except: 
+            #return zero
+            return update_bed_configResponse(False)
+
+        #Delete present Autobed positions and angles from the dictionary
+        try:
+            current_autobed_config_data.pop(req.config)
+        except KeyError:
+            update_bed_configResponse(False)
+            print "Autobed Configuration Database is already empty"
+        try:
+            #Update param file
+            save_pickle(current_autobed_config_data, self.autobed_config_file) 
+            #Publish list of keys to the abdout1 topic
+            self.abdout1.publish(current_autobed_config_data.keys())
+            #Return success if param file correctly updated
+            return update_bed_configResponse(True)
+        except:
+            return update_bed_configResponse(False)
+ 
 
 
-    def update_autobed_configuration(self, req):
+    def add_autobed_configuration(self, req):
         ''' Is the callback from the GUI interaction Service. This service is called when the user wants to 
         save a position to the Autobed. This function will update the autobed_config_data.yaml file with the input string and the present configuration of the bed. Once this is done, it will output success to the client'''
         try:
@@ -162,11 +190,11 @@ class AutobedClient():
             current_autobed_config_data = load_pickle(self.autobed_config_file)
         except: 
             #return zero
-            return add_bed_configResponse(False)
+            return update_bed_configResponse(False)
 
         if req.config in CMDS: 
             self.abdout1.publish(current_autobed_config_data.keys())            
-            return add_bed_configResponse(False)        
+            return update_bed_configResponse(False)        
         else:
             #Append present Autobed positions and angles to the dictionary
             current_autobed_config_data[req.config] = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
@@ -176,13 +204,11 @@ class AutobedClient():
                 #Publish list of keys to the abdout1 topic
                 self.abdout1.publish(current_autobed_config_data.keys())
                 #Return success if param file correctly updated
-                return add_bed_configResponse(True)
+                return update_bed_configResponse(True)
             except:
-                return add_bed_configResponse(False)
- 
-
-
-
+                return update_bed_configResponse(False)
+    
+    
     def run(self): 
         rate = rospy.Rate(5) #5 Hz
         self.actuator_number = 0 #Variable that denotes what actuator is presently being controlled
