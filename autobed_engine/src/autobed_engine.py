@@ -34,7 +34,8 @@ ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 AUTOBED_COMMANDS = [[0, 'F', 'A'], [0, 'D', 'B'], [0, 'E', 'C']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
-
+""" Basic Differential commands to the Autobed via GUI"""
+CMDS = {'headUP': 'F', 'headDN': 'A', 'bedUP':'D', 'bedDN':'B', 'legsUP':'E', 'legsDN':'C'}
 
 
 ##
@@ -78,7 +79,7 @@ class AutobedClient():
             init_autobed_config_data = load_pickle(self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
         except:
-            init_autobed_config_data = {'headUP': 'F', 'headDN': 'A', 'bedUP':'D', 'bedDN':'B', 'legsUP':'E', 'legsDN':'C'}
+            init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
@@ -120,8 +121,8 @@ class AutobedClient():
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
         print "Got: ", data.data
         autobed_config_data = load_pickle(self.autobed_config_file) 
-        if data.data == 'headUP' or data.data == 'headDN' or data.data == 'legsUP' or data.data == 'legsDN' or data.data == 'bedUP' or data.data == 'bedDN':
-            self.autobed_sender.write(autobed_config_data[data.data])
+        if data.data in CMDS: 
+            self.autobed_sender.write(CMDS[data.data])
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
             u_thresh = np.array([80.0, 30.0, 30.0])
@@ -133,7 +134,7 @@ class AutobedClient():
             self.actuator_number = 0
 
 
-    
+ 
     def autobed_engine_callback(self, data):
         ''' Accepts incoming position values from the base selection algorithm and assigns it to a
         global variable. This variable is then used to guide the autobed to the desired position 
@@ -163,7 +164,7 @@ class AutobedClient():
             #return zero
             return add_bed_configResponse(False)
 
-        if req.config == 'headUP' or req.config == 'headDN' or req.config == 'bedUP' or req.config == 'bedDN' or req.config == 'legsUP' or req.config == 'legsDN':
+        if req.config in CMDS: 
             self.abdout1.publish(current_autobed_config_data.keys())            
             return add_bed_configResponse(False)        
         else:
@@ -178,7 +179,7 @@ class AutobedClient():
                 return add_bed_configResponse(True)
             except:
                 return add_bed_configResponse(False)
-        
+ 
 
 
 
