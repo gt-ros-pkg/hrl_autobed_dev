@@ -84,8 +84,8 @@ AutoBed.rosInit = function () {
     //Service to request saving current pose
     AutoBed.saveServiceClient = new ROSLIB.Service({
         ros: AutoBed.ros,
-        name: '/update_autobed_config',
-        serviceType: 'autobed_engine/add_autobed_config' 
+        name: '/add_autobed_config',
+        serviceType: 'autobed_engine/update_autobed_config' 
     });
 
     // Process button-click to save pose
@@ -108,6 +108,33 @@ AutoBed.rosInit = function () {
     // Register handler for save pose button
     var saveButton = document.getElementById('save-pose');
     saveButton.addEventListener('click', AutoBed.saveButtonCB);
+
+    //Handle the success/failure response from saving a pose
+    AutoBed.deleteResponseCB = function (resp) {
+        if (resp.success) {
+            AutoBed.log("Pose deleted.");
+        } else {
+            AutoBed.log("FAILED to delete pose.");
+            }
+    };
+
+    //Service to request saving current pose
+    AutoBed.deleteServiceClient = new ROSLIB.Service({
+        ros: AutoBed.ros,
+        name: '/delete_autobed_config',
+        serviceType: 'autobed_engine/update_autobed_config' 
+    });
+
+    // Process button-click to save pose
+    AutoBed.deleteButtonCB = function (event) {
+        var sel = document.getElementById('pose-select');
+        var req = { 'config' : AutoBed.poses[sel.value] };
+        AutoBed.deleteServiceClient.callService(req, AutoBed.deleteResponseCB);
+    }
+
+    // Register handler for save pose button
+    var deleteButton = document.getElementById('delete-pose');
+    deleteButton.addEventListener('click', AutoBed.deleteButtonCB);
 
     // Callback for subscription to known AutoBed poses
     AutoBed.posesCB = function (stringList) {

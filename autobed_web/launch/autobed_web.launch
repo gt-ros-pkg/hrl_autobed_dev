@@ -1,5 +1,4 @@
 <launch>
-
   <node name="rosbridge" pkg="rosbridge_server" type="rosbridge.py" output="screen">
       <param name="port" type="int" value="8889" />
   </node>

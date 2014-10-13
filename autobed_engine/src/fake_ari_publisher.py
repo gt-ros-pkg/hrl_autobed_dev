@@ -19,7 +19,7 @@ def talker():
     sub = rospy.Subscriber('/abdstatus0', Bool, subscriber_cb)
     pub = rospy.Publisher('/abdin0', FloatArrayBare)
     rospy.init_node('talker', anonymous=True)
-    msg = [90.0, 20.0, 10.0]
+    msg = [0.0, 0.0, 0.0]
     global reached
     reached = False
     r = rospy.Rate(10) # 0.01Hz , i.e 100 secs
@@ -30,6 +30,3 @@ def talker():
 
 if __name__=="__main__":
     talker()
-
-                                                                 
-                                                                 
