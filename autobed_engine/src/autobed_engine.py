@@ -103,18 +103,14 @@ class AutobedClient():
             distances[0] = 80
             
         
-        if distances[2] >= 21.00:
+        if distances[2] >= 20.00:
             distances[2] = 0
-        elif distances[2] >= 20.4 and distances[2] < 21.00:
-            distances[2] = -5.176*distances[2] + 120.56
-        elif distances[2] >= 17.54 and distances[2] < 20.4:
-            distances[2] = -5.02*distances[2] + 117.459
-        elif distances[2] >= 15.23 and distances[2] <17.54:
-            distances[2] = -5.273*distances[2] + 121.81
-        elif distances[2] >= 13.87 and distances[2] < 15.23:
-            distances[2] = -5.664*distances[2] + 127.77
+        elif distances[2] >= 16.77 and distances[2] < 20.00:
+            distances[2] = -5.328*distances[2] + 106.5605
+        elif distances[2] >= 13.83 and distances[2] < 16.77:
+            distances[2] = -4.35*distances[2] + 90.46
         else:
-            distances[2] = -5.664*distances[2] + 127.77
+            distances[2] = -4.35*distances[2] + 90.46
         return distances
 
 
@@ -146,7 +142,7 @@ class AutobedClient():
         #rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data)) 
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
-        u_thresh = np.array([80.0, 30.0, 50.0])
+        u_thresh = np.array([80.0, 30.0, 30.0])
         l_thresh = np.array([1.0, 9.0, 1.0])
         self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
         self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
