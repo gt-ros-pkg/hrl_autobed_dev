@@ -81,6 +81,7 @@ class AutobedClient():
         except:
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
+            self.abdout1.publish(init_autobed_config_data.keys())
         #Let the sensors warm up
         print 'Initializing Autobed 1.5 ...'
         rospy.sleep(1.)
@@ -236,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument("sensor_param_file", type=str, help="The paramter file describing the autobed sensors")
     parser.add_argument("number_of_sensors", type=int, help="Number of sensors on the AutoBed", default=4)
     parser.add_argument("autobed_config_file", type=str, help="Configuration file fo the AutoBed")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
     rospy.init_node('autobed_engine', anonymous = True)
     autobed = AutobedClient(args.serial_device,
