@@ -1,0 +1,2 @@
+@reboot /bin/bash /home/pgrice/git/hrl_autobed_dev/autobed_web/scripts/autobed_start.sh >> /var/log/autobed.log 2>&1
+

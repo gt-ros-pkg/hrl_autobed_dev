@@ -8,7 +8,6 @@ import rospy
 import serial_driver
 import sharp_prox_driver
 import cPickle as pkl
-roslib.load_manifest('hrl_lib')
 from hrl_lib.util import save_pickle, load_pickle
 
 
@@ -118,7 +117,7 @@ class AutobedClient():
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
-        print "Got: ", data.data
+        #print "Got: ", data.data
         autobed_config_data = load_pickle(self.autobed_config_file) 
         if data.data in CMDS: 
             self.autobed_sender.write(CMDS[data.data])
@@ -209,7 +208,7 @@ class AutobedClient():
         while not rospy.is_shutdown():
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-            rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}, reached_destination = {}, self.actuator_number = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error, self.reached_destination, self.actuator_number))
+            #rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}, reached_destination = {}, self.actuator_number = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error, self.reached_destination, self.actuator_number))
             #Publish present Autobed sensor readings
             self.abdout0.publish(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             if self.reached_destination.all() == False:

@@ -9,10 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/autobed_engine</url>
   <depend package="rospy"/>
-  <depend package="hrl_haptic_manipulation_in_clutter_msgs"/>
-  <depend package="pykdl_utils"/>
   <depend package="hrl_lib"/>
-  <depend package="robotis"/>
   <depend package="m3skin_ros"/>
   <depend package="hrl_msgs"/>
 </package>
