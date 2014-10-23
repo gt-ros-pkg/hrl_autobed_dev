@@ -7,7 +7,7 @@ AutoBed.log = function (txt) {
 
 AutoBed.start = function () {
     AutoBed.SERVER = window.location.host.split(':')[0];//Get server from URL in browser
-    AutoBed.PORT = '8889';//Must match port on which rosbridge is being served
+    AutoBed.PORT = '2206';//Must match port on which rosbridge is being served
     AutoBed.ros = new ROSLIB.Ros({url: 'ws://'+ AutoBed.SERVER + ':'+ AutoBed.PORT});
     AutoBed.ros.on('close', function(e) {
         AutoBed.log("Cannot connect to AutoBed.")
