@@ -1,5 +1,6 @@
 #!/bin/bash
-
+echo "Beginning of AutoBed Start Script"
+date
 source /opt/ros/fuerte/setup.bash
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/home/mycroft/git/
 export ROS_MASTER_URI=http://localhost:11312
