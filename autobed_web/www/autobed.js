@@ -71,7 +71,7 @@ AutoBed.rosInit = function () {
     setupButtonCBs(document.getElementById("head-down"));
     setupButtonCBs(document.getElementById("bed-down"));
     setupButtonCBs(document.getElementById("legs-down"));
-/*
+
     //Handle the success/failure response from saving a pose
     AutoBed.saveResponseCB = function (resp) {
         if (resp.success) {
@@ -180,7 +180,5 @@ AutoBed.rosInit = function () {
     // Attach button callback to send pose button
     var sendButton = document.getElementById('send-pose');
     sendButton.addEventListener("click", AutoBed.sendPose)
-    */
 }
-
 
