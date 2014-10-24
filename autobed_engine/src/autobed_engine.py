@@ -21,14 +21,12 @@ from autobed_engine.srv import *
 #This is the maximum error allowed in our control system.
 ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
 
-'''This is the maximum error allowed in our control system.'''
-ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'F', 'A'], [0, 'D', 'B'], [0, 'E', 'C']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
+AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 'F', 'headDN': 'A', 'bedUP':'D', 'bedDN':'B', 'legsUP':'E', 'legsDN':'C'}
+CMDS = {'headUP': 'A', 'headDN': 'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
 
 ##
 #Class AutobedClient()
@@ -86,13 +84,12 @@ class AutobedClient():
         rospy.sleep(1.)
 
     def positions_in_autobed_units(self, distances):
-        '''  Accepts position of the obstacle which is placed at
-             4.92 cm(I tried to keep it 5 cm away) from sensor at 0.0 degrees
-             and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum),
-             For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle
-             of 61 degrees and value of 15.10 for an angle of 0 degrees.
-             and returns value of the head tilt in degrees'''
-
+        ''' Accepts position of the obstacle which is placed at 
+        4.92 cm(I tried to keep it 5 cm away) from sensor at 0.0 degrees 
+        and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum),
+        For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees.
+        and returns value of the head tilt in degrees'''
+    
         if distances[0] <= 12.25:
             distances[0] = (3.197*distances[0] - 12.56)
         elif distances[0] > 12.25 and distances[0] <= 19.5:
@@ -103,16 +100,22 @@ class AutobedClient():
             distances[0] = (3.96*distances[0] - 28.70)
         else:
             distances[0] = 80
-
-        if distances[2] >= 20.00:
+            
+        
+        if distances[2] >= 23.00:
             distances[2] = 0
-        elif distances[2] >= 16.77 and distances[2] < 20.00:
-            distances[2] = -5.328*distances[2] + 106.5605
-        elif distances[2] >= 13.83 and distances[2] < 16.77:
-            distances[2] = -4.35*distances[2] + 90.46
+        elif distances[2] >= 20.4 and distances[2] < 23.00:
+            distances[2] = -5.176*distances[2] + 120.56
+        elif distances[2] >= 17.54 and distances[2] < 20.4:
+            distances[2] = -5.02*distances[2] + 117.459
+        elif distances[2] >= 15.23 and distances[2] <17.54:
+            distances[2] = -5.273*distances[2] + 121.81
+        elif distances[2] >= 13.87 and distances[2] < 15.23:
+            distances[2] = -5.664*distances[2] + 127.77
         else:
-            distances[2] = -4.35*distances[2] + 90.46
+            distances[2] = -5.664*distances[2] + 127.77
         return distances
+
 
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
@@ -123,7 +126,7 @@ class AutobedClient():
             self.autobed_sender.write(CMDS[data.data])
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
-            u_thresh = np.array([80.0, 30.0, 30.0])
+            u_thresh = np.array([80.0, 30.0, 50.0])
             l_thresh = np.array([1.0, 9.0, 1.0])
             self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
             self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
@@ -139,7 +142,7 @@ class AutobedClient():
         #rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data))
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
-        u_thresh = np.array([80.0, 30.0, 30.0])
+        u_thresh = np.array([80.0, 30.0, 50.0])
         l_thresh = np.array([1.0, 9.0, 1.0])
         self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
         self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
