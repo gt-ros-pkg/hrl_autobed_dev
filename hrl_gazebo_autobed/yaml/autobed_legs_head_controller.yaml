@@ -3,7 +3,7 @@ autobed_head_controller:
   joints:
     - head_rest_hinge 
   gains:
-    head_rest_hinge: {p: 43, d: 2.58, i: 0}
+    head_rest_hinge: {p: 100000000, d: 300000, i: 0}
   joint_trajectory_action_node:
     joints:
       - head_rest_hinge 
@@ -17,7 +17,7 @@ autobed_legs_controller:
   joints:
     - leg_rest_upper_joint 
   gains:
-    leg_rest_upper_joint: {p: 43, d: 2.58, i: 0}
+    leg_rest_upper_joint: {p: 100000000, d: 300000, i: 0}
   joint_trajectory_action_node:
     joints:
       - leg_rest_upper_joint

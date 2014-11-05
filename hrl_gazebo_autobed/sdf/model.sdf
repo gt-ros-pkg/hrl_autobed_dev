@@ -147,8 +147,8 @@
         <limit>
           <lower>0.000000</lower>
           <upper>1.057000</upper>
-          <effort>0.000000</effort>
-          <velocity>0.000000</velocity>
+          <effort>2000.000000</effort>
+          <velocity>0.200000</velocity>
         </limit>
         <dynamics/>
       </axis>
@@ -216,8 +216,8 @@
         <limit>
           <lower>0.000000</lower>
           <upper>1.000000</upper>
-          <effort>0.000000</effort>
-          <velocity>0.000000</velocity>
+          <effort>2000.000000</effort>
+          <velocity>0.200000</velocity>
         </limit>
         <dynamics/>
       </axis>

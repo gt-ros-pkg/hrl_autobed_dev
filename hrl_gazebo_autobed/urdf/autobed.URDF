@@ -1,10 +1,10 @@
-<?xml version='1.0'?>
+<?xml version="1.0" ?>
 <robot name="autobed">
   <gazebo reference="autobed">
     <plugin filename="libros_model_plugin.so" name="ros_model_plugin"/>
     <static> false </static>
   </gazebo>
-  <link name="world"/>
+    <link name="world"/>
   <joint name="X" type="fixed">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="1.07 -1.1433776843867E-16 0.0"/>
@@ -142,7 +142,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <collision name="head_rest_link_collision">
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
@@ -167,8 +167,8 @@
     <limit
       lower="0"
       upper="1.057"
-      effort="0"
-      velocity="0" />
+      effort="2000"
+      velocity="0.2" />
   </joint>
   <link
     name="leg_rest_upper_link">
@@ -225,8 +225,8 @@
     <limit
       lower="0"
       upper="1"
-      effort="0"
-      velocity="0" />
+      effort="2000"
+      velocity="0.2" />
   </joint>
   <link
     name="leg_rest_lower_link">
