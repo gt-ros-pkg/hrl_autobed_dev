@@ -1,0 +1,305 @@
+<?xml version='1.0'?>
+<robot name="autobed">
+  <gazebo reference="autobed">
+    <plugin filename="libros_model_plugin.so" name="ros_model_plugin"/>
+    <static> false </static>
+  </gazebo>
+  <link name="world"/>
+  <joint name="X" type="fixed">
+    <axis xyz="1 0 0"/>
+    <origin rpy="0 0 0" xyz="1.07 -1.1433776843867E-16 0.0"/>
+    <parent link="world"/>
+    <child link="base_link"/>
+    <limit effort="30" lower="-0.714601836603" upper="2.2853981634" velocity="3.48"/>
+    <dynamics damping="10.0"/>
+    <safety_controller k_position="100" k_velocity="10" soft_lower_limit="-0.564601836603" soft_upper_limit="2.1353981634"/>
+  </joint>
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="1.07 -1.1433776843867E-16 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="582.60172808288" />
+      <inertia
+        ixx="1.14927006759014"
+        ixy="4.44089209850063E-16"
+        ixz="-2.75515108570424E-16"
+        iyy="6.70434113225239"
+        iyz="-1.34851165646458E-15"
+        izz="7.79754704731756" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="bed_frame_link">
+    <inertial>
+      <origin
+        xyz="1.0384889185537 1.45939207255983E-16 0.0930927110289317"
+        rpy="0 0 0" />
+      <mass
+        value="18.2783" />
+      <inertia
+        ixx="14.1727036705024"
+        ixy="3.00274731894519E-14"
+        ixz="-0.582878793213973"
+        iyy="75.8057802285568"
+        iyz="9.93663151183257E-16"
+        izz="86.6905817538877" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/bed_frame_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/bed_frame_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="autobed_height_joint"
+    type="prismatic">
+    <origin
+      xyz="-0.02 0 0.2805"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="bed_frame_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0.09"
+      upper="0.2"
+      effort="2000"
+      velocity="0.2" />
+  </joint>
+  <link
+    name="head_rest_link">
+    <inertial>
+      <origin
+        xyz="0.372569569871449 -0.0933538492374752 -3.9665323774659E-16"
+        rpy="0 0 0" />
+      <mass
+        value="15.2153755040103" />
+      <inertia
+        ixx="11.3335835372931"
+        ixy="0.223420816611719"
+        ixz="-1.53371591687193E-15"
+        iyy="16.9421346103201"
+        iyz="-3.30400962622086E-15"
+        izz="7.04456355370477" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="head_rest_hinge"
+    type="revolute">
+    <origin
+      xyz="0.775 0 0.26"
+      rpy="1.5708 1.0561E-10 3.1416" />
+    <parent
+      link="bed_frame_link" />
+    <child
+      link="head_rest_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="1.057"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="leg_rest_upper_link">
+    <inertial>
+      <origin
+        xyz="0.184999999999909 0.105000000000441 -2.76269761501025E-16"
+        rpy="0 0 0" />
+      <mass
+        value="07.10955" />
+      <inertia
+        ixx="5.221520128125"
+        ixy="-6.98374142907244E-13"
+        ixz="-6.34687481067045E-16"
+        iyy="5.771325328125"
+        iyz="-1.36920550145777E-16"
+        izz="1.072357125" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="leg_rest_upper_joint"
+    type="revolute">
+    <origin
+      xyz="1.055 0 0.05"
+      rpy="1.5708 2.1987E-11 3.9465E-16" />
+    <parent
+      link="bed_frame_link" />
+    <child
+      link="leg_rest_upper_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="leg_rest_lower_link">
+    <inertial>
+      <origin
+        xyz="0.345000000000193 0.10499999999918 -5.70451144183548E-17"
+        rpy="0 0 0" />
+      <mass
+        value="13.25835" />
+      <inertia
+        ixx="9.73742942812501"
+        ixy="9.56539519154387E-17"
+        ixz="2.44106387255003E-16"
+        iyy="14.510435428125"
+        iyz="1.11598435800825E-16"
+        izz="5.747494725" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="leg_rest_upper_lower_joint"
+    type="fixed">
+    <origin
+      xyz="0.37 0 0"
+      rpy="-3.7123E-16 5.9121E-16 3.7854E-11" />
+    <parent
+      link="leg_rest_upper_link" />
+    <child
+      link="leg_rest_lower_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+<!-- yash added transmissions -->
+  <transmission name="autobed_height_t0" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="autobed_height_a0"/>
+    <joint name="autobed_height_joint"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="head_rest_t0" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="head_rest_a0"/>
+    <joint name="head_rest_hinge"/>
+    <mechanicalReduction>1.0</mechanicalReduction>
+  </transmission>
+  <transmission name="leg_rest_t1" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="leg_rest_a1"/>
+    <joint name="leg_rest_upper_joint"/>
+    <mechanicalReduction>1.0</mechanicalReduction>
+  </transmission>
+</robot>

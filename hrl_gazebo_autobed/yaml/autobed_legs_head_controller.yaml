@@ -1,0 +1,27 @@
+autobed_head_controller:
+  type: robot_mechanism_controllers/JointTrajectoryActionController
+  joints:
+    - head_rest_hinge 
+  gains:
+    head_rest_hinge: {p: 43, d: 2.58, i: 0}
+  joint_trajectory_action_node:
+    joints:
+      - head_rest_hinge 
+    constraints:
+      goal_time: 0.6
+      head_rest_hinge:
+        goal: 1.0 
+
+autobed_legs_controller:
+  type: robot_mechanism_controllers/JointTrajectoryActionController
+  joints:
+    - leg_rest_upper_joint 
+  gains:
+    leg_rest_upper_joint: {p: 43, d: 2.58, i: 0}
+  joint_trajectory_action_node:
+    joints:
+      - leg_rest_upper_joint
+    constraints:
+      goal_time: 0.6
+      leg_rest_upper_joint:
+        goal: 1.0
