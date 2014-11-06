@@ -8,63 +8,18 @@
     <gravity>true</gravity>
     <mu1>0.01</mu1>
     <mu2>0.01</mu2>
-    <sensor name="_tactile_sensor" type="contact">
+    <sensor name="head_rest_link_tactile_sensor" type="contact">
       <contact>
         <collision>head_rest_link_collision</collision>
         <topic>__default_topic__</topic>
       </contact>
-      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_head_rest"/>
+      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_head_rest_link"/>
       <always_on>1</always_on>
       <update_rate>30.0</update_rate>
       <visualize>false</visualize>
     </sensor>
   </gazebo>
-  <gazebo reference="bed_frame_link">
-    <gravity>true</gravity>
-    <mu1>0.01</mu1>
-    <mu2>0.01</mu2>
-    <sensor name="_tactile_sensor" type="contact">
-      <contact>
-        <collision>bed_frame_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_bed_frame"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-  <gazebo reference="leg_rest_upper_link">
-    <gravity>true</gravity>
-    <mu1>0.01</mu1>
-    <mu2>0.01</mu2>
-    <sensor name="_tactile_sensor" type="contact">
-      <contact>
-        <collision>leg_rest_upper_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_leg_rest_upper"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-   <gazebo reference="leg_rest_lower_link">
-    <gravity>true</gravity>
-    <mu1>0.01</mu1>
-    <mu2>0.01</mu2>
-    <sensor name="_tactile_sensor" type="contact">
-      <contact>
-        <collision>leg_rest_lower_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_leg_rest_lower"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
- 
+
   <link name="world"/>
   <joint name="X" type="fixed">
     <axis xyz="1 0 0"/>
@@ -116,7 +71,7 @@
     </collision>
   </link>
   <link
-    name="bed_frame_link">
+    name="torso_lift_link">
     <inertial>
       <origin
         xyz="1.0384889185537 1.45939207255983E-16 0.0930927110289317"
@@ -137,7 +92,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/bed_frame_link.STL" />
+          filename="package://hrl_gazebo_autobed/urdf/meshes/torso_lift_link.STL" />
       </geometry>
       <material
         name="">
@@ -145,13 +100,13 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision name="bed_frame_link_collision">
+    <collision name="torso_lift_link_collision">
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/bed_frame_link.STL" />
+          filename="package://hrl_gazebo_autobed/urdf/meshes/torso_lift_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -164,7 +119,7 @@
     <parent
       link="base_link" />
     <child
-      link="bed_frame_link" />
+      link="torso_lift_link" />
     <axis
       xyz="0 0 1" />
     <limit
@@ -220,7 +175,7 @@
       xyz="0.775 0 0.26"
       rpy="1.5708 1.0561E-10 3.1416" />
     <parent
-      link="bed_frame_link" />
+      link="torso_lift_link" />
     <child
       link="head_rest_link" />
     <axis
@@ -231,6 +186,7 @@
       effort="2000"
       velocity="0.2" />
   </joint>
+
   <link
     name="leg_rest_upper_link">
     <inertial>
@@ -278,7 +234,7 @@
       xyz="1.055 0 0.05"
       rpy="1.5708 2.1987E-11 3.9465E-16" />
     <parent
-      link="bed_frame_link" />
+      link="torso_lift_link" />
     <child
       link="leg_rest_upper_link" />
     <axis

@@ -1,0 +1,41 @@
+<sdf version='1.4'>
+  <model name='human'>
+    <link name='head_link'>
+      <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+      <inertial>
+        <pose>0.000000 0.000000 2.000000 0.000000 0.000000 0.000000</pose>
+        <mass>3.932850</mass>
+        <inertia>
+          <ixx>0.016568</ixx>
+          <ixy>0.000000</ixy>
+          <ixz>-0.002768</ixz>
+          <iyy>0.017702</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>0.016605</izz>
+        </inertia>
+      </inertial>
+      <collision name='head_link_collision'>
+        <pose>0.000000 0.000000 2.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://human/meshes/head_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='head_link_vis'>
+        <pose>0.000000 0.000000 2.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://human/meshes/head_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+    </link>
+  </model>
+</sdf>
