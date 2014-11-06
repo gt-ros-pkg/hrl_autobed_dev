@@ -73,6 +73,17 @@
             <uri>model://autobed/meshes/bed_frame_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode>
+              <mu>0.010000</mu>
+              <mu2>0.010000</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name='bed_frame_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -83,10 +94,22 @@
           </mesh>
         </geometry>
       </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='_tactile_sensor' type='contact'>
+        <contact>
+          <collision>bed_frame_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_tactile_plugin_bed_frame' filename='libros_tactile_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
     </link>
     <joint name='autobed_height_joint' type='prismatic'>
       <child>bed_frame_link</child>
@@ -124,6 +147,17 @@
             <uri>model://autobed/meshes/head_rest_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode>
+              <mu>0.010000</mu>
+              <mu2>0.010000</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name='head_rest_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -134,10 +168,22 @@
           </mesh>
         </geometry>
       </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='_tactile_sensor' type='contact'>
+        <contact>
+          <collision>head_rest_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_tactile_plugin_head_rest' filename='libros_tactile_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
     </link>
     <joint name='head_rest_hinge' type='revolute'>
       <child>head_rest_link</child>
@@ -175,6 +221,17 @@
             <uri>model://autobed/meshes/leg_rest_upper_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode>
+              <mu>0.010000</mu>
+              <mu2>0.010000</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <collision name='leg_rest_upper_link_collision_leg_rest_lower_link'>
         <pose>0.370000 0.000000 0.000000 -0.000000 0.000000 0.000000</pose>
@@ -184,6 +241,17 @@
             <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode>
+              <mu>0.010000</mu>
+              <mu2>0.010000</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name='leg_rest_upper_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -207,6 +275,33 @@
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <sensor name='_tactile_sensor' type='contact'>
+        <contact>
+          <collision>leg_rest_upper_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_tactile_plugin_leg_rest_upper' filename='libros_tactile_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='_tactile_sensor' type='contact'>
+        <contact>
+          <topic>__default_topic__</topic>
+          <collision>leg_rest_upper_link_collision_leg_rest_lower_link</collision>
+        </contact>
+        <plugin name='ros_tactile_plugin_leg_rest_lower' filename='libros_tactile_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+        <pose>0.370000 0.000000 0.000000 -0.000000 0.000000 0.000000</pose>
+      </sensor>
     </link>
     <joint name='leg_rest_upper_joint' type='revolute'>
       <child>leg_rest_upper_link</child>

@@ -4,7 +4,68 @@
     <plugin filename="libros_model_plugin.so" name="ros_model_plugin"/>
     <static> false </static>
   </gazebo>
-    <link name="world"/>
+  <gazebo reference="head_rest_link">
+    <gravity>true</gravity>
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <sensor name="_tactile_sensor" type="contact">
+      <contact>
+        <collision>head_rest_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_head_rest"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo reference="bed_frame_link">
+    <gravity>true</gravity>
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <sensor name="_tactile_sensor" type="contact">
+      <contact>
+        <collision>bed_frame_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_bed_frame"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo reference="leg_rest_upper_link">
+    <gravity>true</gravity>
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <sensor name="_tactile_sensor" type="contact">
+      <contact>
+        <collision>leg_rest_upper_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_leg_rest_upper"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+   <gazebo reference="leg_rest_lower_link">
+    <gravity>true</gravity>
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <sensor name="_tactile_sensor" type="contact">
+      <contact>
+        <collision>leg_rest_lower_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_tactile_plugin.so" name="ros_tactile_plugin_leg_rest_lower"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+ 
+  <link name="world"/>
   <joint name="X" type="fixed">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="1.07 -1.1433776843867E-16 0.0"/>
@@ -84,7 +145,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <collision name="bed_frame_link_collision">
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
@@ -200,7 +261,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <collision name="leg_rest_upper_link_collision">
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
@@ -258,7 +319,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <collision name="leg_rest_lower_link_collision">
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
