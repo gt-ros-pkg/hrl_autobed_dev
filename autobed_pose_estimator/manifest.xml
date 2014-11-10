@@ -1,0 +1,21 @@
+<package>
+  <description brief="autobed_pose_estimator">
+
+     autobed_pose_estimator
+
+  </description>
+  <author>Yash Chitalia</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/autobed_pose_estimator</url>
+  <depend package="rospy"/>
+  <depend package="roslib"/>
+  <depend package="actionlib"/>
+  <depend package="trajectory_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="pr2_controllers_msgs"/>
+
+</package>
+
+
