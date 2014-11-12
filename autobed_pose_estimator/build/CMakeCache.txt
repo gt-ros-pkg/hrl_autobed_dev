@@ -146,8 +146,8 @@ CMAKE_SKIP_RPATH:BOOL=NO
 //Path to a program.
 CMAKE_STRIP:FILEPATH=/usr/bin/strip
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=/opt/ros/fuerte/share/ros/core/rosbuild/rostoolchain.cmake
+//No help, variable specified on the command line.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=/opt/ros/fuerte/share/ros/core/rosbuild/rostoolchain.cmake
 
 //If true, cmake will use relative paths in makefiles and projects.
 CMAKE_USE_RELATIVE_PATHS:BOOL=OFF
@@ -326,17 +326,17 @@ FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/usr/bin/python][v2.7.3()]
 //ADVANCED property for variable: PYTHON_EXECUTABLE
 PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 _rosbuild_EXPORTS:INTERNAL=
-_rosbuild_cached_flag_time:INTERNAL=1415638733.93
+_rosbuild_cached_flag_time:INTERNAL=1415658494.45
 _roslang_LANGS:INTERNAL=roscpp;rospy;roslisp
-_rospack_deps_manifests_invoke_result:INTERNAL=/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/roslib/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/share/rostest/manifest.xml;/opt/ros/fuerte/share/actionlib_msgs/manifest.xml;/opt/ros/fuerte/share/actionlib/manifest.xml;/opt/ros/fuerte/share/trajectory_msgs/manifest.xml;/opt/ros/fuerte/share/std_msgs/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/manifest.xml
-_rospack_msgsrv_gen_invoke_result:INTERNAL=/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/generated;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/generated
+_rospack_deps_manifests_invoke_result:INTERNAL=/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/roslib/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/share/rostest/manifest.xml;/opt/ros/fuerte/share/actionlib_msgs/manifest.xml;/opt/ros/fuerte/share/actionlib/manifest.xml;/opt/ros/fuerte/share/trajectory_msgs/manifest.xml;/opt/ros/fuerte/share/std_msgs/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/manifest.xml;/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/manifest.xml
+_rospack_msgsrv_gen_invoke_result:INTERNAL=/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/msg_gen/generated;/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/msg_gen/generated
 autobed_pose_estimator_CFLAGS_OTHER:INTERNAL=
 autobed_pose_estimator_INCLUDEDIR:INTERNAL=
-autobed_pose_estimator_INCLUDE_DIRS:INTERNAL=/opt/ros/fuerte/include;/opt/ros/fuerte/share/actionlib/include;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/cpp/include;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/cpp/include
+autobed_pose_estimator_INCLUDE_DIRS:INTERNAL=/opt/ros/fuerte/include;/opt/ros/fuerte/share/actionlib/include;/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/msg_gen/cpp/include;/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/msg_gen/cpp/include
 autobed_pose_estimator_LDFLAGS_OTHER:INTERNAL=-Wl,-rpath,/opt/ros/fuerte/share/actionlib/lib
 autobed_pose_estimator_LIBRARIES:INTERNAL=roslib;actionlib;roscpp;rostime;rosconsole;roscpp_serialization;xmlrpcpp
 autobed_pose_estimator_LIBRARY_DIRS:INTERNAL=/opt/ros/fuerte/lib;/opt/ros/fuerte/share/actionlib/lib
-autobed_pose_estimator_cached_manifest_list:INTERNAL=/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/manifest.xml;/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/roslib/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/share/rostest/manifest.xml;/opt/ros/fuerte/share/actionlib_msgs/manifest.xml;/opt/ros/fuerte/share/actionlib/manifest.xml;/opt/ros/fuerte/share/trajectory_msgs/manifest.xml;/opt/ros/fuerte/share/std_msgs/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/manifest.xml;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/generated;/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/generated
+autobed_pose_estimator_cached_manifest_list:INTERNAL=/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/manifest.xml;/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/roslib/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/share/rostest/manifest.xml;/opt/ros/fuerte/share/actionlib_msgs/manifest.xml;/opt/ros/fuerte/share/actionlib/manifest.xml;/opt/ros/fuerte/share/trajectory_msgs/manifest.xml;/opt/ros/fuerte/share/std_msgs/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/manifest.xml;/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/manifest.xml;/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/msg_gen/generated;/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/msg_gen/generated
 autobed_pose_estimator_temp:INTERNAL=-Wl,-rpath,/opt/ros/fuerte/share/actionlib/lib
 roscpp_CMAKE:INTERNAL=/opt/ros/fuerte/share/roscpp/rosbuild/roscpp.cmake
 roslib_path:INTERNAL=/opt/ros/fuerte/share/roslib

@@ -13,8 +13,8 @@ SET(CMAKE_C_INCLUDE_PATH
   "../include"
   "/opt/ros/fuerte/include"
   "/opt/ros/fuerte/share/actionlib/include"
-  "/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/cpp/include"
-  "/opt/ros/fuerte/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/cpp/include"
+  "/home/yashc/fuerte_workspace/sandbox/git/hrl-haptic-manip-dev/hrl_haptic_manipulation_in_clutter_msgs/msg_gen/cpp/include"
+  "/home/yashc/fuerte_workspace/sandbox/git/hrl/hrl_msgs/msg_gen/cpp/include"
   )
 SET(CMAKE_CXX_INCLUDE_PATH ${CMAKE_C_INCLUDE_PATH})
 SET(CMAKE_Fortran_INCLUDE_PATH ${CMAKE_C_INCLUDE_PATH})
