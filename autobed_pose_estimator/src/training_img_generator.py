@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import roslib; roslib.load_manifest('autobed_pose_estimator')
 import rospy
 
-from geometry_msgs.msg import Transform, Vector3, Quaternion
 from hrl_haptic_manipulation_in_clutter_msgs.msg import TaxelArray 
 
 class PoseTrainer():
@@ -15,10 +14,16 @@ class PoseTrainer():
         '''Node that listens into the Gazebo plugin output data array, which consists of coordinates of the pressure points.
         These coordinates are converted into percentages of the total width/height of the bed. Once this is done, then the pressure points can be used 
         to correlate with a mat of any size and resolution. Once this is done, visualization will be done.'''
-        self.centers_x = []
-        self.centers_y = []
-        self.width_ratio = []
-        self.height_ratio = []
+        self.head_centers_x = np.array([])
+        self.head_centers_y = np.array([])
+        self.body_centers_x = np.array([])
+        self.body_centers_y = np.array([])
+        self.legs_upper_centers_x = np.array([])
+        self.legs_upper_centers_y = np.array([])
+        self.legs_lower_centers_x = np.array([])
+        self.legs_lower_centers_y = np.array([])
+        self.width_ratio = np.array([])
+        self.height_ratio = np.array([])
         self.bed_width = 0.915 #meters
         self.bed_half_width = self.bed_width/2
         self.bed_height = 2.08 #metres 
@@ -26,27 +31,53 @@ class PoseTrainer():
         self.numoftaxels_y = 30 
         self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
 
-        #Start a subscriber to accept the incoming pressure coordinates 
-        rospy.Subscriber("/head_rest_link_pressuremat_sensor/taxels/forces", TaxelArray, self.pressure_coordinate_collection_callback)
-        rospy.Subscriber("/torso_lift_link_pressuremat_sensor/taxels/forces", TaxelArray, self.pressure_coordinate_collection_callback)
-
+        #Start subscribers to accept the incoming pressure coordinates 
+        rospy.Subscriber("/head_rest_link_pressuremat_sensor/taxels/forces", TaxelArray, self.head_pressure_collection_callback)
+        rospy.Subscriber("/torso_lift_link_pressuremat_sensor/taxels/forces", TaxelArray, self.body_pressure_collection_callback)
+        rospy.Subscriber("/leg_rest_upper_link_pressuremat_sensor/taxels/forces", TaxelArray, self.legs_upper_pressure_collection_callback)
+        rospy.Subscriber("/leg_rest_lower_link_pressuremat_sensor/taxels/forces", TaxelArray, self.legs_lower_pressure_collection_callback)
         plt.ion()
         plt.show()
 
-    def pressure_coordinate_collection_callback(self, data):
+    def head_pressure_collection_callback(self, data):
         ''' Accepts incoming coordinates from the gazebo model, and stores it into a variable local to our namespace'''
         centers_y = np.asarray(data.centers_y)
         #The x-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
-        self.centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
-        self.centers_x = np.asarray(data.centers_x)
+        self.head_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
+        self.head_centers_x = np.asarray(data.centers_x)
+
+    def body_pressure_collection_callback(self, data):
+        ''' Accepts incoming coordinates from the gazebo model, and stores it into a variable local to our namespace'''
+        centers_y = np.asarray(data.centers_y)
+        #The x-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
+        self.body_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
+        self.body_centers_x = np.asarray(data.centers_x)
+
+
+    def legs_upper_pressure_collection_callback(self, data):
+        ''' Accepts incoming coordinates from the gazebo model, and stores it into a variable local to our namespace'''
+        centers_y = np.asarray(data.centers_y)
+        #The x-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
+        self.legs_upper_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
+        self.legs_upper_centers_x = np.asarray(data.centers_x)
+
+
+    def legs_lower_pressure_collection_callback(self, data):
+        ''' Accepts incoming coordinates from the gazebo model, and stores it into a variable local to our namespace'''
+        centers_y = np.asarray(data.centers_y)
+        #The x-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
+        self.legs_lower_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
+        self.legs_lower_centers_x = np.asarray(data.centers_x)
+
+
 
     def distances_to_ratios(self):
         '''Converts the distances of pressure values to ratios.
         Namely, width_ratio = +/- self.center_x/(bed_width/2)
                 height_ratio =  self.center_y/(bed_hight)'''
-        self.width_ratio = [y/self.bed_width for y in self.centers_y]
-        self.height_ratio = [x/self.bed_height for x in self.centers_x]
 
+        self.height_ratio = np.concatenate((np.concatenate((self.head_centers_x/self.bed_height, self.body_centers_x/self.bed_height)), np.concatenate((self.legs_upper_centers_x/self.bed_height, self.legs_lower_centers_x/self.bed_height))))
+        self.width_ratio = np.concatenate((np.concatenate((self.head_centers_y/self.bed_width, self.body_centers_y/self.bed_width)), np.concatenate((self.legs_upper_centers_y/self.bed_width, self.legs_lower_centers_y/self.bed_width))))
 
     
     def get_pressure_map(self):
@@ -54,12 +85,14 @@ class PoseTrainer():
         and multiply the ratios with the corresponding dimension, and then set the bits in a boolean matrix corresponding to the dimension obtained'''
         #Zero out the initial local matrix
         pressure_map_matrix = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
-        taxels_x = [int(i*self.numoftaxels_x) for i in self.height_ratio]
-        taxels_y = [int(i*self.numoftaxels_y) for i in self.width_ratio]
-        taxels_x = np.asarray(taxels_x)
-        taxels_y = np.asarray(taxels_y)
-        print "Taxels"
-        print taxels_x, taxels_y
+        #Multiply the height ratio and width ratio pressure values by the number of taxels in the width and height of the bed
+        #this will convert the ratios, which are more general, to the specific case of the vista medical pressure mat
+        taxels_x = self.height_ratio*self.numoftaxels_x
+        taxels_y = self.width_ratio*self.numoftaxels_y
+
+        #Typecast into int, so that we can highlight the right taxel in the pressure matrix
+        taxels_x = taxels_x.astype(int)
+        taxels_y = taxels_y.astype(int)
         #Now that we have the exact pixels, we can go ahead and set selected pixels to one
         for i in range(taxels_y.shape[0]-1):
             pressure_map_matrix[taxels_x[i], taxels_y[i]] = 1
@@ -78,7 +111,7 @@ class PoseTrainer():
             #Pass the centers to the conversion function so that the centers can be converted to percentages of bed width and height 
             self.distances_to_ratios()
             #Use the present percentages to get the exact pixels to mark as black
-            pressure_map = self.get_pressure_map()
+            self.get_pressure_map()
             #Call a function that displays the image matrix
             self.visualize_pressure_map()
             rate.sleep()

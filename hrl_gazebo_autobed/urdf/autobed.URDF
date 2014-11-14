@@ -47,6 +47,49 @@
     </sensor>
   </gazebo>
 
+  <gazebo reference="leg_rest_upper_link">
+    <gravity>true</gravity>
+    <!-- kp and kd for rubber -->
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+    <sensor name="leg_rest_upper_link_pressuremat_sensor" type="contact">
+      <contact>
+        <collision>leg_rest_upper_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_leg_rest_upper_link"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="leg_rest_lower_link">
+    <gravity>true</gravity>
+    <!-- kp and kd for rubber -->
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+    <sensor name="leg_rest_lower_link_pressuremat_sensor" type="contact">
+      <contact>
+        <collision>leg_rest_lower_link_collision</collision>
+        <topic>__default_topic__</topic>
+      </contact>
+      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_leg_rest_lower_link"/>
+      <always_on>1</always_on>
+      <update_rate>30.0</update_rate>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
   <link name="world"/>
   <joint name="X" type="fixed">
     <axis xyz="1 0 0"/>
@@ -314,7 +357,7 @@
   </link>
   <joint
     name="leg_rest_upper_lower_joint"
-    type="fixed">
+    type="revolute">
     <origin
       xyz="0.37 0 0"
       rpy="-3.7123E-16 5.9121E-16 3.7854E-11" />
