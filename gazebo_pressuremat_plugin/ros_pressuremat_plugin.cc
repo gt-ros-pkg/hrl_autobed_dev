@@ -211,7 +211,7 @@ namespace gazebo
 
             // Count only available forces
             // HACK: exclude too huge force by Daehyung 20130729
-            if (contact_force.GetSquaredLength() > 0.0001 && contact_force.GetSquaredLength() < 1000.){
+            if (contact_force.GetSquaredLength() > 0.0001 && contact_force.GetSquaredLength() < 100000.){
                 contact_force_sum += frame_rot.RotateVectorReverse(contact_force);
                 nPts++;
             }
