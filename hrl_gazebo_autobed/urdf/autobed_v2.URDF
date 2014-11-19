@@ -1,120 +1,20 @@
 <?xml version="1.0" ?>
-<robot name="autobed">
-  <gazebo reference="autobed">
-    <plugin filename="libros_model_plugin.so" name="ros_model_plugin"/>
-    <static> false </static>
-  </gazebo>
-  <gazebo reference="head_rest_link">
-    <gravity>true</gravity>
-   <!-- kp and kd for rubber -->
-    <kp>1000000.0</kp>
-    <kd>1.0</kd>
-    <mu1>1.5</mu1>
-    <mu2>1.5</mu2>
-    <fdir1>1 0 0</fdir1>
-    <maxVel>1.0</maxVel>
-    <minDepth>0.00</minDepth>
-    <sensor name="head_rest_link_pressuremat_sensor" type="contact">
-      <contact>
-        <collision>head_rest_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_head_rest_link"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-  <gazebo reference="torso_lift_link">
-    <gravity>true</gravity>
-    <!-- kp and kd for rubber -->
-    <kp>1000000.0</kp>
-    <kd>1.0</kd>
-    <mu1>1.5</mu1>
-    <mu2>1.5</mu2>
-    <fdir1>1 0 0</fdir1>
-    <maxVel>1.0</maxVel>
-    <minDepth>0.00</minDepth>
-   <sensor name="torso_lift_link_pressuremat_sensor" type="contact">
-      <contact>
-        <collision>torso_lift_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_torso_lift_link"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-
-  <gazebo reference="leg_rest_upper_link">
-    <gravity>true</gravity>
-    <!-- kp and kd for rubber -->
-    <kp>1000000.0</kp>
-    <kd>1.0</kd>
-    <mu1>1.5</mu1>
-    <mu2>1.5</mu2>
-    <fdir1>1 0 0</fdir1>
-    <maxVel>1.0</maxVel>
-    <minDepth>0.00</minDepth>
-   <sensor name="leg_rest_upper_link_pressuremat_sensor" type="contact">
-      <contact>
-        <collision>leg_rest_upper_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_leg_rest_upper_link"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-
-  <gazebo reference="leg_rest_lower_link">
-    <gravity>true</gravity>
-    <!-- kp and kd for rubber -->
-    <kp>1000000.0</kp>
-    <kd>1.0</kd>
-    <mu1>1.5</mu1>
-    <mu2>1.5</mu2>
-    <fdir1>1 0 0</fdir1>
-    <maxVel>1.0</maxVel>
-    <minDepth>0.00</minDepth>
-
-    <sensor name="leg_rest_lower_link_pressuremat_sensor" type="contact">
-      <contact>
-        <collision>leg_rest_lower_link_collision</collision>
-        <topic>__default_topic__</topic>
-      </contact>
-      <plugin filename="libros_pressuremat_plugin.so" name="ros_pressuremat_plugin_leg_rest_lower_link"/>
-      <always_on>1</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>false</visualize>
-    </sensor>
-  </gazebo>
-  <link name="world"/>
-  <joint name="X" type="fixed">
-    <axis xyz="1 0 0"/>
-    <origin rpy="0 0 0" xyz="1.07 -1.1433776843867E-16 0.0"/>
-    <parent link="world"/>
-    <child link="base_link"/>
-    <limit effort="30" lower="-0.714601836603" upper="2.2853981634" velocity="3.48"/>
-    <dynamics damping="10.0"/>
-    <safety_controller k_position="100" k_velocity="10" soft_lower_limit="-0.564601836603" soft_upper_limit="2.1353981634"/>
-  </joint>
+<robot
+  name="bed_and_body_v4">
   <link
     name="base_link">
     <inertial>
       <origin
-        xyz="1.07 -1.1433776843867E-16 0.0"
+        xyz="1.07 -9.52814736988918E-17 0.0654891108010717"
         rpy="0 0 0" />
       <mass
-        value="582.60172808288" />
+        value="5.8260172808288" />
       <inertia
         ixx="1.14927006759014"
-        ixy="4.44089209850063E-16"
-        ixz="-2.75515108570424E-16"
+        ixy="3.33066907387547E-16"
+        ixz="-3.49761633492705E-16"
         iyy="6.70434113225239"
-        iyz="-1.34851165646458E-15"
+        iyz="-1.31815615371017E-15"
         izz="7.79754704731756" />
     </inertial>
     <visual>
@@ -123,7 +23,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/base_link.STL" />
+          filename="package://bed_and_body_v4/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -137,18 +37,18 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/base_link.STL" />
+          filename="package://bed_and_body_v4/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
   <link
-    name="torso_lift_link">
+    name="bed_frame_link">
     <inertial>
       <origin
         xyz="1.09 2.20819758781256E-16 0.0672692489591485"
         rpy="0 0 0" />
       <mass
-        value="14.2783" />
+        value="128.981" />
       <inertia
         ixx="9.92907506560545"
         ixy="2.91752028352271E-14"
@@ -163,7 +63,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/torso_lift_link.STL" />
+          filename="package://bed_and_body_v4/meshes/bed_frame_link.STL" />
       </geometry>
       <material
         name="">
@@ -171,33 +71,28 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision name="torso_lift_link_collision">
+    <collision>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/torso_lift_link.STL" />
+          filename="package://bed_and_body_v4/meshes/bed_frame_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
-    name="autobed_height_joint"
+    name="tele_legs_joint"
     type="prismatic">
     <origin
-      xyz="-0.02 0 0.2805"
+      xyz="-0.02 0 0.280500000000001"
       rpy="0 0 0" />
     <parent
       link="base_link" />
     <child
-      link="torso_lift_link" />
+      link="bed_frame_link" />
     <axis
-      xyz="0 0 1" />
-    <limit
-      lower="0.09"
-      upper="0.2"
-      effort="2000"
-      velocity="0.2" />
+      xyz="0 0 -1" />
   </joint>
   <link
     name="mid_body_link">
@@ -206,7 +101,7 @@
         xyz="1.8710748266729E-16 0.08 -0.14"
         rpy="0 0 0" />
       <mass
-        value="4.0992" />
+        value="40.992" />
       <inertia
         ixx="0.355264"
         ixy="4.37857509439735E-16"
@@ -221,7 +116,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/mid_body_link.STL" />
+          filename="package://bed_and_body_v4/meshes/mid_body_link.STL" />
       </geometry>
       <material
         name="">
@@ -235,18 +130,18 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/mid_body_link.STL" />
+          filename="package://bed_and_body_v4/meshes/mid_body_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
-    name="mid_body_support"
+    name="mid_body_link"
     type="fixed">
     <origin
       xyz="0.782663137625778 0 0.0499999999999999"
       rpy="1.5707963267949 -8.02446817831858E-32 -1.5707963267949" />
     <parent
-      link="torso_lift_link" />
+      link="bed_frame_link" />
     <child
       link="mid_body_link" />
     <axis
@@ -259,7 +154,7 @@
         xyz="-0.265125168782913 4.4043687850025E-16 0.300923176859995"
         rpy="0 0 0" />
       <mass
-        value="5.2153755040103" />
+        value="46.745755040103" />
       <inertia
         ixx="4.3520435272735"
         ixy="-6.37257789586883E-16"
@@ -274,7 +169,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_link.STL" />
+          filename="package://bed_and_body_v4/meshes/head_rest_link.STL" />
       </geometry>
       <material
         name="">
@@ -282,13 +177,13 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision name="head_rest_link_collision">
+    <collision>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_link.STL" />
+          filename="package://bed_and_body_v4/meshes/head_rest_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -296,19 +191,19 @@
     name="head_rest_hinge"
     type="revolute">
     <origin
-      xyz="0.775 0 0.26"
-      rpy="1.5708 1.0561E-10 3.1416" />
+      xyz="0 0.21 0"
+      rpy="1.5708 1.5708 0" />
     <parent
       link="mid_body_link" />
     <child
       link="head_rest_link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 -1 0" />
     <limit
       lower="0"
       upper="1.57"
-      effort="2000"
-      velocity="0.2" />
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="head_rest_spring">
@@ -317,7 +212,7 @@
         xyz="-0.330483974229218 4.31545596915377E-16 0.193081181832052"
         rpy="0 0 0" />
       <mass
-        value="10.0" />
+        value="105.408" />
       <inertia
         ixx="10.1304498593177"
         ixy="-1.95205264327444E-15"
@@ -332,7 +227,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/head_rest_spring.STL" />
       </geometry>
       <material
         name="">
@@ -346,7 +241,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/head_rest_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/head_rest_spring.STL" />
       </geometry>
     </collision>
   </link>
@@ -363,7 +258,6 @@
     <axis
       xyz="0 0 0" />
   </joint>
- 
   <link
     name="leg_rest_upper_link">
     <inertial>
@@ -371,7 +265,7 @@
         xyz="0.182707305037763 3.86279581056153E-16 0.0383150190635188"
         rpy="0 0 0" />
       <mass
-        value="02.10955" />
+        value="16.9275" />
       <inertia
         ixx="1.20574516349631"
         ixy="3.88338409378493E-17"
@@ -386,7 +280,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_link.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_upper_link.STL" />
       </geometry>
       <material
         name="">
@@ -394,13 +288,13 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision name="leg_rest_upper_link_collision">
+    <collision>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_link.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_upper_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -419,8 +313,8 @@
     <limit
       lower="0"
       upper="1"
-      effort="2000"
-      velocity="0.2" />
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="leg_rest_lower_link">
@@ -429,7 +323,7 @@
         xyz="0.334457721707061 -1.50857618804305E-16 -0.0882498294100081"
         rpy="0 0 0" />
       <mass
-        value="3.25835" />
+        value="31.5675" />
       <inertia
         ixx="2.25144692930096"
         ixy="-4.04280836598245E-16"
@@ -444,7 +338,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_link.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_lower_link.STL" />
       </geometry>
       <material
         name="">
@@ -452,13 +346,13 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision name="leg_rest_lower_link_collision">
+    <collision>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_link.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_lower_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -466,17 +360,15 @@
     name="leg_rest_upper_lower_joint"
     type="revolute">
     <origin
-      xyz="0.37 0 0"
-      rpy="-3.7123E-16 5.9121E-16 3.7854E-11" />
+      xyz="0.34869 0 0.12375"
+      rpy="0 0 0" />
     <parent
       link="leg_rest_upper_link" />
     <child
       link="leg_rest_lower_link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 -1 0" />
     <limit
-      lower="0"
-      upper="0"
       effort="0"
       velocity="0" />
   </joint>
@@ -487,7 +379,7 @@
         xyz="0.315077040128518 -1.42119067021682E-16 -0.191445707143964"
         rpy="0 0 0" />
       <mass
-        value="10.016" />
+        value="101.016" />
       <inertia
         ixx="7.39246105746224"
         ixy="-2.04710343003883E-16"
@@ -502,7 +394,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_lower_spring.STL" />
       </geometry>
       <material
         name="">
@@ -516,7 +408,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_lower_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_lower_spring.STL" />
       </geometry>
     </collision>
   </link>
@@ -540,7 +432,7 @@
         xyz="0.217825695885058 4.63769251181149E-16 -0.0606379931411832"
         rpy="0 0 0" />
       <mass
-        value="5.0" />
+        value="54.168" />
       <inertia
         ixx="3.95099347623326"
         ixy="2.08188694044973E-16"
@@ -555,7 +447,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_upper_spring.STL" />
       </geometry>
       <material
         name="">
@@ -569,7 +461,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-                filename="package://hrl_gazebo_autobed/urdf/meshes/leg_rest_upper_spring.STL" />
+          filename="package://bed_and_body_v4/meshes/leg_rest_upper_spring.STL" />
       </geometry>
     </collision>
   </link>
@@ -586,21 +478,4 @@
     <axis
       xyz="0 0 0" />
   </joint>
-
-<!-- yash added transmissions -->
-  <transmission name="autobed_height_t0" type="pr2_mechanism_model/SimpleTransmission">
-    <actuator name="autobed_height_a0"/>
-    <joint name="autobed_height_joint"/>
-    <mechanicalReduction>1</mechanicalReduction>
-  </transmission>
-  <transmission name="head_rest_t0" type="pr2_mechanism_model/SimpleTransmission">
-    <actuator name="head_rest_a0"/>
-    <joint name="head_rest_hinge"/>
-    <mechanicalReduction>1.0</mechanicalReduction>
-  </transmission>
-  <transmission name="leg_rest_t1" type="pr2_mechanism_model/SimpleTransmission">
-    <actuator name="leg_rest_a1"/>
-    <joint name="leg_rest_upper_joint"/>
-    <mechanicalReduction>1.0</mechanicalReduction>
-  </transmission>
 </robot>
