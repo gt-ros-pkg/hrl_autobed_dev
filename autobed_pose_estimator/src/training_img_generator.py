@@ -98,6 +98,8 @@ class PoseTrainer():
             pressure_map_matrix[taxels_x[i], taxels_y[i]] = 1
         #Assign to a global 
         self.pressure_map = pressure_map_matrix
+        num_pressure_points = np.count_nonzero(self.pressure_map)
+        print num_pressure_points
 
     def visualize_pressure_map(self):
         '''Used to visualize the pressure map created'''
