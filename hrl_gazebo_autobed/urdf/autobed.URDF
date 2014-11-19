@@ -6,7 +6,7 @@
   </gazebo>
   <gazebo reference="head_rest_link">
     <gravity>true</gravity>
-    <!-- kp and kd for rubber -->
+   <!-- kp and kd for rubber -->
     <kp>1000000.0</kp>
     <kd>1.0</kd>
     <mu1>1.5</mu1>
@@ -35,7 +35,7 @@
     <fdir1>1 0 0</fdir1>
     <maxVel>1.0</maxVel>
     <minDepth>0.00</minDepth>
-    <sensor name="torso_lift_link_pressuremat_sensor" type="contact">
+   <sensor name="torso_lift_link_pressuremat_sensor" type="contact">
       <contact>
         <collision>torso_lift_link_collision</collision>
         <topic>__default_topic__</topic>
@@ -57,7 +57,7 @@
     <fdir1>1 0 0</fdir1>
     <maxVel>1.0</maxVel>
     <minDepth>0.00</minDepth>
-    <sensor name="leg_rest_upper_link_pressuremat_sensor" type="contact">
+   <sensor name="leg_rest_upper_link_pressuremat_sensor" type="contact">
       <contact>
         <collision>leg_rest_upper_link_collision</collision>
         <topic>__default_topic__</topic>
@@ -79,6 +79,7 @@
     <fdir1>1 0 0</fdir1>
     <maxVel>1.0</maxVel>
     <minDepth>0.00</minDepth>
+
     <sensor name="leg_rest_lower_link_pressuremat_sensor" type="contact">
       <contact>
         <collision>leg_rest_lower_link_collision</collision>

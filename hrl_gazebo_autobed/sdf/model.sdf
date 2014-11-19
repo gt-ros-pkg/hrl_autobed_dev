@@ -73,6 +73,30 @@
             <uri>model://autobed/meshes/torso_lift_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+            <friction>
+                 <ode>
+                     <mu>1.000000</mu>
+                     <mu2>1.000000</mu2>
+                     <fdir1>0.000000 0.000000 0.000000</fdir1>
+                     <slip1>0.000000</slip1>
+                     <slip2>0.000000</slip2>
+                 </ode>
+            </friction>
+            <bounce>
+                 <restitution_coefficient>0.000000</restitution_coefficient>
+                 <threshold>100000.000000</threshold>
+            </bounce>
+            <contact>
+                 <ode>
+                            <kp>10000.000000</kp>
+                            <kd>00.000000</kd>-->
+                            <max_vel>0.000000</max_vel>
+                            <min_depth>0.1000</min_depth>
+                 </ode>
+            </contact>
+         </surface>
+         <laser_retro>0.000000</laser_retro>
       </collision>
       <visual name='torso_lift_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -83,10 +107,22 @@
           </mesh>
         </geometry>
       </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='torso_lift_link_pressuremat_sensor' type='contact'>
+        <contact>
+          <collision>torso_lift_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_pressuremat_plugin_torso_lift_link' filename='libros_pressuremat_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
     </link>
     <joint name='autobed_height_joint' type='prismatic'>
       <child>torso_lift_link</child>
@@ -125,16 +161,29 @@
           </mesh>
         </geometry>
         <surface>
-          <contact>
-            <ode/>
-          </contact>
-          <friction>
-            <ode>
-              <mu>0.010000</mu>
-              <mu2>0.010000</mu2>
-            </ode>
-          </friction>
-        </surface>
+            <friction>
+                 <ode>
+                     <mu>1.000000</mu>
+                     <mu2>1.000000</mu2>
+                     <fdir1>0.000000 0.000000 0.000000</fdir1>
+                     <slip1>0.000000</slip1>
+                     <slip2>0.000000</slip2>
+                 </ode>
+            </friction>
+            <bounce>
+                 <restitution_coefficient>0.000000</restitution_coefficient>
+                 <threshold>100000.000000</threshold>
+            </bounce>
+            <contact>
+                 <ode>
+                            <kp>10000.000000</kp>
+                            <kd>00.000000</kd>-->
+                            <max_vel>0.000000</max_vel>
+                            <min_depth>0.1000</min_depth>
+                 </ode>
+            </contact>
+         </surface>
+         <laser_retro>0.000000</laser_retro>
       </collision>
       <visual name='head_rest_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -159,7 +208,7 @@
         <plugin name='ros_pressuremat_plugin_head_rest_link' filename='libros_pressuremat_plugin.so'/>
         <always_on>1</always_on>
         <update_rate>30.000000</update_rate>
-        <visualize>1</visualize>
+        <visualize>0</visualize>
       </sensor>
     </link>
     <joint name='head_rest_hinge' type='revolute'>
@@ -179,15 +228,15 @@
     <link name='leg_rest_upper_link'>
       <pose>2.105000 -0.000000 0.330500 1.570800 0.000000 0.000000</pose>
       <inertial>
-        <pose>0.530000 0.105000 -0.000000 0.000000 0.000000 0.000000</pose>
-        <mass>20.367900</mass>
+        <pose>0.185000 0.105000 -0.000000 0.000000 0.000000 0.000000</pose>
+        <mass>7.109550</mass>
         <inertia>
-          <ixx>14.958900</ixx>
-          <ixy>0.000000</ixy>
-          <ixz>0.000000</ixz>
-          <iyy>21.581700</iyy>
-          <iyz>0.000000</iyz>
-          <izz>8.119830</izz>
+          <ixx>5.221520</ixx>
+          <ixy>-0.000000</ixy>
+          <ixz>-0.000000</ixz>
+          <iyy>5.771330</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>1.072360</izz>
         </inertia>
       </inertial>
       <collision name='leg_rest_upper_link_collision'>
@@ -198,15 +247,30 @@
             <uri>model://autobed/meshes/leg_rest_upper_link.STL</uri>
           </mesh>
         </geometry>
-      </collision>
-      <collision name='leg_rest_upper_link_collision_leg_rest_lower_link'>
-        <pose>0.370000 0.000000 0.000000 -0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
-          </mesh>
-        </geometry>
+        <surface>
+            <friction>
+                 <ode>
+                     <mu>1.000000</mu>
+                     <mu2>1.000000</mu2>
+                     <fdir1>0.000000 0.000000 0.000000</fdir1>
+                     <slip1>0.000000</slip1>
+                     <slip2>0.000000</slip2>
+                 </ode>
+            </friction>
+            <bounce>
+                 <restitution_coefficient>0.000000</restitution_coefficient>
+                 <threshold>100000.000000</threshold>
+            </bounce>
+            <contact>
+                 <ode>
+                            <kp>10000.000000</kp>
+                            <kd>00.000000</kd>-->
+                            <max_vel>0.000000</max_vel>
+                            <min_depth>0.1000</min_depth>
+                 </ode>
+            </contact>
+         </surface>
+         <laser_retro>0.000000</laser_retro>
       </collision>
       <visual name='leg_rest_upper_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
@@ -217,19 +281,22 @@
           </mesh>
         </geometry>
       </visual>
-      <visual name='leg_rest_upper_link_vis_leg_rest_lower_link'>
-        <pose>0.370000 0.000000 0.000000 -0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
-          </mesh>
-        </geometry>
-      </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='leg_rest_upper_link_pressuremat_sensor' type='contact'>
+        <contact>
+          <collision>leg_rest_upper_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_pressuremat_plugin_leg_rest_upper_link' filename='libros_pressuremat_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
     </link>
     <joint name='leg_rest_upper_joint' type='revolute'>
       <child>leg_rest_upper_link</child>
@@ -241,6 +308,93 @@
           <upper>1.000000</upper>
           <effort>2000.000000</effort>
           <velocity>0.200000</velocity>
+        </limit>
+        <dynamics/>
+      </axis>
+    </joint>
+    <link name='leg_rest_lower_link'>
+      <pose>2.475000 0.000000 0.330500 1.570800 -0.000000 0.000000</pose>
+      <inertial>
+        <pose>0.345000 0.105000 -0.000000 0.000000 0.000000 0.000000</pose>
+        <mass>13.258400</mass>
+        <inertia>
+          <ixx>9.737430</ixx>
+          <ixy>0.000000</ixy>
+          <ixz>0.000000</ixz>
+          <iyy>14.510400</iyy>
+          <iyz>0.000000</iyz>
+          <izz>5.747490</izz>
+        </inertia>
+      </inertial>
+      <collision name='leg_rest_lower_link_collision'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
+          </mesh>
+        </geometry>
+        <surface>
+            <friction>
+                 <ode>
+                     <mu>1.000000</mu>
+                     <mu2>1.000000</mu2>
+                     <fdir1>0.000000 0.000000 0.000000</fdir1>
+                     <slip1>0.000000</slip1>
+                     <slip2>0.000000</slip2>
+                 </ode>
+            </friction>
+            <bounce>
+                 <restitution_coefficient>0.000000</restitution_coefficient>
+                 <threshold>100000.000000</threshold>
+            </bounce>
+            <contact>
+                 <ode>
+                            <kp>10000.000000</kp>
+                            <kd>00.000000</kd>-->
+                            <max_vel>0.000000</max_vel>
+                            <min_depth>0.1000</min_depth>
+                 </ode>
+            </contact>
+         </surface>
+         <laser_retro>0.000000</laser_retro>
+      </collision>
+      <visual name='leg_rest_lower_link_vis'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='leg_rest_lower_link_pressuremat_sensor' type='contact'>
+        <contact>
+          <collision>leg_rest_lower_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_pressuremat_plugin_leg_rest_lower_link' filename='libros_pressuremat_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
+    </link>
+    <joint name='leg_rest_upper_lower_joint' type='revolute'>
+      <child>leg_rest_lower_link</child>
+      <parent>leg_rest_upper_link</parent>
+      <axis>
+        <xyz>0.000000 -1.000000 -0.000004</xyz>
+        <limit>
+          <lower>0.000000</lower>
+          <upper>0.000000</upper>
+          <effort>0.000000</effort>
+          <velocity>0.000000</velocity>
         </limit>
         <dynamics/>
       </axis>
