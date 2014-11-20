@@ -54,15 +54,15 @@
     <link name='torso_lift_link'>
       <pose>1.050000 -0.000000 0.280500 0.000000 0.000000 0.000000</pose>
       <inertial>
-        <pose>0.990058 0.041265 0.043944 0.000000 0.000000 0.000000</pose>
-        <mass>18.377500</mass>
+        <pose>1.049600 0.000000 0.082398 0.000000 0.000000 0.000000</pose>
+        <mass>14.278300</mass>
         <inertia>
-          <ixx>14.180100</ixx>
-          <ixy>0.157280</ixy>
-          <ixz>-0.473100</ixz>
-          <iyy>76.368000</iyy>
-          <iyz>0.101573</iyz>
-          <izz>85.843300</izz>
+          <ixx>12.999000</ixx>
+          <ixy>0.000000</ixy>
+          <ixz>-0.326530</ixz>
+          <iyy>75.150000</iyy>
+          <iyz>0.000000</iyz>
+          <izz>85.421000</izz>
         </inertia>
       </inertial>
       <collision name='torso_lift_link_collision'>
@@ -76,33 +76,7 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000.000000</kp>
-              <kd>0.000000</kd>
-              <max_vel>1.000000</max_vel>
-              <min_depth>0.000000</min_depth>
-            </ode>
-          </contact>
-          <friction>
-            <ode>
-              <mu>1.500000</mu>
-              <mu2>1.500000</mu2>
-              <fdir1>1.000000 0.000000 0.000000</fdir1>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <collision name='torso_lift_link_collision_mid_body_link'>
-        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/mid_body_link.STL</uri>
-          </mesh>
-        </geometry>
-        <surface>
-          <contact>
-            <ode>
-              <kp>1000.000000</kp>
+              <kp>10000000000.000000</kp>
               <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
@@ -126,36 +100,12 @@
           </mesh>
         </geometry>
       </visual>
-      <visual name='torso_lift_link_vis_mid_body_link'>
-        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/mid_body_link.STL</uri>
-          </mesh>
-        </geometry>
-      </visual>
-      <velocity_decay>
-        <linear>0.000000</linear>
-        <angular>0.000000</angular>
-      </velocity_decay>
       <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
       <self_collide>0</self_collide>
-      <sensor name='mid_body_link_pressuremat_sensor' type='contact'>
-        <contact>
-          <topic>__default_topic__</topic>
-          <collision>torso_lift_link_collision_mid_body_link</collision>
-        </contact>
-        <plugin name='ros_pressuremat_plugin_mid_body_link' filename='libros_pressuremat_plugin.so'/>
-        <always_on>1</always_on>
-        <update_rate>30.000000</update_rate>
-        <visualize>0</visualize>
-        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
-      </sensor>
     </link>
     <joint name='autobed_height_joint' type='prismatic'>
       <child>torso_lift_link</child>
@@ -171,26 +121,26 @@
         <dynamics/>
       </axis>
     </joint>
-    <link name='head_rest_link'>
-      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
+    <link name='mid_body_link'>
+      <pose>1.832660 -0.000000 0.330500 1.570800 0.000000 -1.570800</pose>
       <inertial>
-        <pose>-0.374023 -0.000000 -0.089114 0.000000 0.000000 0.000000</pose>
-        <mass>15.215400</mass>
+        <pose>0.000000 0.185000 -0.140000 0.000000 0.000000 0.000000</pose>
+        <mass>4.099200</mass>
         <inertia>
-          <ixx>10.921700</ixx>
-          <ixy>-0.000000</ixy>
-          <ixz>-0.048656</ixz>
-          <iyy>6.584110</iyy>
-          <iyz>-0.000000</iyz>
-          <izz>16.893800</izz>
+          <ixx>0.086361</ixx>
+          <ixy>0.000000</ixy>
+          <ixz>-0.000000</ixz>
+          <iyy>0.977430</iyy>
+          <iyz>0.000000</iyz>
+          <izz>0.896410</izz>
         </inertia>
       </inertial>
-      <collision name='head_rest_link_collision'>
+      <collision name='mid_body_link_collision'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/head_rest_link.STL</uri>
+            <uri>model://autobed/meshes/mid_body_link.STL</uri>
           </mesh>
         </geometry>
         <surface>
@@ -211,12 +161,66 @@
           </friction>
         </surface>
       </collision>
-      <collision name='head_rest_link_collision_head_rest_spring'>
+      <visual name='mid_body_link_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/head_rest_spring.STL</uri>
+            <uri>model://autobed/meshes/mid_body_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+      <sensor name='mid_body_link_pressuremat_sensor' type='contact'>
+        <contact>
+          <collision>mid_body_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_pressuremat_plugin_mid_body_link' filename='libros_pressuremat_plugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30.000000</update_rate>
+        <visualize>0</visualize>
+      </sensor>
+    </link>
+    <joint name='mid_body_support' type='revolute'>
+      <child>mid_body_link</child>
+      <parent>torso_lift_link</parent>
+      <axis>
+        <xyz>-1.000000 0.000004 -0.000004</xyz>
+        <limit>
+          <lower>0.000000</lower>
+          <upper>0.000000</upper>
+          <effort>0.000000</effort>
+          <velocity>0.000000</velocity>
+        </limit>
+        <dynamics/>
+      </axis>
+    </joint>
+    <link name='head_rest_link'>
+      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
+      <inertial>
+        <pose>-0.400910 -0.000000 -0.010720 0.000000 0.000000 0.000000</pose>
+        <mass>5.215380</mass>
+        <inertia>
+          <ixx>3.293800</ixx>
+          <ixy>-0.000000</ixy>
+          <ixz>-0.065382</ixz>
+          <iyy>1.751100</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>4.980100</izz>
+        </inertia>
+      </inertial>
+      <collision name='head_rest_link_collision'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/head_rest_link.STL</uri>
           </mesh>
         </geometry>
         <surface>
@@ -246,19 +250,12 @@
           </mesh>
         </geometry>
       </visual>
-      <visual name='head_rest_link_vis_head_rest_spring'>
-        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/head_rest_spring.STL</uri>
-          </mesh>
-        </geometry>
-      </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
       <sensor name='head_rest_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>head_rest_link_collision</collision>
@@ -269,16 +266,10 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
-      <gravity>1</gravity>
-      <velocity_decay>
-        <linear>0.000000</linear>
-        <angular>0.000000</angular>
-      </velocity_decay>
-      <self_collide>0</self_collide>
     </link>
     <joint name='head_rest_hinge' type='revolute'>
       <child>head_rest_link</child>
-      <parent>torso_lift_link</parent>
+      <parent>mid_body_link</parent>
       <axis>
         <xyz>0.000004 1.000000 0.000796</xyz>
         <limit>
@@ -290,32 +281,32 @@
         <dynamics/>
       </axis>
     </joint>
-    <link name='leg_rest_upper_link'>
-      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
+    <link name='head_rest_spring'>
+      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
       <inertial>
-        <pose>0.185000 -0.000000 -0.098844 0.000000 0.000000 0.000000</pose>
-        <mass>7.109550</mass>
+        <pose>-0.360000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
+        <mass>10.000000</mass>
         <inertia>
-          <ixx>5.095660</ixx>
+          <ixx>7.579100</ixx>
           <ixy>-0.000000</ixy>
           <ixz>-0.000000</ixz>
-          <iyy>0.946527</iyy>
+          <iyy>4.778500</iyy>
           <iyz>-0.000000</iyz>
-          <izz>5.771300</izz>
+          <izz>11.908000</izz>
         </inertia>
       </inertial>
-      <collision name='leg_rest_upper_link_collision'>
+      <collision name='head_rest_spring_collision'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_upper_link.STL</uri>
+            <uri>model://autobed/meshes/head_rest_spring.STL</uri>
           </mesh>
         </geometry>
         <surface>
           <contact>
             <ode>
-              <kp>1000.000000</kp>
+              <kp>10000000000.000000</kp>
               <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
@@ -330,12 +321,56 @@
           </friction>
         </surface>
       </collision>
-      <collision name='leg_rest_upper_link_collision_leg_rest_upper_spring'>
+      <visual name='head_rest_spring_vis'>
         <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_upper_spring.STL</uri>
+            <uri>model://autobed/meshes/head_rest_spring.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='head_support' type='revolute'>
+      <child>head_rest_spring</child>
+      <parent>head_rest_link</parent>
+      <axis>
+        <xyz>-0.000800 -0.000796 0.999999</xyz>
+        <limit>
+          <lower>0.000000</lower>
+          <upper>0.000000</upper>
+          <effort>0.000000</effort>
+          <velocity>0.000000</velocity>
+        </limit>
+        <dynamics/>
+      </axis>
+    </joint>
+    <link name='leg_rest_upper_link'>
+      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <inertial>
+        <pose>0.185000 -0.000000 -0.025000 0.000000 0.000000 0.000000</pose>
+        <mass>2.109550</mass>
+        <inertia>
+          <ixx>1.184500</ixx>
+          <ixy>0.000000</ixy>
+          <ixz>0.000000</ixz>
+          <iyy>0.196640</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>1.374100</izz>
+        </inertia>
+      </inertial>
+      <collision name='leg_rest_upper_link_collision'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_upper_link.STL</uri>
           </mesh>
         </geometry>
         <surface>
@@ -365,19 +400,12 @@
           </mesh>
         </geometry>
       </visual>
-      <visual name='leg_rest_upper_link_vis_leg_rest_upper_spring'>
-        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_upper_spring.STL</uri>
-          </mesh>
-        </geometry>
-      </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
       <sensor name='leg_rest_upper_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>leg_rest_upper_link_collision</collision>
@@ -388,16 +416,10 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
-      <gravity>1</gravity>
-      <velocity_decay>
-        <linear>0.000000</linear>
-        <angular>0.000000</angular>
-      </velocity_decay>
-      <self_collide>0</self_collide>
     </link>
     <joint name='leg_rest_upper_joint' type='revolute'>
       <child>leg_rest_upper_link</child>
-      <parent>torso_lift_link</parent>
+      <parent>mid_body_link</parent>
       <axis>
         <xyz>-0.000004 -1.000000 0.000004</xyz>
         <limit>
@@ -412,15 +434,15 @@
     <link name='leg_rest_lower_link'>
       <pose>2.482660 -0.000002 0.540501 -0.000004 0.000000 -0.000004</pose>
       <inertial>
-        <pose>0.345000 -0.000000 -0.104226 0.000000 0.000000 0.000000</pose>
-        <mass>13.274400</mass>
+        <pose>0.345000 -0.000000 -0.025000 0.000000 0.000000 0.000000</pose>
+        <mass>3.258350</mass>
         <inertia>
-          <ixx>9.499410</ixx>
-          <ixy>-0.000000</ixy>
+          <ixx>2.209000</ixx>
+          <ixy>0.000000</ixy>
           <ixz>-0.000000</ixz>
-          <iyy>5.509410</iyy>
+          <iyy>1.259000</iyy>
           <iyz>-0.000000</iyz>
-          <izz>14.510900</izz>
+          <izz>3.454900</izz>
         </inertia>
       </inertial>
       <collision name='leg_rest_lower_link_collision'>
@@ -429,32 +451,6 @@
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
             <uri>model://autobed/meshes/leg_rest_lower_link.STL</uri>
-          </mesh>
-        </geometry>
-        <surface>
-          <contact>
-            <ode>
-              <kp>1000.000000</kp>
-              <kd>0.000000</kd>
-              <max_vel>1.000000</max_vel>
-              <min_depth>0.000000</min_depth>
-            </ode>
-          </contact>
-          <friction>
-            <ode>
-              <mu>1.500000</mu>
-              <mu2>1.500000</mu2>
-              <fdir1>1.000000 0.000000 0.000000</fdir1>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <collision name='leg_rest_lower_link_collision_leg_rest_lower_spring'>
-        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_lower_spring.STL</uri>
           </mesh>
         </geometry>
         <surface>
@@ -484,19 +480,12 @@
           </mesh>
         </geometry>
       </visual>
-      <visual name='leg_rest_lower_link_vis_leg_rest_lower_spring'>
-        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
-        <geometry>
-          <mesh>
-            <scale>1.000000 1.000000 1.000000</scale>
-            <uri>model://autobed/meshes/leg_rest_lower_spring.STL</uri>
-          </mesh>
-        </geometry>
-      </visual>
+      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
+      <self_collide>0</self_collide>
       <sensor name='leg_rest_lower_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>leg_rest_lower_link_collision</collision>
@@ -507,6 +496,70 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
+    </link>
+    <joint name='leg_rest_upper_lower_joint' type='revolute'>
+      <child>leg_rest_lower_link</child>
+      <parent>leg_rest_upper_link</parent>
+      <axis>
+        <xyz>-0.000004 -1.000000 0.000004</xyz>
+        <limit>
+          <lower>0.000000</lower>
+          <upper>0.000000</upper>
+          <effort>0.000000</effort>
+          <velocity>0.000000</velocity>
+        </limit>
+        <dynamics/>
+      </axis>
+    </joint>
+    <link name='leg_rest_lower_spring'>
+      <pose>2.482660 -0.000002 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <inertial>
+        <pose>0.345000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
+        <mass>10.016000</mass>
+        <inertia>
+          <ixx>7.263300</ixx>
+          <ixy>-0.000000</ixy>
+          <ixz>0.000000</ixz>
+          <iyy>4.223300</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>11.056000</izz>
+        </inertia>
+      </inertial>
+      <collision name='leg_rest_lower_spring_collision'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_lower_spring.STL</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>10000000000.000000</kp>
+              <kd>0.000000</kd>
+              <max_vel>1.000000</max_vel>
+              <min_depth>0.000000</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1.500000</mu>
+              <mu2>1.500000</mu2>
+              <fdir1>1.000000 0.000000 0.000000</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='leg_rest_lower_spring_vis'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_lower_spring.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
       <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
@@ -514,11 +567,81 @@
       </velocity_decay>
       <self_collide>0</self_collide>
     </link>
-    <joint name='leg_rest_upper_lower_joint' type='revolute'>
-      <child>leg_rest_lower_link</child>
+    <joint name='leg_rest_lower_support' type='revolute'>
+      <child>leg_rest_lower_spring</child>
+      <parent>leg_rest_lower_link</parent>
+      <axis>
+        <xyz>0.000000 0.000004 1.000000</xyz>
+        <limit>
+          <lower>0.000000</lower>
+          <upper>0.000000</upper>
+          <effort>0.000000</effort>
+          <velocity>0.000000</velocity>
+        </limit>
+        <dynamics/>
+      </axis>
+    </joint>
+    <link name='leg_rest_upper_spring'>
+      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <inertial>
+        <pose>0.185000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
+        <mass>5.000000</mass>
+        <inertia>
+          <ixx>3.894800</ixx>
+          <ixy>-0.000000</ixy>
+          <ixz>-0.000000</ixz>
+          <iyy>0.733530</iyy>
+          <iyz>-0.000000</iyz>
+          <izz>4.397200</izz>
+        </inertia>
+      </inertial>
+      <collision name='leg_rest_upper_spring_collision'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_upper_spring.STL</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>10000000000.000000</kp>
+              <kd>0.000000</kd>
+              <max_vel>1.000000</max_vel>
+              <min_depth>0.000000</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1.500000</mu>
+              <mu2>1.500000</mu2>
+              <fdir1>1.000000 0.000000 0.000000</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='leg_rest_upper_spring_vis'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <geometry>
+          <mesh>
+            <scale>1.000000 1.000000 1.000000</scale>
+            <uri>model://autobed/meshes/leg_rest_upper_spring.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+    </link>
+    <joint name='leg_rest_upper_support' type='revolute'>
+      <child>leg_rest_upper_spring</child>
       <parent>leg_rest_upper_link</parent>
       <axis>
-        <xyz>-0.000004 -1.000000 0.000004</xyz>
+        <xyz>0.000000 0.000004 1.000000</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>

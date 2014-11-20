@@ -66,7 +66,7 @@
   <gazebo reference="torso_lift_link">
     <gravity>true</gravity>
     <!-- kp and kd for rubber -->
-    <kp>1000.0</kp>
+    <kp>10000000000.0</kp>
     <kd>0.0</kd>
     <mu1>1.5</mu1>
     <mu2>1.5</mu2>
@@ -303,7 +303,7 @@
 
   <joint
     name="mid_body_support"
-    type="fixed">
+    type="revolute">
     <origin
       xyz="0.78266 0 0.05"
       rpy="1.5708 -8.0245E-32 -1.5708" />
@@ -312,7 +312,12 @@
     <child
       link="mid_body_link" />
     <axis
-      xyz="0 0 0" />
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
 
   <link
@@ -355,6 +360,7 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="head_rest_hinge"
     type="revolute">
@@ -373,6 +379,7 @@
       effort="2000"
       velocity="0.2" />
   </joint>
+
   <link
     name="head_rest_spring">
     <inertial>
@@ -413,9 +420,10 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="head_support"
-    type="fixed">
+    type="revolute">
     <origin
       xyz="0 0 0"
       rpy="0 0 0" />
@@ -424,8 +432,14 @@
     <child
       link="head_rest_spring" />
     <axis
-      xyz="0 0 0" />
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
+
   <link
     name="leg_rest_upper_link">
     <inertial>
@@ -466,6 +480,7 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="leg_rest_upper_joint"
     type="revolute">
@@ -484,6 +499,7 @@
       effort="2000"
       velocity="0.2" />
   </joint>
+
   <link
     name="leg_rest_lower_link">
     <inertial>
@@ -524,6 +540,7 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="leg_rest_upper_lower_joint"
     type="revolute">
@@ -542,6 +559,7 @@
       effort="0"
       velocity="0" />
   </joint>
+
   <link
     name="leg_rest_lower_spring">
     <inertial>
@@ -582,9 +600,10 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="leg_rest_lower_support"
-    type="fixed">
+    type="revolute">
     <origin
       xyz="0 0 0"
       rpy="0 0 0" />
@@ -593,8 +612,14 @@
     <child
       link="leg_rest_lower_spring" />
     <axis
-      xyz="0 0 0" />
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
+
   <link
     name="leg_rest_upper_spring">
     <inertial>
@@ -635,9 +660,10 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="leg_rest_upper_support"
-    type="fixed">
+    type="revolute">
     <origin
       xyz="0 0 0"
       rpy="0 0 0" />
@@ -646,7 +672,13 @@
     <child
       link="leg_rest_upper_spring" />
     <axis
-      xyz="0 0 0" />
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+
   </joint>
 
 <!-- yash added transmissions -->

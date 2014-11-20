@@ -42,7 +42,7 @@ class PoseTrainer():
     def head_pressure_collection_callback(self, data):
         ''' Accepts incoming coordinates from the gazebo model, and stores it into a variable local to our namespace'''
         centers_y = np.asarray(data.centers_y)
-        #The x-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
+        #The y-centers will arrive in the coordinate frame specified by gazebo. We need to change that to out pressure mat frame
         self.head_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
         self.head_centers_x = np.asarray(data.centers_x)
 
