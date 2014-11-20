@@ -54,15 +54,15 @@
     <link name='torso_lift_link'>
       <pose>1.050000 -0.000000 0.280500 0.000000 0.000000 0.000000</pose>
       <inertial>
-        <pose>1.021450 0.017844 0.032190 0.000000 0.000000 0.000000</pose>
+        <pose>0.990058 0.041265 0.043944 0.000000 0.000000 0.000000</pose>
         <mass>18.377500</mass>
         <inertia>
-          <ixx>13.156000</ixx>
-          <ixy>0.078306</ixy>
-          <ixz>-0.153939</ixz>
-          <iyy>77.128700</iyy>
-          <iyz>0.040070</iyz>
-          <izz>82.099200</izz>
+          <ixx>14.180100</ixx>
+          <ixy>0.157280</ixy>
+          <ixz>-0.473100</ixz>
+          <iyy>76.368000</iyy>
+          <iyz>0.101573</iyz>
+          <izz>85.843300</izz>
         </inertia>
       </inertial>
       <collision name='torso_lift_link_collision'>
@@ -76,8 +76,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -92,7 +92,7 @@
         </surface>
       </collision>
       <collision name='torso_lift_link_collision_mid_body_link'>
-        <pose>0.782663 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
+        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
@@ -102,8 +102,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -127,7 +127,7 @@
         </geometry>
       </visual>
       <visual name='torso_lift_link_vis_mid_body_link'>
-        <pose>0.782663 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
+        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
         <geometry>
           <mesh>
             <scale>1.000000 1.000000 1.000000</scale>
@@ -135,21 +135,26 @@
           </mesh>
         </geometry>
       </visual>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
       <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
       <self_collide>0</self_collide>
-      <sensor name='torso_lift_link_pressuremat_sensor' type='contact'>
+      <sensor name='mid_body_link_pressuremat_sensor' type='contact'>
         <contact>
-          <collision>torso_lift_link_collision</collision>
           <topic>__default_topic__</topic>
+          <collision>torso_lift_link_collision_mid_body_link</collision>
         </contact>
-        <plugin name='ros_pressuremat_plugin_torso_lift_link' filename='libros_pressuremat_plugin.so'/>
+        <plugin name='ros_pressuremat_plugin_mid_body_link' filename='libros_pressuremat_plugin.so'/>
         <always_on>1</always_on>
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
+        <pose>0.782660 0.000000 0.050000 1.570800 0.000000 -1.570800</pose>
       </sensor>
     </link>
     <joint name='autobed_height_joint' type='prismatic'>
@@ -167,17 +172,17 @@
       </axis>
     </joint>
     <link name='head_rest_link'>
-      <pose>1.572660 -0.775000 0.330500 0.000004 0.000007 1.570800</pose>
+      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
       <inertial>
-        <pose>-0.308081 0.000000 0.230046 0.000000 0.000000 0.000000</pose>
+        <pose>-0.374023 -0.000000 -0.089114 0.000000 0.000000 0.000000</pose>
         <mass>15.215400</mass>
         <inertia>
-          <ixx>14.522400</ixx>
+          <ixx>10.921700</ixx>
           <ixy>-0.000000</ixy>
-          <ixz>-2.971550</ixz>
+          <ixz>-0.048656</ixz>
           <iyy>6.584110</iyy>
           <iyz>-0.000000</iyz>
-          <izz>13.292900</izz>
+          <izz>16.893800</izz>
         </inertia>
       </inertial>
       <collision name='head_rest_link_collision'>
@@ -191,8 +196,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -217,8 +222,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -250,12 +255,10 @@
           </mesh>
         </geometry>
       </visual>
-      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
-      <self_collide>0</self_collide>
       <sensor name='head_rest_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>head_rest_link_collision</collision>
@@ -266,12 +269,18 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
     </link>
     <joint name='head_rest_hinge' type='revolute'>
       <child>head_rest_link</child>
       <parent>torso_lift_link</parent>
       <axis>
-        <xyz>0.000004 0.000007 1.000000</xyz>
+        <xyz>0.000004 1.000000 0.000796</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>1.570000</upper>
@@ -282,17 +291,17 @@
       </axis>
     </joint>
     <link name='leg_rest_upper_link'>
-      <pose>2.112660 -0.000000 0.540500 -3.141590 -0.000000 0.000004</pose>
+      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
       <inertial>
-        <pose>0.207405 0.000000 -0.031277 0.000000 0.000000 0.000000</pose>
+        <pose>0.185000 -0.000000 -0.098844 0.000000 0.000000 0.000000</pose>
         <mass>7.109550</mass>
         <inertia>
-          <ixx>5.171270</ixx>
-          <ixy>0.000000</ixy>
-          <ixz>0.223272</ixz>
-          <iyy>0.946523</iyy>
+          <ixx>5.095660</ixx>
+          <ixy>-0.000000</ixy>
+          <ixz>-0.000000</ixz>
+          <iyy>0.946527</iyy>
           <iyz>-0.000000</iyz>
-          <izz>5.695750</izz>
+          <izz>5.771300</izz>
         </inertia>
       </inertial>
       <collision name='leg_rest_upper_link_collision'>
@@ -306,8 +315,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -332,8 +341,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -365,12 +374,10 @@
           </mesh>
         </geometry>
       </visual>
-      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
-      <self_collide>0</self_collide>
       <sensor name='leg_rest_upper_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>leg_rest_upper_link_collision</collision>
@@ -381,12 +388,18 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
     </link>
     <joint name='leg_rest_upper_joint' type='revolute'>
       <child>leg_rest_upper_link</child>
       <parent>torso_lift_link</parent>
       <axis>
-        <xyz>-0.000004 1.000000 0.000004</xyz>
+        <xyz>-0.000004 -1.000000 0.000004</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>1.000000</upper>
@@ -397,17 +410,17 @@
       </axis>
     </joint>
     <link name='leg_rest_lower_link'>
-      <pose>2.482660 0.000001 0.540500 -3.141590 -0.000000 0.000004</pose>
+      <pose>2.482660 -0.000002 0.540501 -0.000004 0.000000 -0.000004</pose>
       <inertial>
-        <pose>0.319834 -0.000000 -0.166115 0.000000 0.000000 0.000000</pose>
+        <pose>0.345000 -0.000000 -0.104226 0.000000 0.000000 0.000000</pose>
         <mass>13.274400</mass>
         <inertia>
-          <ixx>9.670090</ixx>
+          <ixx>9.499410</ixx>
           <ixy>-0.000000</ixy>
-          <ixz>-0.918874</ixz>
-          <iyy>5.509430</iyy>
+          <ixz>-0.000000</ixz>
+          <iyy>5.509410</iyy>
           <iyz>-0.000000</iyz>
-          <izz>14.339700</izz>
+          <izz>14.510900</izz>
         </inertia>
       </inertial>
       <collision name='leg_rest_lower_link_collision'>
@@ -421,8 +434,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -447,8 +460,8 @@
         <surface>
           <contact>
             <ode>
-              <kp>1000000.000000</kp>
-              <kd>1.000000</kd>
+              <kp>1000.000000</kp>
+              <kd>0.000000</kd>
               <max_vel>1.000000</max_vel>
               <min_depth>0.000000</min_depth>
             </ode>
@@ -480,12 +493,10 @@
           </mesh>
         </geometry>
       </visual>
-      <gravity>1</gravity>
       <velocity_decay>
         <linear>0.000000</linear>
         <angular>0.000000</angular>
       </velocity_decay>
-      <self_collide>0</self_collide>
       <sensor name='leg_rest_lower_link_pressuremat_sensor' type='contact'>
         <contact>
           <collision>leg_rest_lower_link_collision</collision>
@@ -496,12 +507,18 @@
         <update_rate>30.000000</update_rate>
         <visualize>0</visualize>
       </sensor>
+      <gravity>1</gravity>
+      <velocity_decay>
+        <linear>0.000000</linear>
+        <angular>0.000000</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
     </link>
     <joint name='leg_rest_upper_lower_joint' type='revolute'>
       <child>leg_rest_lower_link</child>
       <parent>leg_rest_upper_link</parent>
       <axis>
-        <xyz>-0.000000 0.000004 -1.000000</xyz>
+        <xyz>-0.000004 -1.000000 0.000004</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>
