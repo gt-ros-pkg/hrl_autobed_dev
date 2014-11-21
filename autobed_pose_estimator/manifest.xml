@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/autobed_pose_estimator</url>
   <depend package="rospy"/>
   <depend package="roslib"/>
+  <depend package="hrl_lib"/>
   <depend package="actionlib"/>
   <depend package="trajectory_msgs"/>
   <depend package="std_msgs"/>

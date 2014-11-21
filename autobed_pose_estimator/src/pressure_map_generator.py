@@ -8,7 +8,7 @@ import rospy
 
 from hrl_haptic_manipulation_in_clutter_msgs.msg import TaxelArray 
 
-class PoseTrainer():
+class MapGenerator():
     '''Subscribes to the gazebo autobed and displays a map of whatever object is placed on the surface of the bed'''
     def __init__(self):
         '''Node that listens into the Gazebo plugin output data array, which consists of coordinates of the pressure points.
@@ -29,8 +29,10 @@ class PoseTrainer():
         self.bed_height = 2.08 #metres 
         self.numoftaxels_x = 73 #taxels
         self.numoftaxels_y = 30 
-        self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
+        #self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
 
+        #Init a ROS node
+        rospy.init_node('pose_estimation_trainer', anonymous = True)
         #Start subscribers to accept the incoming pressure coordinates 
         rospy.Subscriber("/head_rest_link_pressuremat_sensor/taxels/forces", TaxelArray, self.head_pressure_collection_callback)
         rospy.Subscriber("/torso_lift_link_pressuremat_sensor/taxels/forces", TaxelArray, self.body_pressure_collection_callback)
@@ -71,6 +73,10 @@ class PoseTrainer():
 
 
 
+    def get_mat_size_in_taxels(self):
+        '''Returns the mat size in taxels x taxels'''
+        return [self.numoftaxels_x, self.numoftaxels_y]
+
     def distances_to_ratios(self):
         '''Converts the distances of pressure values to ratios.
         Namely, width_ratio = +/- self.center_x/(bed_width/2)
@@ -83,6 +89,8 @@ class PoseTrainer():
     def get_pressure_map(self):
         '''Take the pressure ratios, dimensions of the pressure map in terms of taxels x taxels,
         and multiply the ratios with the corresponding dimension, and then set the bits in a boolean matrix corresponding to the dimension obtained'''
+        #Pass the centers to the conversion function so that the centers can be converted to percentages of bed width and height 
+        self.distances_to_ratios()
         #Zero out the initial local matrix
         pressure_map_matrix = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
         #Multiply the height ratio and width ratio pressure values by the number of taxels in the width and height of the bed
@@ -97,31 +105,27 @@ class PoseTrainer():
         for i in range(taxels_y.shape[0]-1):
             pressure_map_matrix[taxels_x[i], taxels_y[i]] = 1
         #Assign to a global 
-        self.pressure_map = np.logical_or(self.pressure_map, pressure_map_matrix)
-        num_pressure_points = np.count_nonzero(self.pressure_map)
-        print num_pressure_points
+        #self.pressure_map =  pressure_map_matrix
+        return pressure_map_matrix 
 
-    def visualize_pressure_map(self):
+    def visualize_pressure_map(self, pressure_map_matrix):
         '''Used to visualize the pressure map created'''
-        plt.imshow(self.pressure_map, interpolation='nearest', cmap= plt.cm.binary, origin='upper', vmin=0, vmax=1)
+        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap= plt.cm.binary, origin='upper', vmin=0, vmax=1)
         plt.draw() 
         
     def run(self):
         rate = rospy.Rate(5) #5 Hz
 
         while not rospy.is_shutdown():
-            #Pass the centers to the conversion function so that the centers can be converted to percentages of bed width and height 
-            self.distances_to_ratios()
             #Use the present percentages to get the exact pixels to mark as black
-            self.get_pressure_map()
+            pressure_map_matrix = self.get_pressure_map()
             #Call a function that displays the image matrix
-            self.visualize_pressure_map()
+            self.visualize_pressure_map(pressure_map_matrix)
             rate.sleep()
 
-'''Runs the Autobed robot using an object of the AutobedClient class and the run method provided therein'''
+'''Runs the pressure mat using an object of the MapGenerator class and the run method provided therein'''
 if __name__ == "__main__":
-    #Initialize pose trainer 
-    rospy.init_node('pose_estimation_trainer', anonymous = True)
-    pose_estimator_trainer = PoseTrainer()
-    pose_estimator_trainer.run()
+    #Initialize pressure mat
+    pressure_mat = MapGenerator()
+    pressure_mat.run()
 
