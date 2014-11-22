@@ -20,7 +20,7 @@ class PoseTrainer():
         self.pose_ID = pose_ID #Current pose, that we are training the system for
         self.pressure_mat = pressure_map_generator.MapGenerator()#Create a pressure mat object   
         self.current_pressure_map = np.zeros(self.pressure_mat.get_mat_size_in_taxels()) #Zero out the present pressure map. We will populate this in a bit.
-        '''
+        
         try:
             pose_dict = load_pickle(self.pose_list_file) #Load this list of poses for which we need to train
             self.current_dataset = np.asarray(pose_dict[pose_ID]) #Presently, the dataset will have only the positions of the joints
@@ -33,7 +33,7 @@ class PoseTrainer():
             self.training_database = {} #Database doesn't exist yet. So we will create it.
             save_pickle(self.training_database, self.training_database_file) #Save an empty dict for now
        
-        '''
+        
 
     def begin_training(self):
         '''Calls the get_pressure_map() method given by the MapGenerator class until the pressure map is rich enough to be stored in the database. Once this is done, the map along with the list of joints is safely stored in the training database pickle file'''
@@ -48,10 +48,10 @@ class PoseTrainer():
             self.pressure_mat.visualize_pressure_map(self.current_pressure_map)
 
         '''We have obtained a pressure map that is rich enough. Lets upload that to the database now'''
-        #self.current_dataset.append(self.current_pressure_map) #First we append the pressure map to our list of joints
-        #self.training_database.keys.append(self.pose_ID) #Add the current pose_ID to the database
-        #self.training_database[self.pose_ID] = self.current_dataset #assign the current dataset(i.e pressure map and true joint positions) as a value to the pose_ID key.
-        #save_pickle(self.training_database, self.training_database_file) #save the database
+        self.current_dataset.append(self.current_pressure_map) #First we append the pressure map to our list of joints
+        self.training_database.keys.append(self.pose_ID) #Add the current pose_ID to the database
+        self.training_database[self.pose_ID] = self.current_dataset #assign the current dataset(i.e pressure map and true joint positions) as a value to the pose_ID key.
+        save_pickle(self.training_database, self.training_database_file) #save the database
     
 
 
