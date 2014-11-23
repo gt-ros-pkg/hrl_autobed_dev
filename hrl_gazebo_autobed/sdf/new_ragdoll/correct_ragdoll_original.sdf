@@ -6,7 +6,7 @@
 <sdf version="1.4">
     <model name="new_ragdoll">
         <!--<pose>0.000000 0.000000 10 1.57 -0.000000 0.000000</pose>-->
-        <pose>0.000000 0.000000 0.8 1.57 0.0000000 3.140000</pose>-->
+        <pose>2.100000 0.000000 1.0 1.57 0.0000000 3.140000</pose>-->
         <link name="lower_body">
             <pose>0.000000 0.000000 0.000000 0.000000 -0.000000 0.000000</pose>
             <inertial>
@@ -1347,8 +1347,8 @@
                 <limit>
                     <!--<lower>-0.698</lower>
                     <upper>0.780</upper>-->
-                    <lower>0.</lower>
-                    <upper>0.</upper>
+                    <lower>0.0</lower>
+                    <upper>0.418</upper>
                 </limit>
                 <dynamics>
                     <damping>1.000000</damping>
@@ -1405,8 +1405,8 @@
                 <limit>
                     <!--<lower>-0.780</lower>
                     <upper>0.698</upper>-->
-                    <lower>0.</lower>
-                    <upper>0.</upper>
+                    <lower>-0.418</lower>
+                    <upper>0.0</upper>
                 </limit>
                 <dynamics>
                     <damping>1.000000</damping>
