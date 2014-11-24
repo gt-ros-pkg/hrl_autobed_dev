@@ -20,7 +20,7 @@ def main():
             poses_dict[pos_id] = [posture, plugin_entry]
 
     '''Right Lateral Position'''
-
+    '''
     posture = "<pose> 2.10 0.0 0.95 -0.3 0.0 3.14 </pose>"
     for thighs in thigh_angles_lateral:
         for knees in knee_angles_lateral:
@@ -29,9 +29,9 @@ def main():
                 plugin_entry = "float joint_angles[17] = {"+str(thighs)+", "+str(thighs)+", 0.0, 0.0,"+str(knees)+", "+str(knees)+", 0.0, 0.0,"+str(shoulder_lateral)+", "+str(shoulder_lateral)+", 0.0, 0.0, 0.0, "+str(elbows)+", "+str(elbows)+", 0.0, 0.0};"
                 poses_dict[pos_id] = [posture, plugin_entry]
 
-
+    '''
     '''Left Lateral Position'''
-
+    '''
     posture = "<pose> 2.10 0.0 0.95 3.44 0.0 3.14 </pose>"
     for thighs in thigh_angles_lateral:
         for knees in knee_angles_lateral:
@@ -40,7 +40,7 @@ def main():
                 plugin_entry = "float joint_angles[17] = {"+str(thighs)+", "+str(thighs)+", 0.0, 0.0,"+str(knees)+", "+str(knees)+", 0.0, 0.0,"+str(shoulder_lateral)+", "+str(shoulder_lateral)+", 0.0, 0.0, 0.0, "+str(elbows)+", "+str(elbows)+", 0.0, 0.0};"
                 poses_dict[pos_id] = [posture, plugin_entry]
 
-
+    '''
 
     print poses_dict
     pkl.dump(poses_dict, open("human_poses_list.p", "wb"))

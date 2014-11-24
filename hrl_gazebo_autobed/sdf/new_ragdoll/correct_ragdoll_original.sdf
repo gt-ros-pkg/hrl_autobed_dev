@@ -84,7 +84,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>-->
-            <gravity>0</gravity>
+            <gravity>1</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
@@ -634,7 +634,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>
-            <gravity>0</gravity>
+            <gravity>1</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
@@ -712,7 +712,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>
-            <gravity>0</gravity>
+            <gravity>1</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
