@@ -14,21 +14,39 @@ def main(pose_id):
     '''
     poses_dict = pkl.load(open("/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/src/human_poses_list.p", "rb"))
     plugin_file = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model2_plugin.cc', "r")
-    plugin_lines = plugin_file.readlines()
-    plugin_file.close()
+    sdf_file = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/correct_ragdoll_original.sdf')
 
+    plugin_lines = plugin_file.readlines()
+    sdf_lines = sdf_file.readlines()
+
+    plugin_file.close()
+    sdf_file.close()
     
     plugin_file_to_write = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model3_plugin.cc', "wb")
+    sdf_file_to_write = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/correct_ragdoll_temporary.sdf', "wb")
 
-    string_to_search = "float joint_angles"
+    plugin_string_to_search = "float joint_angles"
+    sdf_string_to_search = "<pose>"
+
+    count = 0
+
 
     for line in plugin_lines:
-        if not string_to_search in line:
+        if not plugin_string_to_search in line:
             plugin_file_to_write.write(line)
         else:
-            plugin_file_to_write.write(poses_dict[pose_id]+'\n')
+            plugin_file_to_write.write(poses_dict[pose_id][1]+'\n')
 
     plugin_file_to_write.close()
+ 
+    for line in sdf_lines:
+        if (not sdf_string_to_search in line) or (count >= 1):
+            sdf_file_to_write.write(line)
+        else:
+            sdf_file_to_write.write(poses_dict[pose_id][0]+'\n')
+            count = count + 1
+
+    sdf_file_to_write.close() 
 
 
 if __name__ == "__main__":

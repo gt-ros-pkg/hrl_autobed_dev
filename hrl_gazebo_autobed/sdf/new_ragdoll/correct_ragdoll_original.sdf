@@ -5,8 +5,7 @@
 
 <sdf version="1.4">
     <model name="new_ragdoll">
-        <!--<pose>0.000000 0.000000 10 1.57 -0.000000 0.000000</pose>-->
-        <pose>2.100000 0.000000 1.0 1.57 0.0000000 3.140000</pose>-->
+<pose> 2.10 0.0 0.95 3.44 0.0 3.14 </pose>
         <link name="lower_body">
             <pose>0.000000 0.000000 0.000000 0.000000 -0.000000 0.000000</pose>
             <inertial>
@@ -51,8 +50,8 @@
                             <kd>1.000000</kd>-->
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>-->
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>-->
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -85,7 +84,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>-->
-            <gravity>1</gravity>
+            <gravity>0</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
@@ -133,7 +132,7 @@
                             <kd>1.000000</kd>-->
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
+                            <kp>10000000.000000</kp>
                             <kd>0.000000</kd>-->
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
@@ -211,8 +210,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -289,8 +288,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -367,8 +366,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -445,8 +444,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -523,8 +522,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -601,8 +600,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -635,7 +634,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>
-            <gravity>1</gravity>
+            <gravity>0</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
@@ -679,8 +678,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -713,7 +712,7 @@
               <update_rate>100.0</update_rate>
               <visualize>false</visualize>
             </sensor>
-            <gravity>1</gravity>
+            <gravity>0</gravity>
             <self_collide>0</self_collide>
             <kinematic>0</kinematic>
         </link>
@@ -757,8 +756,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -825,8 +824,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -893,8 +892,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -961,8 +960,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -1039,8 +1038,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -1119,8 +1118,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -1187,8 +1186,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -1255,8 +1254,8 @@
                         <ode>
 			    <soft_cfm>0.0</soft_cfm>
                             <soft_erp>0.200000</soft_erp>
-                            <kp>100000000.000000</kp>
-                            <kd>000.000000</kd>
+                            <kp>10000000.000000</kp>
+                            <kd>0.000000</kd>
                             <max_vel>0.000000</max_vel>
                             <min_depth>0.001000</min_depth>
                         </ode>
@@ -1332,7 +1331,8 @@
                 <xyz>0.000000 0.000000 1.000000</xyz>
                 <limit>
                     <lower>-2.051</lower>
-                    <upper>0.785</upper>
+                    <upper>0.00</upper>
+                    <!--<upper>0.785</upper>-->
                 </limit>
                 <dynamics>
                     <damping>1.000000</damping>
@@ -1347,7 +1347,7 @@
                 <limit>
                     <!--<lower>-0.698</lower>
                     <upper>0.780</upper>-->
-                    <lower>0.0</lower>
+                    <lower>-0.1</lower>
                     <upper>0.418</upper>
                 </limit>
                 <dynamics>
@@ -1390,7 +1390,8 @@
                 <xyz>0.000000 0.000000 1.000000</xyz>
                 <limit>
                     <lower>-2.051</lower>
-                    <upper>0.785</upper>
+                    <upper>0.0</upper>
+                    <!-- <upper>0.785</upper>-->
 		</limit>
                 <dynamics>
                     <damping>1.000000</damping>
@@ -1406,7 +1407,7 @@
                     <!--<lower>-0.780</lower>
                     <upper>0.698</upper>-->
                     <lower>-0.418</lower>
-                    <upper>0.0</upper>
+                    <upper>0.1</upper>
                 </limit>
                 <dynamics>
                     <damping>1.000000</damping>
@@ -1476,7 +1477,8 @@
                 <xyz>0.000000 0.000000 1.000000</xyz>
                 <limit>
 		    <lower>-3.094</lower>
-                    <upper>1.025</upper>
+                    <upper>0.00</upper>
+                    <!--<upper>1.025</upper> -->
 		    <!--<lower>-1.025</lower>
                     <upper>3.094</upper>-->
                 </limit>
@@ -1541,7 +1543,7 @@
                 <limit>
                     <!--<lower>-1.047000</lower>
                     <upper>1.047000</upper>-->
-		    <lower>-0.87266</lower>
+		    <lower>-0.0</lower>
                     <upper>0.000</upper>
                 </limit>
                 <dynamics>
@@ -1587,7 +1589,9 @@
                 <xyz>0.000000 0.000000 1.000000</xyz>
                 <limit>
                     <lower>-3.094</lower>
-                    <upper>1.025</upper>
+                    <upper>0.000</upper>
+
+                    <!--<upper>1.025</upper>-->
 		</limit>
                 <dynamics>
                     <damping>1.000000</damping>

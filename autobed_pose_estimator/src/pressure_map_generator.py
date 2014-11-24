@@ -29,6 +29,10 @@ class MapGenerator():
         self.bed_height = 2.08 #metres 
         self.numoftaxels_x = 73 #taxels
         self.numoftaxels_y = 30 
+        self.LOW_TAXEL_THRESH_X = 0
+        self.LOW_TAXEL_THRESH_Y = 0
+        self.HIGH_TAXEL_THRESH_X = (self.numoftaxels_x - 1) 
+        self.HIGH_TAXEL_THRESH_Y = (self.numoftaxels_y - 1) 
         #self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
 
         #Init a ROS node
@@ -98,9 +102,14 @@ class MapGenerator():
         taxels_x = self.height_ratio*self.numoftaxels_x
         taxels_y = self.width_ratio*self.numoftaxels_y
 
-        #Typecast into int, so that we can highlight the right taxel in the pressure matrix
-        taxels_x = taxels_x.astype(int)
-        taxels_y = taxels_y.astype(int)
+        #Typecast into int, so that we can highlight the right taxel in the pressure matrix, and threshold the resulting values
+        taxels_x = (taxels_x.astype(int) - 1)
+        taxels_y = (taxels_y.astype(int) - 1)
+        #Thresholding the taxels_* array
+        taxels_x[taxels_x < self.LOW_TAXEL_THRESH_X] = self.LOW_TAXEL_THRESH_X 
+        taxels_y[taxels_y < self.LOW_TAXEL_THRESH_Y] = self.LOW_TAXEL_THRESH_Y
+        taxels_x[taxels_x > self.HIGH_TAXEL_THRESH_X] = self.HIGH_TAXEL_THRESH_X
+        taxels_y[taxels_y > self.HIGH_TAXEL_THRESH_Y] = self.HIGH_TAXEL_THRESH_Y 
         #Now that we have the exact pixels, we can go ahead and set selected pixels to one
         for i in range(taxels_y.shape[0]-1):
             pressure_map_matrix[taxels_x[i], taxels_y[i]] = 1
