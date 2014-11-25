@@ -5,7 +5,7 @@
 
 <sdf version="1.4">
     <model name="new_ragdoll">
-<pose> 2.10 0.0 0.95 3.44 0.0 3.14 </pose>
+<pose> 2.10 0.0 0.95 1.57 0.0 3.14 </pose>
         <link name="lower_body">
             <pose>0.000000 0.000000 0.000000 0.000000 -0.000000 0.000000</pose>
             <inertial>

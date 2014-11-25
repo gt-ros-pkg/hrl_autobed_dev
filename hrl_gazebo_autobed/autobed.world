@@ -21,13 +21,20 @@
     </physics>
     <include>
       <uri>model://ground_plane</uri>
+      <name>ground_plane</name>
     </include>
     <include>
       <uri>model://autobed</uri>
+      <name>autobed</name>
     </include>
-
+    <!-- <include>
+    <uri>model://new_ragdoll</uri>
+      <name>new_ragdoll</name>
+    </include>-->
+ 
     <include>
       <uri>model://sun</uri>
+      <name>sun</name>
     </include>
 
     <plugin filename="libros_world_plugin.so" name="ros_world_plugin"/>

@@ -42,7 +42,7 @@ def main():
 
     '''
 
-    print poses_dict
+    print pos_id
     pkl.dump(poses_dict, open("human_poses_list.p", "wb"))
 
 

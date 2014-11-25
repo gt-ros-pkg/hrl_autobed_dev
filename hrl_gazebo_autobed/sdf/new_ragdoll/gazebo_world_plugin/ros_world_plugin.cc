@@ -243,47 +243,41 @@ namespace gazebo
       models_ = this->world->GetModels();
       nModel = this->world->GetModelCount();
 
-     // printf("******************************* NO OF MODELS ******************************* %d \n", nModel);
-     // if(nModel == 3){
-     // std::string modelName_o = models_[2]->GetName();
-     // printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %s",modelName_o.c_str());
       // Set header
-      //}
+      this->pub_object_array_.header.frame_id = "world";
+      this->pub_object_array_.header.stamp = ros::Time(this->world->GetSimTime().Double());
+
       for (unsigned int i = 0; i < nModel; i++){
         std::string modelName = models_[i]->GetName();
         // Get only obstacles
         if (modelName.find("new_ragdoll") != std::string::npos){
-          obs_pose = models_[i]->GetWorldPose();
-  	  obj_pose = links_[0]->GetWorldCoGPose();
-          //this->pub_objectcog_array_.frame_names.push_back("small_lift_box"); 
-	
- 	  links_ = models_[i]->GetLinks();
+            obs_pose = models_[i]->GetWorldPose();
+ 	        links_ = models_[i]->GetLinks();
+
 	  for (unsigned int j = 0; j < links_.size(); j++){
             std::string linkName = links_[j]->GetName();
-	    //inertial_ = links_[j]->GetInertial();
-	    //double mass = inertial_->GetMass();
-	    link_cog = links_[j]->GetWorldCoGPose();
-	    link_pose = links_[j]->GetCollision(0)->GetWorldPose();
-	    if (linkName.find("lower_body") != std::string::npos){
-		ragdoll_lower_body_cog.pos.x = link_cog.pos.x;
-		ragdoll_lower_body_cog.pos.y = link_cog.pos.y;
-		ragdoll_lower_body_cog.pos.z = link_cog.pos.z;
-	        ragdoll_lower_body_cog.rot.x = link_cog.rot.x;
+	        link_cog = links_[j]->GetWorldCoGPose();
+	        link_pose = links_[j]->GetCollision(0)->GetWorldPose();
+	        if (linkName.find("lower_body") != std::string::npos){
+		        ragdoll_lower_body_cog.pos.x = link_cog.pos.x;
+		        ragdoll_lower_body_cog.pos.y = link_cog.pos.y;
+		        ragdoll_lower_body_cog.pos.z = link_cog.pos.z;
+	            ragdoll_lower_body_cog.rot.x = link_cog.rot.x;
                 ragdoll_lower_body_cog.rot.y = link_cog.rot.y;
                 ragdoll_lower_body_cog.rot.z = link_cog.rot.z;
                 ragdoll_lower_body_cog.rot.w = link_cog.rot.w;
-		ragdoll_lower_body_pose.pos.x = link_pose.pos.x;
+		        ragdoll_lower_body_pose.pos.x = link_pose.pos.x;
                 ragdoll_lower_body_pose.pos.y = link_pose.pos.y;
                 ragdoll_lower_body_pose.pos.z = link_pose.pos.z;
                 ragdoll_lower_body_pose.rot.x = link_pose.rot.x;
                 ragdoll_lower_body_pose.rot.y = link_pose.rot.y;
                 ragdoll_lower_body_pose.rot.z = link_pose.rot.z;
                 ragdoll_lower_body_pose.rot.w = link_pose.rot.w;
-	  	ragdoll_m2_num_x = ragdoll_m2_num_x + lower_body_mass*link_cog.pos.x;
+	  	        ragdoll_m2_num_x = ragdoll_m2_num_x + lower_body_mass*link_cog.pos.x;
                 ragdoll_m2_num_y = ragdoll_m2_num_y + lower_body_mass*link_cog.pos.y;
                 ragdoll_m2_num_z = ragdoll_m2_num_z + lower_body_mass*link_cog.pos.z;
                 ragdoll_m2_den = ragdoll_m2_den + lower_body_mass;
-		ragdoll_cog_num_x = ragdoll_cog_num_x + lower_body_mass*link_cog.pos.x;
+		        ragdoll_cog_num_x = ragdoll_cog_num_x + lower_body_mass*link_cog.pos.x;
             	ragdoll_cog_num_y = ragdoll_cog_num_y + lower_body_mass*link_cog.pos.y;
             	ragdoll_cog_num_z = ragdoll_cog_num_z + lower_body_mass*link_cog.pos.z;
             	ragdoll_cog_den = ragdoll_cog_den + lower_body_mass;
@@ -293,18 +287,18 @@ namespace gazebo
                 ragdoll_l_thigh_cog.pos.x = link_cog.pos.x;
                 ragdoll_l_thigh_cog.pos.y = link_cog.pos.y;
                 ragdoll_l_thigh_cog.pos.z = link_cog.pos.z;
-		ragdoll_l_thigh_cog.rot.x = link_cog.rot.x;
+		        ragdoll_l_thigh_cog.rot.x = link_cog.rot.x;
                 ragdoll_l_thigh_cog.rot.y = link_cog.rot.y;
                 ragdoll_l_thigh_cog.rot.z = link_cog.rot.z;
                 ragdoll_l_thigh_cog.rot.w = link_cog.rot.w;
-		ragdoll_l_thigh_pose.pos.x = link_pose.pos.x;
+		        ragdoll_l_thigh_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_thigh_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_thigh_pose.pos.z = link_pose.pos.z;
                 ragdoll_l_thigh_pose.rot.x = link_pose.rot.x;
                 ragdoll_l_thigh_pose.rot.y = link_pose.rot.y;
                 ragdoll_l_thigh_pose.rot.z = link_pose.rot.z;
                 ragdoll_l_thigh_pose.rot.w = link_pose.rot.w;
-		ragdoll_m2_num_x = ragdoll_m2_num_x + l_thigh_mass*link_cog.pos.x;
+		        ragdoll_m2_num_x = ragdoll_m2_num_x + l_thigh_mass*link_cog.pos.x;
                 ragdoll_m2_num_y = ragdoll_m2_num_y + l_thigh_mass*link_cog.pos.y;
                 ragdoll_m2_num_z = ragdoll_m2_num_z + l_thigh_mass*link_cog.pos.z;
                 ragdoll_m2_den = ragdoll_m2_den + l_thigh_mass;
@@ -321,14 +315,14 @@ namespace gazebo
                 //ragdoll_l_shin_cog.rot.y = link_cog.rot.y;
                 //ragdoll_l_shin_cog.rot.z = link_cog.rot.z;
                 //ragdoll_l_shin_cog.rot.w = link_cog.rot.w;
-		ragdoll_l_shin_pose.pos.x = link_pose.pos.x;
+		        ragdoll_l_shin_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_shin_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_shin_pose.pos.z = link_pose.pos.z;
                 ragdoll_l_shin_pose.rot.x = link_pose.rot.x;
                 ragdoll_l_shin_pose.rot.y = link_pose.rot.y;
                 ragdoll_l_shin_pose.rot.z = link_pose.rot.z;
                 ragdoll_l_shin_pose.rot.w = link_pose.rot.w;
-		ragdoll_m1_num_x = ragdoll_m1_num_x + l_shin_mass*link_cog.pos.x;
+		        ragdoll_m1_num_x = ragdoll_m1_num_x + l_shin_mass*link_cog.pos.x;
                 ragdoll_m1_num_y = ragdoll_m1_num_y + l_shin_mass*link_cog.pos.y;
                 ragdoll_m1_num_z = ragdoll_m1_num_z + l_shin_mass*link_cog.pos.z;
                 ragdoll_m1_den = ragdoll_m1_den + l_shin_mass;
@@ -345,14 +339,14 @@ namespace gazebo
                 //ragdoll_l_foot_cog.rot.y = link_cog.rot.y;
                 //ragdoll_l_foot_cog.rot.z = link_cog.rot.z;
                 //ragdoll_l_foot_cog.rot.w = link_cog.rot.w;
-		ragdoll_l_foot_pose.pos.x = link_pose.pos.x;
+		        ragdoll_l_foot_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_foot_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_foot_pose.pos.z = link_pose.pos.z;
                 ragdoll_l_foot_pose.rot.x = link_pose.rot.x;
                 ragdoll_l_foot_pose.rot.y = link_pose.rot.y;
                 ragdoll_l_foot_pose.rot.z = link_pose.rot.z;
                 ragdoll_l_foot_pose.rot.w = link_pose.rot.w;
-		ragdoll_m1_num_x = ragdoll_m1_num_x + l_foot_mass*link_cog.pos.x;
+		        ragdoll_m1_num_x = ragdoll_m1_num_x + l_foot_mass*link_cog.pos.x;
                 ragdoll_m1_num_y = ragdoll_m1_num_y + l_foot_mass*link_cog.pos.y;
                 ragdoll_m1_num_z = ragdoll_m1_num_z + l_foot_mass*link_cog.pos.z;
                 ragdoll_m1_den = ragdoll_m1_den + l_foot_mass;
@@ -365,18 +359,18 @@ namespace gazebo
                 ragdoll_r_thigh_cog.pos.x = link_cog.pos.x;
                 ragdoll_r_thigh_cog.pos.y = link_cog.pos.y;
                 ragdoll_r_thigh_cog.pos.z = link_cog.pos.z;
-		ragdoll_r_thigh_cog.rot.x = link_cog.rot.x;
+		        ragdoll_r_thigh_cog.rot.x = link_cog.rot.x;
                 ragdoll_r_thigh_cog.rot.y = link_cog.rot.y;
                 ragdoll_r_thigh_cog.rot.z = link_cog.rot.z;
                 ragdoll_r_thigh_cog.rot.w = link_cog.rot.w;
-		ragdoll_r_thigh_pose.pos.x = link_pose.pos.x;
+		        ragdoll_r_thigh_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_thigh_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_thigh_pose.pos.z = link_pose.pos.z;
                 ragdoll_r_thigh_pose.rot.x = link_pose.rot.x;
                 ragdoll_r_thigh_pose.rot.y = link_pose.rot.y;
                 ragdoll_r_thigh_pose.rot.z = link_pose.rot.z;
                 ragdoll_r_thigh_pose.rot.w = link_pose.rot.w;
-		ragdoll_m2_num_x = ragdoll_m2_num_x + r_thigh_mass*link_cog.pos.x;
+		        ragdoll_m2_num_x = ragdoll_m2_num_x + r_thigh_mass*link_cog.pos.x;
                 ragdoll_m2_num_y = ragdoll_m2_num_y + r_thigh_mass*link_cog.pos.y;
                 ragdoll_m2_num_z = ragdoll_m2_num_z + r_thigh_mass*link_cog.pos.z;
                 ragdoll_m2_den = ragdoll_m2_den + r_thigh_mass;
@@ -384,10 +378,10 @@ namespace gazebo
                 ragdoll_cog_num_y = ragdoll_cog_num_y + r_thigh_mass*link_cog.pos.y;
                 ragdoll_cog_num_z = ragdoll_cog_num_z + r_thigh_mass*link_cog.pos.z;
                 ragdoll_cog_den = ragdoll_cog_den + r_thigh_mass;
-		ragdoll_m2.rot.x = link_cog.rot.x;
-		ragdoll_m2.rot.y = link_cog.rot.y;
-		ragdoll_m2.rot.z = link_cog.rot.z;
-		ragdoll_m2.rot.w = link_cog.rot.w;
+		        ragdoll_m2.rot.x = link_cog.rot.x;
+		        ragdoll_m2.rot.y = link_cog.rot.y;
+		        ragdoll_m2.rot.z = link_cog.rot.z;
+		        ragdoll_m2.rot.w = link_cog.rot.w;
                 }
 	    if (linkName.find("r_shin") != std::string::npos){
 		//ragdoll_r_shin_cog.pos.x = link_cog.pos.x;
@@ -397,14 +391,14 @@ namespace gazebo
                 //ragdoll_r_shin_cog.rot.y = link_cog.rot.y;
                 //ragdoll_r_shin_cog.rot.z = link_cog.rot.z;
                 //ragdoll_r_shin_cog.rot.w = link_cog.rot.w;
-		ragdoll_r_shin_pose.pos.x = link_pose.pos.x;
+		        ragdoll_r_shin_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_shin_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_shin_pose.pos.z = link_pose.pos.z;
                 ragdoll_r_shin_pose.rot.x = link_pose.rot.x;
                 ragdoll_r_shin_pose.rot.y = link_pose.rot.y;
                 ragdoll_r_shin_pose.rot.z = link_pose.rot.z;
                 ragdoll_r_shin_pose.rot.w = link_pose.rot.w;
-		ragdoll_m1_num_x = ragdoll_m1_num_x + r_shin_mass*link_cog.pos.x;
+		        ragdoll_m1_num_x = ragdoll_m1_num_x + r_shin_mass*link_cog.pos.x;
                 ragdoll_m1_num_y = ragdoll_m1_num_y + r_shin_mass*link_cog.pos.y;
                 ragdoll_m1_num_z = ragdoll_m1_num_z + r_shin_mass*link_cog.pos.z;
                 ragdoll_m1_den = ragdoll_m1_den + r_shin_mass;
@@ -412,7 +406,7 @@ namespace gazebo
                 ragdoll_cog_num_y = ragdoll_cog_num_y + r_shin_mass*link_cog.pos.y;
                 ragdoll_cog_num_z = ragdoll_cog_num_z + r_shin_mass*link_cog.pos.z;
                 ragdoll_cog_den = ragdoll_cog_den + r_shin_mass;
-		ragdoll_m1.rot.x = link_cog.rot.x;
+		        ragdoll_m1.rot.x = link_cog.rot.x;
                 ragdoll_m1.rot.y = link_cog.rot.y;
                 ragdoll_m1.rot.z = link_cog.rot.z;
                 ragdoll_m1.rot.w = link_cog.rot.w;
@@ -425,14 +419,14 @@ namespace gazebo
                 //ragdoll_r_foot_cog.rot.y = link_cog.rot.y;
                 //ragdoll_r_foot_cog.rot.z = link_cog.rot.z;
                 //ragdoll_r_foot_cog.rot.w = link_cog.rot.w;
-		ragdoll_r_foot_pose.pos.x = link_pose.pos.x;
+		        ragdoll_r_foot_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_foot_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_foot_pose.pos.z = link_pose.pos.z;
                 ragdoll_r_foot_pose.rot.x = link_pose.rot.x;
                 ragdoll_r_foot_pose.rot.y = link_pose.rot.y;
                 ragdoll_r_foot_pose.rot.z = link_pose.rot.z;
                 ragdoll_r_foot_pose.rot.w = link_pose.rot.w;
-		ragdoll_m1_num_x = ragdoll_m1_num_x + r_foot_mass*link_cog.pos.x;
+		        ragdoll_m1_num_x = ragdoll_m1_num_x + r_foot_mass*link_cog.pos.x;
                 ragdoll_m1_num_y = ragdoll_m1_num_y + r_foot_mass*link_cog.pos.y;
                 ragdoll_m1_num_z = ragdoll_m1_num_z + r_foot_mass*link_cog.pos.z;
                 ragdoll_m1_den = ragdoll_m1_den + r_foot_mass;
@@ -449,14 +443,14 @@ namespace gazebo
                 //ragdoll_middle_body_cog.rot.y = link_cog.rot.y;
                 //ragdoll_middle_body_cog.rot.z = link_cog.rot.z;
                 //ragdoll_middle_body_cog.rot.w = link_cog.rot.w;
-		ragdoll_middle_body_pose.pos.x = link_pose.pos.x;
+		        ragdoll_middle_body_pose.pos.x = link_pose.pos.x;
                 ragdoll_middle_body_pose.pos.y = link_pose.pos.y;
                 ragdoll_middle_body_pose.pos.z = link_pose.pos.z;
                 ragdoll_middle_body_pose.rot.x = link_pose.rot.x;
                 ragdoll_middle_body_pose.rot.y = link_pose.rot.y;
                 ragdoll_middle_body_pose.rot.z = link_pose.rot.z;
                 ragdoll_middle_body_pose.rot.w = link_pose.rot.w;
-		ragdoll_m3_num_x = ragdoll_m3_num_x + middle_body_mass*link_cog.pos.x;
+		        ragdoll_m3_num_x = ragdoll_m3_num_x + middle_body_mass*link_cog.pos.x;
                 ragdoll_m3_num_y = ragdoll_m3_num_y + middle_body_mass*link_cog.pos.y;
                 ragdoll_m3_num_z = ragdoll_m3_num_z + middle_body_mass*link_cog.pos.z;
                 ragdoll_m3_den = ragdoll_m3_den + middle_body_mass;
@@ -469,18 +463,18 @@ namespace gazebo
                 ragdoll_upper_body_cog.pos.x = link_cog.pos.x;
                 ragdoll_upper_body_cog.pos.y = link_cog.pos.y;
                 ragdoll_upper_body_cog.pos.z = link_cog.pos.z;
-		ragdoll_upper_body_cog.rot.x = link_cog.rot.x;
+		        ragdoll_upper_body_cog.rot.x = link_cog.rot.x;
                 ragdoll_upper_body_cog.rot.y = link_cog.rot.y;
                 ragdoll_upper_body_cog.rot.z = link_cog.rot.z;
                 ragdoll_upper_body_cog.rot.w = link_cog.rot.w;
-		ragdoll_upper_body_pose.pos.x = link_pose.pos.x;
+		        ragdoll_upper_body_pose.pos.x = link_pose.pos.x;
                 ragdoll_upper_body_pose.pos.y = link_pose.pos.y;
                 ragdoll_upper_body_pose.pos.z = link_pose.pos.z;
                 ragdoll_upper_body_pose.rot.x = link_pose.rot.x;
                 ragdoll_upper_body_pose.rot.y = link_pose.rot.y;
                 ragdoll_upper_body_pose.rot.z = link_pose.rot.z;
                 ragdoll_upper_body_pose.rot.w = link_pose.rot.w;
-		ragdoll_m3_num_x = ragdoll_m3_num_x + upper_body_mass*link_cog.pos.x;
+		        ragdoll_m3_num_x = ragdoll_m3_num_x + upper_body_mass*link_cog.pos.x;
                 ragdoll_m3_num_y = ragdoll_m3_num_y + upper_body_mass*link_cog.pos.y;
                 ragdoll_m3_num_z = ragdoll_m3_num_z + upper_body_mass*link_cog.pos.z;
                 ragdoll_m3_den = ragdoll_m3_den + upper_body_mass;
@@ -488,7 +482,7 @@ namespace gazebo
                 ragdoll_cog_num_y = ragdoll_cog_num_y + upper_body_mass*link_cog.pos.y;
                 ragdoll_cog_num_z = ragdoll_cog_num_z + upper_body_mass*link_cog.pos.z;
                 ragdoll_cog_den = ragdoll_cog_den + upper_body_mass;
-		ragdoll_m3.rot.x = link_cog.rot.x;
+		        ragdoll_m3.rot.x = link_cog.rot.x;
                 ragdoll_m3.rot.y = link_cog.rot.y;
                 ragdoll_m3.rot.z = link_cog.rot.z;
                 ragdoll_m3.rot.w = link_cog.rot.w;
