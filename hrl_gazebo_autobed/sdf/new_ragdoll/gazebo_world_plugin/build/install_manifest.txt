@@ -1,1 +1,0 @@
-/usr/local/lib/gazebo_plugins/libros_world_plugin.so
