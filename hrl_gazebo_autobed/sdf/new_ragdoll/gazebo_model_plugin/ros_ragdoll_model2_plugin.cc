@@ -214,7 +214,7 @@ namespace gazebo
       //////Change this section for ragdoll 
       physics::Joint_V joints_;
       unsigned int njoints = 0;
-float joint_angles[17] = {-1.134, -1.134, 0.0, 0.0,1.134, 1.134, 0.0, 0.0,-1.57, -1.57, 0.0, 0.0, 0.0, -1.57, -1.57, 0.0, 0.0};
+float joint_angles[17] = {0.0, 0.0,0.419, -0.419, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 //Thighs: range(-2.051, 0.785)
       math::Angle l_thigh_angle = math::Angle(joint_angles[0]);
