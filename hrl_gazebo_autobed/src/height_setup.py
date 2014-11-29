@@ -32,6 +32,7 @@ class JointTrajectoryTest():
         print "Received joint state information. Sending bed to default position (0.3m)"
         up_msg = self.up_msg()
         self.goal_pub.publish(up_msg)
+        return
 
 if __name__=='__main__':
     rospy.init_node('autobed_height_setup')

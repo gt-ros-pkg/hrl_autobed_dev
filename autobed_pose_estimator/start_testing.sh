@@ -1,8 +1,9 @@
 #!/bin/bash
+
 roslaunch /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/launch/autobed_param_upload.launch &
 sleep 6 
 
-rosrun autobed_pose_estimator training_database_generator.py 1 /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/training_data2.p &
+rosrun autobed_pose_estimator pose_testing.py /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/training_data.p &
 sleep 6 
 
 
@@ -10,10 +11,11 @@ gazebo /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autob
 sleep 6 
 
 name="new_ragdoll"
+pose_id=2
 echo "=================================================="
 echo "Tweaking Initial poses for Human" 
 echo "=================================================="
-python /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/src/model_plugin_modifier.py 1 
+python /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/src/model_plugin_modifier.py $pose_id 
 rm /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model2_plugin.cc
 mv /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model3_plugin.cc /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model2_plugin.cc
 rm /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/correct_ragdoll_original.sdf
@@ -47,6 +49,8 @@ kill -9 `ps aux | grep gazebo | awk "{print $2}"`
 sleep 1 
 
 kill -9 `ps aux | grep autobed | awk "{print $2}"` & 
-
 sleep 10 
 kill -9 `ps aux | grep autobed | awk "{print $2}"`  
+echo "****The actual pose ID was $pose_id****"
+
+

@@ -12,7 +12,7 @@ def main():
     pos_id = 0
     poses_dict = {}
     '''Supine Position'''
-    posture = "<pose> 2.10 0.0 1.0 1.57 0.0 3.14 </pose>"
+    posture = "<pose> 2.10 0.0 0.9 1.57 0.0 3.14 </pose>"
     for thigh_l in thigh_angles_supine:
         for thigh_r in thigh_angles_supine:
             pos_id = pos_id + 1
@@ -42,9 +42,9 @@ def main():
 
     '''
 
-    print pos_id
+    print poses_dict
     pkl.dump(poses_dict, open("human_poses_list.p", "wb"))
-
+    print "Done"
 
 if __name__ == "__main__":
     main()

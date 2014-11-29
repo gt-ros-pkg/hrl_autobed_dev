@@ -207,21 +207,21 @@ namespace gazebo
       math::Pose ragdoll_cog;
       math::Pose ragdoll_lower_body_cog;
       math::Pose ragdoll_l_thigh_cog;
-      //math::Pose ragdoll_l_shin_cog;
-      //math::Pose ragdoll_l_foot_cog;
+      math::Pose ragdoll_l_shin_cog;
+      math::Pose ragdoll_l_foot_cog;
       math::Pose ragdoll_r_thigh_cog;
-      //math::Pose ragdoll_r_shin_cog;
-      //math::Pose ragdoll_r_foot_cog;
-      //math::Pose ragdoll_middle_body_cog;
+      math::Pose ragdoll_r_shin_cog;
+      math::Pose ragdoll_r_foot_cog;
+      math::Pose ragdoll_middle_body_cog;
       math::Pose ragdoll_upper_body_cog;
-      //math::Pose ragdoll_l_arm_cog;
-      //math::Pose ragdoll_l_wrist_cog;
-      //math::Pose ragdoll_l_hand_cog;
-      //math::Pose ragdoll_neck_cog;
-      //math::Pose ragdoll_head_cog;
-      //math::Pose ragdoll_r_arm_cog;
-      //math::Pose ragdoll_r_wrist_cog;
-      //math::Pose ragdoll_r_hand_cog;
+      math::Pose ragdoll_l_arm_cog;
+      math::Pose ragdoll_l_wrist_cog;
+      math::Pose ragdoll_l_hand_cog;
+      math::Pose ragdoll_neck_cog;
+      math::Pose ragdoll_head_cog;
+      math::Pose ragdoll_r_arm_cog;
+      math::Pose ragdoll_r_wrist_cog;
+      math::Pose ragdoll_r_hand_cog;
       math::Pose ragdoll_lower_body_pose;
       math::Pose ragdoll_l_thigh_pose;
       math::Pose ragdoll_l_shin_pose;
@@ -257,7 +257,7 @@ namespace gazebo
 	  for (unsigned int j = 0; j < links_.size(); j++){
             std::string linkName = links_[j]->GetName();
 	        link_cog = links_[j]->GetWorldCoGPose();
-	        link_pose = links_[j]->GetCollision(0)->GetWorldPose();
+	        link_pose = links_[j]->GetWorldPose();
 	        if (linkName.find("lower_body") != std::string::npos){
 		        ragdoll_lower_body_cog.pos.x = link_cog.pos.x;
 		        ragdoll_lower_body_cog.pos.y = link_cog.pos.y;
@@ -308,13 +308,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + l_thigh_mass;
             }
 	    if (linkName.find("l_shin") != std::string::npos){
-		//ragdoll_l_shin_cog.pos.x = link_cog.pos.x;
-                //ragdoll_l_shin_cog.pos.y = link_cog.pos.y;
-                //ragdoll_l_shin_cog.pos.z = link_cog.pos.z;
-                //ragdoll_l_shin_cog.rot.x = link_cog.rot.x;
-                //ragdoll_l_shin_cog.rot.y = link_cog.rot.y;
-                //ragdoll_l_shin_cog.rot.z = link_cog.rot.z;
-                //ragdoll_l_shin_cog.rot.w = link_cog.rot.w;
+		        ragdoll_l_shin_cog.pos.x = link_cog.pos.x;
+                ragdoll_l_shin_cog.pos.y = link_cog.pos.y;
+                ragdoll_l_shin_cog.pos.z = link_cog.pos.z;
+                ragdoll_l_shin_cog.rot.x = link_cog.rot.x;
+                ragdoll_l_shin_cog.rot.y = link_cog.rot.y;
+                ragdoll_l_shin_cog.rot.z = link_cog.rot.z;
+                ragdoll_l_shin_cog.rot.w = link_cog.rot.w;
 		        ragdoll_l_shin_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_shin_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_shin_pose.pos.z = link_pose.pos.z;
@@ -332,13 +332,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + l_shin_mass;
             }
 	    if (linkName.find("l_foot") != std::string::npos){
-		//ragdoll_l_foot_cog.pos.x = link_cog.pos.x;
-                //ragdoll_l_foot_cog.pos.y = link_cog.pos.y;
-                //ragdoll_l_foot_cog.pos.z = link_cog.pos.z;
-                //ragdoll_l_foot_cog.rot.x = link_cog.rot.x;
-                //ragdoll_l_foot_cog.rot.y = link_cog.rot.y;
-                //ragdoll_l_foot_cog.rot.z = link_cog.rot.z;
-                //ragdoll_l_foot_cog.rot.w = link_cog.rot.w;
+		        ragdoll_l_foot_cog.pos.x = link_cog.pos.x;
+                ragdoll_l_foot_cog.pos.y = link_cog.pos.y;
+                ragdoll_l_foot_cog.pos.z = link_cog.pos.z;
+                ragdoll_l_foot_cog.rot.x = link_cog.rot.x;
+                ragdoll_l_foot_cog.rot.y = link_cog.rot.y;
+                ragdoll_l_foot_cog.rot.z = link_cog.rot.z;
+                ragdoll_l_foot_cog.rot.w = link_cog.rot.w;
 		        ragdoll_l_foot_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_foot_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_foot_pose.pos.z = link_pose.pos.z;
@@ -384,13 +384,13 @@ namespace gazebo
 		        ragdoll_m2.rot.w = link_cog.rot.w;
                 }
 	    if (linkName.find("r_shin") != std::string::npos){
-		//ragdoll_r_shin_cog.pos.x = link_cog.pos.x;
-                //ragdoll_r_shin_cog.pos.y = link_cog.pos.y;
-                //ragdoll_r_shin_cog.pos.z = link_cog.pos.z;
-                //ragdoll_r_shin_cog.rot.x = link_cog.rot.x;
-                //ragdoll_r_shin_cog.rot.y = link_cog.rot.y;
-                //ragdoll_r_shin_cog.rot.z = link_cog.rot.z;
-                //ragdoll_r_shin_cog.rot.w = link_cog.rot.w;
+		        ragdoll_r_shin_cog.pos.x = link_cog.pos.x;
+                ragdoll_r_shin_cog.pos.y = link_cog.pos.y;
+                ragdoll_r_shin_cog.pos.z = link_cog.pos.z;
+                ragdoll_r_shin_cog.rot.x = link_cog.rot.x;
+                ragdoll_r_shin_cog.rot.y = link_cog.rot.y;
+                ragdoll_r_shin_cog.rot.z = link_cog.rot.z;
+                ragdoll_r_shin_cog.rot.w = link_cog.rot.w;
 		        ragdoll_r_shin_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_shin_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_shin_pose.pos.z = link_pose.pos.z;
@@ -412,13 +412,13 @@ namespace gazebo
                 ragdoll_m1.rot.w = link_cog.rot.w;
 	    }
 	    if (linkName.find("r_foot") != std::string::npos){
-		//ragdoll_r_foot_cog.pos.x = link_cog.pos.x;
-                //ragdoll_r_foot_cog.pos.y = link_cog.pos.y;
-                //ragdoll_r_foot_cog.pos.z = link_cog.pos.z;
-                //ragdoll_r_foot_cog.rot.x = link_cog.rot.x;
-                //ragdoll_r_foot_cog.rot.y = link_cog.rot.y;
-                //ragdoll_r_foot_cog.rot.z = link_cog.rot.z;
-                //ragdoll_r_foot_cog.rot.w = link_cog.rot.w;
+		        ragdoll_r_foot_cog.pos.x = link_cog.pos.x;
+                ragdoll_r_foot_cog.pos.y = link_cog.pos.y;
+                ragdoll_r_foot_cog.pos.z = link_cog.pos.z;
+                ragdoll_r_foot_cog.rot.x = link_cog.rot.x;
+                ragdoll_r_foot_cog.rot.y = link_cog.rot.y;
+                ragdoll_r_foot_cog.rot.z = link_cog.rot.z;
+                ragdoll_r_foot_cog.rot.w = link_cog.rot.w;
 		        ragdoll_r_foot_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_foot_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_foot_pose.pos.z = link_pose.pos.z;
@@ -436,13 +436,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + r_foot_mass;
             }
 	    if (linkName.find("middle_body") != std::string::npos){
-		//ragdoll_middle_body_cog.pos.x = link_cog.pos.x;
-                //ragdoll_middle_body_cog.pos.y = link_cog.pos.y;
-                //ragdoll_middle_body_cog.pos.z = link_cog.pos.z;
-                //ragdoll_middle_body_cog.rot.x = link_cog.rot.x;
-                //ragdoll_middle_body_cog.rot.y = link_cog.rot.y;
-                //ragdoll_middle_body_cog.rot.z = link_cog.rot.z;
-                //ragdoll_middle_body_cog.rot.w = link_cog.rot.w;
+		        ragdoll_middle_body_cog.pos.x = link_cog.pos.x;
+                ragdoll_middle_body_cog.pos.y = link_cog.pos.y;
+                ragdoll_middle_body_cog.pos.z = link_cog.pos.z;
+                ragdoll_middle_body_cog.rot.x = link_cog.rot.x;
+                ragdoll_middle_body_cog.rot.y = link_cog.rot.y;
+                ragdoll_middle_body_cog.rot.z = link_cog.rot.z;
+                ragdoll_middle_body_cog.rot.w = link_cog.rot.w;
 		        ragdoll_middle_body_pose.pos.x = link_pose.pos.x;
                 ragdoll_middle_body_pose.pos.y = link_pose.pos.y;
                 ragdoll_middle_body_pose.pos.z = link_pose.pos.z;
@@ -488,14 +488,14 @@ namespace gazebo
                 ragdoll_m3.rot.w = link_cog.rot.w;
             }
 	    if (linkName.find("l_arm") != std::string::npos){
-		//ragdoll_l_arm_cog.pos.x = link_cog.pos.x;
-                //ragdoll_l_arm_cog.pos.y = link_cog.pos.y;
-                //ragdoll_l_arm_cog.pos.z = link_cog.pos.z;
-                //ragdoll_l_arm_cog.rot.x = link_cog.rot.x;
-                //ragdoll_l_arm_cog.rot.y = link_cog.rot.y;
-                //ragdoll_l_arm_cog.rot.z = link_cog.rot.z;
-                //ragdoll_l_arm_cog.rot.w = link_cog.rot.w;
-		ragdoll_l_arm_pose.pos.x = link_pose.pos.x;
+		        ragdoll_l_arm_cog.pos.x = link_cog.pos.x;
+                ragdoll_l_arm_cog.pos.y = link_cog.pos.y;
+                ragdoll_l_arm_cog.pos.z = link_cog.pos.z;
+                ragdoll_l_arm_cog.rot.x = link_cog.rot.x;
+                ragdoll_l_arm_cog.rot.y = link_cog.rot.y;
+                ragdoll_l_arm_cog.rot.z = link_cog.rot.z;
+                ragdoll_l_arm_cog.rot.w = link_cog.rot.w;
+		        ragdoll_l_arm_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_arm_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_arm_pose.pos.z = link_pose.pos.z;
                 ragdoll_l_arm_pose.rot.x = link_pose.rot.x;
@@ -512,13 +512,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + l_arm_mass;
             }
 	    if (linkName.find("l_wrist") != std::string::npos){
-		//ragdoll_l_wrist_cog.pos.x = link_cog.pos.x;
-                //ragdoll_l_wrist_cog.pos.y = link_cog.pos.y;
-                //ragdoll_l_wrist_cog.pos.z = link_cog.pos.z;
-                //ragdoll_l_wrist_cog.rot.x = link_cog.rot.x;
-                //ragdoll_l_wrist_cog.rot.y = link_cog.rot.y;
-                //ragdoll_l_wrist_cog.rot.z = link_cog.rot.z;
-                //ragdoll_l_wrist_cog.rot.w = link_cog.rot.w;
+		        ragdoll_l_wrist_cog.pos.x = link_cog.pos.x;
+                ragdoll_l_wrist_cog.pos.y = link_cog.pos.y;
+                ragdoll_l_wrist_cog.pos.z = link_cog.pos.z;
+                ragdoll_l_wrist_cog.rot.x = link_cog.rot.x;
+                ragdoll_l_wrist_cog.rot.y = link_cog.rot.y;
+                ragdoll_l_wrist_cog.rot.z = link_cog.rot.z;
+                ragdoll_l_wrist_cog.rot.w = link_cog.rot.w;
 		ragdoll_l_wrist_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_wrist_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_wrist_pose.pos.z = link_pose.pos.z;
@@ -536,13 +536,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + l_wrist_mass;
             }
 	    if (linkName.find("l_hand") != std::string::npos){
-		//ragdoll_l_hand_cog.pos.x = link_cog.pos.x;
-                //ragdoll_l_hand_cog.pos.y = link_cog.pos.y;
-                //ragdoll_l_hand_cog.pos.z = link_cog.pos.z;
-                //ragdoll_l_hand_cog.rot.x = link_cog.rot.x;
-                //ragdoll_l_hand_cog.rot.y = link_cog.rot.y;
-                //ragdoll_l_hand_cog.rot.z = link_cog.rot.z;
-                //ragdoll_l_hand_cog.rot.w = link_cog.rot.w;
+		ragdoll_l_hand_cog.pos.x = link_cog.pos.x;
+                ragdoll_l_hand_cog.pos.y = link_cog.pos.y;
+                ragdoll_l_hand_cog.pos.z = link_cog.pos.z;
+                ragdoll_l_hand_cog.rot.x = link_cog.rot.x;
+                ragdoll_l_hand_cog.rot.y = link_cog.rot.y;
+                ragdoll_l_hand_cog.rot.z = link_cog.rot.z;
+                ragdoll_l_hand_cog.rot.w = link_cog.rot.w;
 		ragdoll_l_hand_pose.pos.x = link_pose.pos.x;
                 ragdoll_l_hand_pose.pos.y = link_pose.pos.y;
                 ragdoll_l_hand_pose.pos.z = link_pose.pos.z;
@@ -560,13 +560,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + l_hand_mass;
             }
 	    if (linkName.find("neck") != std::string::npos){
-		//ragdoll_neck_cog.pos.x = link_cog.pos.x;
-                //ragdoll_neck_cog.pos.y = link_cog.pos.y;
-                //ragdoll_neck_cog.pos.z = link_cog.pos.z;
-                //ragdoll_neck_cog.rot.x = link_cog.rot.x;
-                //ragdoll_neck_cog.rot.y = link_cog.rot.y;
-                //ragdoll_neck_cog.rot.z = link_cog.rot.z;
-                //ragdoll_neck_cog.rot.w = link_cog.rot.w;
+		ragdoll_neck_cog.pos.x = link_cog.pos.x;
+                ragdoll_neck_cog.pos.y = link_cog.pos.y;
+                ragdoll_neck_cog.pos.z = link_cog.pos.z;
+                ragdoll_neck_cog.rot.x = link_cog.rot.x;
+                ragdoll_neck_cog.rot.y = link_cog.rot.y;
+                ragdoll_neck_cog.rot.z = link_cog.rot.z;
+                ragdoll_neck_cog.rot.w = link_cog.rot.w;
 		ragdoll_neck_pose.pos.x = link_pose.pos.x;
                 ragdoll_neck_pose.pos.y = link_pose.pos.y;
                 ragdoll_neck_pose.pos.z = link_pose.pos.z;
@@ -584,13 +584,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + neck_mass;
             }
             if (linkName.find("head") != std::string::npos){
-		//ragdoll_head_cog.pos.x = link_cog.pos.x;
-                //ragdoll_head_cog.pos.y = link_cog.pos.y;
-                //ragdoll_head_cog.pos.z = link_cog.pos.z;
-                //ragdoll_head_cog.rot.x = link_cog.rot.x;
-                //ragdoll_head_cog.rot.y = link_cog.rot.y;
-                //ragdoll_head_cog.rot.z = link_cog.rot.z;
-                //ragdoll_head_cog.rot.w = link_cog.rot.w;
+		ragdoll_head_cog.pos.x = link_cog.pos.x;
+                ragdoll_head_cog.pos.y = link_cog.pos.y;
+                ragdoll_head_cog.pos.z = link_cog.pos.z;
+                ragdoll_head_cog.rot.x = link_cog.rot.x;
+                ragdoll_head_cog.rot.y = link_cog.rot.y;
+                ragdoll_head_cog.rot.z = link_cog.rot.z;
+                ragdoll_head_cog.rot.w = link_cog.rot.w;
 		ragdoll_head_pose.pos.x = link_pose.pos.x;
                 ragdoll_head_pose.pos.y = link_pose.pos.y;
                 ragdoll_head_pose.pos.z = link_pose.pos.z;
@@ -608,13 +608,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + head_mass;
             }
             if (linkName.find("r_arm") != std::string::npos){
-		//ragdoll_r_arm_cog.pos.x = link_cog.pos.x;
-                //ragdoll_r_arm_cog.pos.y = link_cog.pos.y;
-                //ragdoll_r_arm_cog.pos.z = link_cog.pos.z;
-                //ragdoll_r_arm_cog.rot.x = link_cog.rot.x;
-                //ragdoll_r_arm_cog.rot.y = link_cog.rot.y;
-                //ragdoll_r_arm_cog.rot.z = link_cog.rot.z;
-                //ragdoll_r_arm_cog.rot.w = link_cog.rot.w;
+		ragdoll_r_arm_cog.pos.x = link_cog.pos.x;
+                ragdoll_r_arm_cog.pos.y = link_cog.pos.y;
+                ragdoll_r_arm_cog.pos.z = link_cog.pos.z;
+                ragdoll_r_arm_cog.rot.x = link_cog.rot.x;
+                ragdoll_r_arm_cog.rot.y = link_cog.rot.y;
+                ragdoll_r_arm_cog.rot.z = link_cog.rot.z;
+                ragdoll_r_arm_cog.rot.w = link_cog.rot.w;
 		ragdoll_r_arm_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_arm_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_arm_pose.pos.z = link_pose.pos.z;
@@ -632,13 +632,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + r_arm_mass;
             }
             if (linkName.find("r_wrist") != std::string::npos){
-		//ragdoll_r_wrist_cog.pos.x = link_cog.pos.x;
-                //ragdoll_r_wrist_cog.pos.y = link_cog.pos.y;
-                //ragdoll_r_wrist_cog.pos.z = link_cog.pos.z;
-                //ragdoll_r_wrist_cog.rot.x = link_cog.rot.x;
-                //ragdoll_r_wrist_cog.rot.y = link_cog.rot.y;
-                //ragdoll_r_wrist_cog.rot.z = link_cog.rot.z;
-                //ragdoll_r_wrist_cog.rot.w = link_cog.rot.w;
+		ragdoll_r_wrist_cog.pos.x = link_cog.pos.x;
+                ragdoll_r_wrist_cog.pos.y = link_cog.pos.y;
+                ragdoll_r_wrist_cog.pos.z = link_cog.pos.z;
+                ragdoll_r_wrist_cog.rot.x = link_cog.rot.x;
+                ragdoll_r_wrist_cog.rot.y = link_cog.rot.y;
+                ragdoll_r_wrist_cog.rot.z = link_cog.rot.z;
+                ragdoll_r_wrist_cog.rot.w = link_cog.rot.w;
 		ragdoll_r_wrist_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_wrist_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_wrist_pose.pos.z = link_pose.pos.z;
@@ -656,13 +656,13 @@ namespace gazebo
                 ragdoll_cog_den = ragdoll_cog_den + r_wrist_mass;
             }
 	    if (linkName.find("r_hand") != std::string::npos){
-		//ragdoll_r_hand_cog.pos.x = link_cog.pos.x;
-                //ragdoll_r_hand_cog.pos.y = link_cog.pos.y;
-                //ragdoll_r_hand_cog.pos.z = link_cog.pos.z;
-                //ragdoll_r_hand_cog.rot.x = link_cog.rot.x;
-                //ragdoll_r_hand_cog.rot.y = link_cog.rot.y;
-                //ragdoll_r_hand_cog.rot.z = link_cog.rot.z;
-                //ragdoll_r_hand_cog.rot.w = link_cog.rot.w;
+		ragdoll_r_hand_cog.pos.x = link_cog.pos.x;
+                ragdoll_r_hand_cog.pos.y = link_cog.pos.y;
+                ragdoll_r_hand_cog.pos.z = link_cog.pos.z;
+                ragdoll_r_hand_cog.rot.x = link_cog.rot.x;
+                ragdoll_r_hand_cog.rot.y = link_cog.rot.y;
+                ragdoll_r_hand_cog.rot.z = link_cog.rot.z;
+                ragdoll_r_hand_cog.rot.w = link_cog.rot.w;
 		ragdoll_r_hand_pose.pos.x = link_pose.pos.x;
                 ragdoll_r_hand_pose.pos.y = link_pose.pos.y;
                 ragdoll_r_hand_pose.pos.z = link_pose.pos.z;
@@ -757,157 +757,157 @@ namespace gazebo
 	
 	  // publish the cog of each ragdoll link
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_lower_body_pose");
-	  this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_lower_body_pose.pos.x);
-	  this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_lower_body_pose.pos.y);
-	  this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_lower_body_pose.pos.z);
-	  this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_lower_body_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_lower_body_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_lower_body_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_lower_body_pose.rot.w);
+	  this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_lower_body_cog.pos.x);
+	  this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_lower_body_cog.pos.y);
+	  this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_lower_body_cog.pos.z);
+	  this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_lower_body_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_lower_body_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_lower_body_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_lower_body_cog.rot.w);
 	   
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_thigh_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_thigh_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_thigh_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_thigh_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_thigh_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_thigh_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_thigh_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_thigh_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_thigh_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_thigh_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_thigh_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_thigh_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_thigh_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_thigh_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_thigh_cog.rot.w);
 
  	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_shin_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_shin_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_shin_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_shin_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_shin_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_shin_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_shin_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_shin_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_shin_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_shin_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_shin_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_shin_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_shin_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_shin_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_shin_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_foot_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_foot_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_foot_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_foot_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_foot_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_foot_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_foot_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_foot_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_foot_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_foot_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_foot_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_foot_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_foot_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_foot_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_foot_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_thigh_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_thigh_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_thigh_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_thigh_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_thigh_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_thigh_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_thigh_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_thigh_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_thigh_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_thigh_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_thigh_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_thigh_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_thigh_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_thigh_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_thigh_cog.rot.w);
 
           this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_shin_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_shin_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_shin_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_shin_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_shin_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_shin_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_shin_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_shin_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_shin_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_shin_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_shin_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_shin_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_shin_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_shin_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_shin_cog.rot.w);
 
           this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_foot_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_foot_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_foot_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_foot_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_foot_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_foot_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_foot_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_foot_pose.rot.w);	
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_foot_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_foot_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_foot_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_foot_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_foot_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_foot_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_foot_cog.rot.w);	
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_middle_body_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_middle_body_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_middle_body_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_middle_body_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_middle_body_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_middle_body_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_middle_body_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_middle_body_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_middle_body_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_middle_body_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_middle_body_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_middle_body_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_middle_body_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_middle_body_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_middle_body_cog.rot.w);
 	
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_upper_body_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_upper_body_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_upper_body_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_upper_body_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_upper_body_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_upper_body_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_upper_body_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_upper_body_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_upper_body_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_upper_body_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_upper_body_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_upper_body_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_upper_body_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_upper_body_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_upper_body_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_arm_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_arm_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_arm_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_arm_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_arm_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_arm_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_arm_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_arm_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_arm_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_arm_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_arm_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_arm_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_arm_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_arm_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_arm_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_wrist_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_wrist_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_wrist_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_wrist_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_wrist_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_wrist_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_wrist_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_wrist_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_wrist_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_wrist_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_wrist_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_wrist_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_wrist_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_wrist_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_wrist_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_l_hand_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_hand_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_hand_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_hand_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_hand_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_hand_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_hand_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_hand_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_l_hand_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_l_hand_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_l_hand_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_l_hand_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_l_hand_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_l_hand_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_l_hand_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_neck_cog");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_neck_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_neck_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_neck_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_neck_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_neck_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_neck_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_neck_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_neck_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_neck_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_neck_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_neck_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_neck_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_neck_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_neck_cog.rot.w);
 
           this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_head_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_head_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_head_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_head_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_head_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_head_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_head_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_head_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_head_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_head_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_head_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_head_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_head_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_head_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_head_cog.rot.w);
 
 	  this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_arm_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_arm_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_arm_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_arm_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_arm_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_arm_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_arm_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_arm_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_arm_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_arm_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_arm_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_arm_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_arm_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_arm_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_arm_cog.rot.w);
 
           this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_wrist_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_wrist_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_wrist_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_wrist_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_wrist_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_wrist_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_wrist_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_wrist_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_wrist_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_wrist_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_wrist_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_wrist_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_wrist_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_wrist_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_wrist_cog.rot.w);
 
           this->pub_ragdollcog_array_.frame_names.push_back("ragdoll_r_hand_pose");
-          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_hand_pose.pos.x);
-          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_hand_pose.pos.y);
-          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_hand_pose.pos.z);
-          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_hand_pose.rot.x);
-          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_hand_pose.rot.y);
-          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_hand_pose.rot.z);
-          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_hand_pose.rot.w);
+          this->pub_ragdollcog_array_.centers_x.push_back(ragdoll_r_hand_cog.pos.x);
+          this->pub_ragdollcog_array_.centers_y.push_back(ragdoll_r_hand_cog.pos.y);
+          this->pub_ragdollcog_array_.centers_z.push_back(ragdoll_r_hand_cog.pos.z);
+          this->pub_ragdollcog_array_.rotation_x.push_back(ragdoll_r_hand_cog.rot.x);
+          this->pub_ragdollcog_array_.rotation_y.push_back(ragdoll_r_hand_cog.rot.y);
+          this->pub_ragdollcog_array_.rotation_z.push_back(ragdoll_r_hand_cog.rot.z);
+          this->pub_ragdollcog_array_.rotation_w.push_back(ragdoll_r_hand_cog.rot.w);
 
 	    }
       }

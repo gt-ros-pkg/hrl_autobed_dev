@@ -36,7 +36,7 @@ class MapGenerator():
         #self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
 
         #Init a ROS node
-        rospy.init_node('pose_estimation_trainer', anonymous = True)
+        rospy.init_node('pressure_mat', anonymous = True)
         #Start subscribers to accept the incoming pressure coordinates 
         rospy.Subscriber("/head_rest_link_pressuremat_sensor/taxels/forces", TaxelArray, self.head_pressure_collection_callback)
         rospy.Subscriber("/torso_lift_link_pressuremat_sensor/taxels/forces", TaxelArray, self.body_pressure_collection_callback)

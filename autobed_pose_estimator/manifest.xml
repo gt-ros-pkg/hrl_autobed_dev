@@ -14,6 +14,7 @@
   <depend package="actionlib"/>
   <depend package="trajectory_msgs"/>
   <depend package="std_msgs"/>
+  <depend package="sttr_msgs"/>
   <depend package="actionlib_msgs"/>
   <depend package="hrl_haptic_manipulation_in_clutter_msgs"/>
 </package>
