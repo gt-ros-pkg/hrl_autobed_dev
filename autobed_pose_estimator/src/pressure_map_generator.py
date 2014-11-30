@@ -33,6 +33,9 @@ class MapGenerator():
         self.LOW_TAXEL_THRESH_Y = 0
         self.HIGH_TAXEL_THRESH_X = (self.numoftaxels_x - 1) 
         self.HIGH_TAXEL_THRESH_Y = (self.numoftaxels_y - 1) 
+        #TODO: Remove this. Move Autobed to the world origin.
+        self.WORLD_TO_AUTOBED_X = 1.07
+        self.WORLD_TO_AUTOBED_Y = -0.000
         #self.pressure_map = np.zeros([self.numoftaxels_x, self.numoftaxels_y])
 
         #Init a ROS node
@@ -75,11 +78,42 @@ class MapGenerator():
         self.legs_lower_centers_y = centers_y + self.bed_half_width*np.ones(centers_y.shape)
         self.legs_lower_centers_x = np.asarray(data.centers_x)
 
-
-
+    
     def get_mat_size_in_taxels(self):
         '''Returns the mat size in taxels x taxels'''
         return [self.numoftaxels_x, self.numoftaxels_y]
+
+    
+    def coordinates_to_taxel_positions(self, center_tuple):
+        '''Takes coordinates in the world frame and converts the same to taxel positions on the mat.
+        Input: Coordinates as a tuple (x,y)
+        Output: Taxel positions as tuple (t_x, t_y)'''
+        #Assign to local variables after a coordinate transform
+        center_x = center_tuple[0] - self.WORLD_TO_AUTOBED_X
+        center_y = center_tuple[1] +  self.bed_half_width - self.WORLD_TO_AUTOBED_Y
+
+        t_x = ((center_x/self.bed_height)*self.numoftaxels_x).astype(int) - 1
+        t_y = ((center_y/self.bed_width)*self.numoftaxels_y).astype(int) - 1
+
+        #thresholding(TODO: Remove this part and consider the case where body may lie partly outside)
+        t_x = self.HIGH_TAXEL_THRESH_X if t_x > self.HIGH_TAXEL_THRESH_X else t_x
+        t_x = self.LOW_TAXEL_THRESH_X if t_x < self.LOW_TAXEL_THRESH_X else t_x
+        t_y = self.HIGH_TAXEL_THRESH_Y if t_y > self.HIGH_TAXEL_THRESH_Y else t_y
+        t_y = self.LOW_TAXEL_THRESH_Y if t_y < self.LOW_TAXEL_THRESH_Y else t_y
+
+        return (t_x, t_y)
+
+
+    def taxel_positions_to_coordinates(self, center_tuple):
+        '''Takes coordinates in the taxel frame and converts them into coordinates in the world frame
+        Input: Taxel positions as a tuple (t_x, t_y)
+        Output: Coordinates as a tuple (x, y)'''
+        t_x = center_tuple[0]
+        t_y = center_tuple[1]
+        c_x = ((t_x + 1.0)*self.bed_height)/self.numoftaxels_x 
+        c_y = ((t_y + 1.0)*self.bed_width)/self.numoftaxels_y - self.bed_half_width
+        return (c_x + self.WORLD_TO_AUTOBED_X, c_y + self.WORLD_TO_AUTOBED_Y)
+
 
     def distances_to_ratios(self):
         '''Converts the distances of pressure values to ratios.

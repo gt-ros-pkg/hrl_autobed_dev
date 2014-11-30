@@ -2,7 +2,7 @@
 import pickle as pkl
 import sys
 
-def main(pose_id):
+def main(pose_id, file_with_list_of_poses):
     '''Takes the pickle file that we have already stored with a dictionary of poses in it.
     Then it deletes a line in the ragdoll_model2_plugin.cc and replaces the line with a 
     line taken from the dictionary corresponding to the POSE_ID. This line is just a C++ declaration
@@ -12,7 +12,7 @@ def main(pose_id):
     uses it in the gazebo simulation.
     REMEMBER TO REMOVE THE OLD FILE AND RENAME  THE newly created model3_plugin.cc using the shell script.
     '''
-    poses_dict = pkl.load(open("/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/src/human_poses_list.p", "rb"))
+    poses_dict = pkl.load(open(file_with_list_of_poses, "rb"))
     plugin_file = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/gazebo_model_plugin/ros_ragdoll_model2_plugin.cc', "r")
     sdf_file = open('/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/correct_ragdoll_original.sdf')
 
@@ -50,4 +50,4 @@ def main(pose_id):
 
 
 if __name__ == "__main__":
-    main(int(sys.argv[1]))
+    main(int(sys.argv[1]), sys.argv[2])
