@@ -22,7 +22,7 @@ class PoseTester():
         self.pressure_mat = pressure_map_generator.MapGenerator()#Create a pressure mat object   
         self.current_pressure_map = np.zeros(self.pressure_mat.get_mat_size_in_taxels()) #Zero out the present pressure map. We will populate this in a bit.
         self.correlated_pressure_val = {}
-
+        self.cog_adjustment_window_size = 3 #Window size for fine adjustment of the cog 
         try:
             self.training_database = pkl.load(open(self.training_database_file, "rb"))#Load the database of trained poses
         except:
@@ -38,7 +38,7 @@ class PoseTester():
         '''Calls the get_pressure_map() method given by the MapGenerator class until the pressure map is rich enough. Then we will correlate the pressure map with every map in the dictionary. The poseID with the maximum value of normalized correlation is selected as the correct pose.'''
 
         num_pressure_points = 0 #Variable representing the number of pressure points recorded
-        while num_pressure_points<170 and (not rospy.is_shutdown()):
+        while num_pressure_points<270 and (not rospy.is_shutdown()):
             pressure_map_matrix = self.pressure_mat.get_pressure_map() #Get the current pressure mat readings
             '''Note: Since, we are using a Gazebo based pressure mat simulation for our training, we don't get a very rich pressure map within one reading. Thus we will logically OR our previous pressure map reading with the current one. Since we are not moving in the bed, this is fine.'''
 
@@ -52,7 +52,12 @@ class PoseTester():
 
         '''We have obtained a pressure map that is rich enough. Lets correlate that with each of the training poses'''
         for pose_ID in range(1, len(self.training_database)+1):
-            self.correlated_pressure_val[pose_ID] = np.correlate(np.ravel(self.training_database[pose_ID]['pressure_map'].astype(int)) , np.ravel(self.current_pressure_map.astype(int))) 
+            try:
+                self.correlated_pressure_val[pose_ID] = np.correlate(np.ravel(self.training_database[pose_ID]['pressure_map'].astype(int)) , np.ravel(self.current_pressure_map.astype(int))) 
+            except KeyError:
+                #This pose was probably not stored in the database. No problems. We ignore this and move on.
+                print "WARNING:[Pose Estimation]Pose number {} has not been recorded. Ignoring and moving on..".format(pose_ID)
+                continue
         #Find the pose_ID that corresponds to the maximum correlation 
         max_pose_ID = max(self.correlated_pressure_val.iteritems(), key=operator.itemgetter(1))[0]
 
@@ -69,10 +74,10 @@ class PoseTester():
         taxel_centers = [self.pressure_mat.coordinates_to_taxel_positions(coordinate_center) for coordinate_center in coordinate_centers]
         #Create a bounding box of 5 taxels around each center 
         for center_num in taxel_centers:
-            min_x = (center_num[0] - 2) if (center_num[0] - 2) >= 0 else 0
-            max_x = (center_num[0] + 3) if (center_num[0] + 3) <= 72 else 72
-            min_y = (center_num[1] - 2) if (center_num[1] - 2) >= 0 else 0
-            max_y = (center_num[1] + 3) if (center_num[1] + 3) <= 29 else 29
+            min_x = (center_num[0] - int(self.cog_adjustment_window_size/2)) if (center_num[0] - int(self.cog_adjustment_window_size/2)) >= 0 else 0
+            max_x = (center_num[0] + int(self.cog_adjustment_window_size/2)+1) if (center_num[0] + int(self.cog_adjustment_window_size/2)+1) <= 72 else 72
+            min_y = (center_num[1] - int(self.cog_adjustment_window_size/2)) if (center_num[1] - int(self.cog_adjustment_window_size/2)) >= 0 else 0
+            max_y = (center_num[1] + int(self.cog_adjustment_window_size/2)+1) if (center_num[1] + int(self.cog_adjustment_window_size/2)+1) <= 29 else 29
             
             #Make the current center taxel 1, otherwise the center of mass wont be a number
             self.current_pressure_map[center_num[0], center_num[1]] = True

@@ -214,7 +214,7 @@ namespace gazebo
       //////Change this section for ragdoll 
       physics::Joint_V joints_;
       unsigned int njoints = 0;
-float joint_angles[17] = {0.0, 0.0,0.0, -0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+float joint_angles[18] = {0.0, 0.0,0.419, -0.419, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.419, -0.419, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 //Thighs: range(-2.051, 0.785)
       math::Angle l_thigh_angle = math::Angle(joint_angles[0]);
@@ -231,17 +231,21 @@ float joint_angles[17] = {0.0, 0.0,0.0, -0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 //Arms: range(-3.094, 1.025)
       math::Angle l_arm_angle = math::Angle(joint_angles[8]);
       math::Angle r_arm_angle = math::Angle(joint_angles[9]);
-      math::Angle l_arm_angle2 = math::Angle(joint_angles[10]);
+      //math::Angle l_arm_angle2 = math::Angle(joint_angles[10]);
+//Arms(Y-direction): range(0.000, 0.418)
+      math::Angle L_arm_angle_y = math::Angle(joint_angles[10]);
+      math::Angle R_arm_angle_y = math::Angle(joint_angles[11]);
+
 //M-Body: range(-0.262, 0.611)
-      math::Angle middle_body_angle = math::Angle(joint_angles[11]);
+      math::Angle middle_body_angle = math::Angle(joint_angles[12]);
 //U-Body: range(-0.262, 0.611)
-      math::Angle upper_body_angle = math::Angle(joint_angles[12]);
+      math::Angle upper_body_angle = math::Angle(joint_angles[13]);
 //Wrists: range(-2.378, 0.0)
-      math::Angle l_wrist_angle = math::Angle(joint_angles[13]);
-      math::Angle r_wrist_angle = math::Angle(joint_angles[14]);
+      math::Angle l_wrist_angle = math::Angle(joint_angles[14]);
+      math::Angle r_wrist_angle = math::Angle(joint_angles[15]);
 //Hands: range(0.0, 3.14)
-      math::Angle l_hand_angle = math::Angle(joint_angles[15]);
-      math::Angle r_hand_angle = math::Angle(joint_angles[16]);
+      math::Angle l_hand_angle = math::Angle(joint_angles[16]);
+      math::Angle r_hand_angle = math::Angle(joint_angles[17]);
 
       joints_ = this->model->GetJoints();
       njoints= this->model->GetJointCount();
@@ -261,12 +265,20 @@ float joint_angles[17] = {0.0, 0.0,0.0, -0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
           joints_[k]->SetAngle(0,r_arm_angle);
 	  joints_[k]->SetVelocity(0,0);
           gzdbg << "r_arm_joint angle: " << joints_[k]->GetAngle(1) << "\n";
-	}else if (jointName.find("l_arm_joint2") != std::string::npos){
-          gzdbg << "l_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
+//Arms(Y-direction)
+	}else if (jointName.find("L_arm_joint2") != std::string::npos){
+          gzdbg << "L_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
 	  joints_[k]->SetVelocity(0,0);
-          joints_[k]->SetAngle(0,l_arm_angle2);
+          joints_[k]->SetAngle(0,L_arm_angle_y);
 	  joints_[k]->SetVelocity(0,0);
-          gzdbg << "l_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
+          gzdbg << "L_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
+
+        }else if (jointName.find("R_arm_joint2") != std::string::npos){
+          gzdbg << "R_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
+	  joints_[k]->SetVelocity(0,0);
+          joints_[k]->SetAngle(0,R_arm_angle_y);
+	  joints_[k]->SetVelocity(0,0);
+          gzdbg << "R_arm_joint2 angle: " << joints_[k]->GetAngle(1) << "\n";
 //Thighs
         }else if (jointName.find("l_thigh_joint") != std::string::npos){
           gzdbg << "l_thigh_joint angle: " << joints_[k]->GetAngle(1) << "\n";

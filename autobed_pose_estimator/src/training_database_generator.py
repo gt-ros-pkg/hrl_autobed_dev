@@ -38,7 +38,7 @@ class PoseTrainer():
         '''Calls the get_pressure_map() method given by the MapGenerator class until the pressure map is rich enough to be stored in the database. Once this is done, the map along with the list of joints is safely stored in the training database pickle file'''
 
         num_pressure_points = 0 #Variable representing the number of pressure points recorded
-        while num_pressure_points<180 and (not rospy.is_shutdown()):
+        while num_pressure_points<280 and (not rospy.is_shutdown()):
             pressure_map_matrix = self.pressure_mat.get_pressure_map() #Get the current pressure mat readings
             '''Note: Since, we are using a Gazebo based pressure mat simulation for our training, we don't get a very rich pressure map within one reading. Thus we will logically OR our previous pressure map reading with the current one. Since we are not moving in the bed, this is fine.'''
 

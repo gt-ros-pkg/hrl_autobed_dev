@@ -42,7 +42,7 @@ class MapGenerator():
         rospy.init_node('pressure_mat', anonymous = True)
         #Start subscribers to accept the incoming pressure coordinates 
         rospy.Subscriber("/head_rest_link_pressuremat_sensor/taxels/forces", TaxelArray, self.head_pressure_collection_callback)
-        rospy.Subscriber("/torso_lift_link_pressuremat_sensor/taxels/forces", TaxelArray, self.body_pressure_collection_callback)
+        rospy.Subscriber("/mid_body_link_pressuremat_sensor/taxels/forces", TaxelArray, self.body_pressure_collection_callback)
         rospy.Subscriber("/leg_rest_upper_link_pressuremat_sensor/taxels/forces", TaxelArray, self.legs_upper_pressure_collection_callback)
         rospy.Subscriber("/leg_rest_lower_link_pressuremat_sensor/taxels/forces", TaxelArray, self.legs_lower_pressure_collection_callback)
         plt.ion()

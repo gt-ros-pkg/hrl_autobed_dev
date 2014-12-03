@@ -1,6 +1,6 @@
 #!/bin/bash
 
-trials=${1}
+trials=${5}
 for pose_id in $(seq $1 $trials);
 do
     echo "*********************************************************"
@@ -10,7 +10,7 @@ do
     roslaunch /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/launch/autobed_param_upload.launch &
     sleep 6 
 
-    rosrun autobed_pose_estimator pose_testing.py /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/training_data.p /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/test_results.p &
+    rosrun autobed_pose_estimator pose_testing.py /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/training_data_270_taxel_limit.p /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/test_results.p &
     sleep 6 
 
 
@@ -41,7 +41,7 @@ do
     sleep 6 
     roslaunch /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/launch/autobed_default_controllers.launch &
 
-    sleep 90 
+    sleep 40 
     kill -9 `ps aux | grep ros | awk "{print $2}"`  
     sleep 1  
 
