@@ -1,4 +1,7 @@
 <launch>
+
+  <include file="$(find autobed_engine)/launch/autobed_engine.launch" /> 
+
   <node name="rosbridge" pkg="rosbridge_server" type="rosbridge.py" output="screen">
       <param name="port" type="int" value="2206" />
   </node>
