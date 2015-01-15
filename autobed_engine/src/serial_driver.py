@@ -111,7 +111,7 @@ class SerialDriver():
 
 # If executed.
 if __name__ == "__main__":
-  dev = '/dev/ttyUSB1'
+  dev = '/dev/ttyACM0'
   n = 4
   if len(sys.argv) > 1:
     dev = sys.argv[1]
@@ -126,7 +126,7 @@ if __name__ == "__main__":
   drivers = []
   
   for i in xrange(4):
-    drivers.append(SerialDriver(1, port='/dev/ttyUSB'+str(i), baudrate=57600, rate=1000.0))
+    drivers.append(SerialDriver(1, port='/dev/ttyACM0'+str(i), baudrate=57600, rate=1000.0))
   # while True:
   #   time.sleep(0.01)
   #   print enc_driver.getValues()
