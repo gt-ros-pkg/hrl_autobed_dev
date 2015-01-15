@@ -23,7 +23,7 @@ AUTOBED_COMMANDS = [[0, 'A', 'B'], [0, 'C', 'D'], [0, 'E', 'F']]#Don't ask why t
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 'A', 'headDN': 'B', 'bedUP':'C', 'bedDN':'D', 'legsUP':'E', 'legsDN':'F'}
+CMDS = {'headUP': 'B', 'headDN': 'A', 'bedUP':'D', 'bedDN':'E', 'legsUP':'F', 'legsDN':'C'}
 
 ##
 #Class AutobedClient()
@@ -58,13 +58,10 @@ class AutobedClient():
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them to the Autobed.
         This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
-        autobed_config_data = load_pickle(self.autobed_config_file) 
         if data.data in CMDS: 
             self.autobed_sender.write(CMDS[data.data])
         else:
             rospy.loginfo('Error: Wrong command sent to autobed')
-
-
 
     def run(self):
         rate = rospy.Rate(5) #5 Hz
