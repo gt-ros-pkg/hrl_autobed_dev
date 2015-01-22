@@ -1,11 +1,11 @@
 // Define output pin
 long myData;
 int headUP=5;
-int headDN=3;
+int headDN=2;
 int bedUP=6;
-int bedDN=7;
-int legsUP=4;
-int legsDN=2;
+int bedDN=4;
+int legsUP=3;
+int legsDN=7;
 int ledTimer1;
 int pin=13;
 
