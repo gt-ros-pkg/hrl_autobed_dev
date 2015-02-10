@@ -4,12 +4,12 @@ import pickle as pkl
 def main():
     '''Makes a pickle file that contains a dictionary of pos_id matched with strings
     that are to be put into the gazebo_ragdoll_plugin.cc'''
-    postures_supine = [2.965, 3.14, 3.315]
+    postures_supine = [3.14]#[2.965, 3.14, 3.315]
     thigh_angles_supine = [0.0, 0.139, 0.279]
-    arm_angles_supine = [0.0, 0.139, 0.279]
-    thigh_angles_lateral = [-0.785, -0.959, -1.134]
-    knee_angles_lateral = [0.785, 0.959, 1.134]
-    elbow_angles_lateral = [-0.174, -0.523, -1.047, -1.57]
+    arm_angles_supine = [0.139, 0.279]#[0.0, 0.139, 0.279]
+    thigh_angles_lateral = [-0.785]#, -0.959, -1.134]
+    knee_angles_lateral = [0.785]#, 0.959, 1.134]
+    elbow_angles_lateral = [-0.174]#, -0.523, -1.047, -1.57]
     shoulder_lateral = -1.57
     pos_id = 0
     poses_dict = {}

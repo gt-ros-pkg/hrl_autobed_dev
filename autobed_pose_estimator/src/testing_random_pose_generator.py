@@ -6,10 +6,10 @@ import random
 def main():
     '''Makes a pickle file that contains a dictionary of pos_id matched with strings
     that are to be put into the gazebo_ragdoll_plugin.cc'''
-    random_thigh_l_supine = [random.uniform(0.279, 0.419) for _ in range(20)]
-    random_thigh_r_supine = [random.uniform(-0.419, -0.279) for _ in range(20)]
-    random_arm_l_supine = [random.uniform(0.279, 1.57) for _ in range(20)]
-    random_arm_r_supine = [random.uniform(-1.57, -0.279) for _ in range(20)]
+    random_thigh_l_supine = [random.uniform(0.279, 0.4) for _ in range(20)]
+    random_thigh_r_supine = [random.uniform(-0.4, -0.279) for _ in range(20)]
+    random_arm_l_supine = [random.uniform(0.279, 0.4) for _ in range(20)]
+    random_arm_r_supine = [random.uniform(-0.4, -0.279) for _ in range(20)]
     random_body_angles_supine = [random.uniform(2.79, 3.49) for _ in range(20)]
 
     random_angles_supine = zip(random_thigh_l_supine, random_thigh_r_supine, random_arm_l_supine, random_arm_r_supine, random_body_angles_supine)

@@ -27,8 +27,8 @@ def visualize_results(training_database_file, test_result_file):
         except:
             break
 
-        estimated_taxels = [pressure_mat.coordinates_to_taxel_positions(coordinate_center) for coordinate_center in result['estimated_positions']]
-        ground_truth_taxels = [pressure_mat.coordinates_to_taxel_positions(coordinate_center) for coordinate_center in result['ground_truth']]
+        estimated_taxels = [pressure_mat.tuple_coordinates_to_taxel_positions(coordinate_center) for coordinate_center in result['estimated_positions']]
+        ground_truth_taxels = [pressure_mat.tuple_coordinates_to_taxel_positions(coordinate_center) for coordinate_center in result['ground_truth']]
         for i in range(len(estimated_taxels)):
             closest_map[estimated_taxels[i][0]][estimated_taxels[i][1]] = 5
         for i in range(len(ground_truth_taxels)):
