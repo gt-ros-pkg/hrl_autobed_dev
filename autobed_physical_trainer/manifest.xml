@@ -1,0 +1,14 @@
+<package>
+  <description brief="autobed_physical_trainer">
+
+     autobed_physical_trainer
+
+  </description>
+  <author>Yash Chitalia</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/autobed_physical_trainer</url>
+
+</package>
+
+
