@@ -186,9 +186,18 @@ class MapGenerator():
 
     def visualize_pressure_map(self, pressure_map_matrix):
         '''Used to visualize the pressure map created'''
-        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap= plt.cm.binary, origin='upper', vmin=0, vmax=1)
+        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
+                plt.cm.binary, origin='upper', vmin=0, vmax=1)
         plt.draw() 
-        
+ 
+
+    def visualize_colorful_pressure_map(self, pressure_map_matrix):
+        '''Used to visualize the pressure map created'''
+        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
+                plt.cm.coolwarm, origin='upper', vmin=0, vmax=100)
+        plt.draw() 
+       
+
     def run(self):
         rate = rospy.Rate(5) #5 Hz
 
