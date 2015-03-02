@@ -17,9 +17,9 @@ class BagfileToPickle():
         rospy.init_node('listener', anonymous=True)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.current_physical_pressure_map_callback)
-        rospy.Subscriber("/head_o/pose", TransformStamped,
-                self.mat_origin_callback)
         rospy.Subscriber("/mat_o/pose", TransformStamped,
+                self.mat_origin_callback)
+        rospy.Subscriber("/head_o/pose", TransformStamped,
                 self.head_origin_callback)
         rospy.Subscriber("/l_hand_o/pose", TransformStamped,
                 self.l_hand_origin_callback)
@@ -80,10 +80,11 @@ class BagfileToPickle():
         while not rospy.is_shutdown():
             if self.ok_to_read_pose == True:
                 self.count += 1
-                #After 20 seconds, we sample mat pose
-                if self.count == 1000 and not self.mat_pose_sampled:
+                #After 2 seconds, we sample mat pose
+                if self.count == 10 and not self.mat_pose_sampled:
                     self.training_database['mat_o'] = self.mat_pose
                     self.mat_pose_sampled = True
+                    print "Mat pose sampled."
 
                 self.training_database[self.pressure_map] = (self.head_pose +
                     self.l_hand_pose + self.r_hand_pose)

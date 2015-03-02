@@ -17,25 +17,25 @@ from sklearn.preprocessing import scale
 from sklearn import linear_model
 from sklearn import decomposition 
 
+MAT_WIDTH = 0.762 #metres
+MAT_HEIGHT = 1.854 #metres
+MAT_HALF_WIDTH = MAT_WIDTH/2 
+NUMOFTAXELS_X = 64#73 #taxels
+NUMOFTAXELS_Y = 27#30 
+LOW_TAXEL_THRESH_X = 0
+LOW_TAXEL_THRESH_Y = 0
+HIGH_TAXEL_THRESH_X = (NUMOFTAXELS_X - 1) 
+HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1) 
 
+ 
 class PhysicalTrainer():
     '''Gets the dictionary of pressure maps from the training database, 
     and will have API to do all sorts of training with it.'''
-
     def __init__(self, training_database_file):
         '''Opens the specified pickle files to get the combined dataset:
         This dataset is a dictionary of pressure maps with the corresponding
         3d position and orientation of the markers associated with it.'''
-        self.MAT_WIDTH = 0.762 #metres
-        self.MAT_HEIGHT = 1.854 #metres
-        self.MAT_HALF_WIDTH = self.MAT_WIDTH/2 
-        self.NUMOFTAXELS_X = 64#73 #taxels
-        self.NUMOFTAXELS_Y = 27#30 
-        self.LOW_TAXEL_THRESH_X = 0
-        self.LOW_TAXEL_THRESH_Y = 0
-        self.HIGH_TAXEL_THRESH_X = (self.NUMOFTAXELS_X - 1) 
-        self.HIGH_TAXEL_THRESH_Y = (self.NUMOFTAXELS_Y - 1) 
- 
+
         #Entire pressure dataset with coordinates in world frame
         dat = pkl.load(open(training_database_file, 
             "rb")) 
@@ -47,7 +47,7 @@ class PhysicalTrainer():
             print "[Warning] Either retrain system or get mat older mat_origin"
 
         #TODO:Write code for the dataset to store these vals
-        self.mat_size = (64, 27)
+        self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
         #Capture issues.
         print "Checking database for empty values."
@@ -65,9 +65,9 @@ class PhysicalTrainer():
         random.shuffle(rand_keys)
         self.train_y = [] #Initialize the training coordinate list
         self.test_y = [] #Initialize the ground truth list
-        self.train_x_flat = rand_keys[:10]#Pressure maps
+        self.train_x_flat = rand_keys[:700]#Pressure maps
         [self.train_y.append(dat[key]) for key in self.train_x_flat]#Coordinates 
-        self.test_x_flat = rand_keys[600:610]#Pressure maps(test dataset)
+        self.test_x_flat = rand_keys[700:800]#Pressure maps(test dataset)
         [self.test_y.append(dat[key]) for key in self.test_x_flat]#ground truth
         self.mat_frame_joints = []
 
@@ -154,18 +154,50 @@ class PhysicalTrainer():
 
         plt.subplot(131)
         taxel_est = []
+        taxel_real = []
         img = random.randint(1, len(test_x_lowres)-1)
         [taxel_est.append(self.world_to_mat(item)) for item in (
             list(self.chunks(estimated_y[img], 3)))]
+        for item in taxel_est:
+            test_x_lowres[img][item[0], item[1]] = 200
         print taxel_est
+        [taxel_real.append(self.world_to_mat(item)) for item in (
+            list(self.chunks(self.test_y[img], 3)))]
+        for item in taxel_real:
+            test_x_lowres[img][item[0], item[1]] = 300
+        print taxel_real
         self.visualize_pressure_map(test_x_lowres[img])
         
         plt.subplot(132)
+        taxel_est = []
+        taxel_real = []
         img = random.randint(1, len(test_x_lowres)-1)
+        [taxel_est.append(self.world_to_mat(item)) for item in (
+            list(self.chunks(estimated_y[img], 3)))]
+        for item in taxel_est:
+            test_x_lowres[img][item[0], item[1]] = 200
+        print taxel_est
+        [taxel_real.append(self.world_to_mat(item)) for item in (
+            list(self.chunks(self.test_y[img], 3)))]
+        for item in taxel_real:
+            test_x_lowres[img][item[0], item[1]] = 300
+        print taxel_real 
         self.visualize_pressure_map(test_x_lowres[img])
 
         plt.subplot(133)
+        taxel_est = []
+        taxel_real = []
         img = random.randint(1, len(test_x_lowres)-1)
+        [taxel_est.append(self.world_to_mat(item)) for item in (
+            list(self.chunks(estimated_y[img], 3)))]
+        for item in taxel_est:
+            test_x_lowres[img][item[0], item[1]] = 200
+        print taxel_est
+        [taxel_real.append(self.world_to_mat(item)) for item in (
+            list(self.chunks(self.test_y[img], 3)))]
+        for item in taxel_real:
+            test_x_lowres[img][item[0], item[1]] = 300
+        print taxel_real 
         self.visualize_pressure_map(test_x_lowres[img])
         plt.show()
 
@@ -219,7 +251,7 @@ class PhysicalTrainer():
         visualizing the joint coordinates on the pressure mat.
         Input: w_data: which is a 3 x 1 vector in the world frame'''
         #The homogenous transformation matrix from world to mat
-        O_m_w = np.matrix([[0, 0, -1], [-1, 0, 0], [0, 1, 0]])
+        O_m_w = np.matrix([[0, 1, 0], [-1, 0, 0], [0, 0, 1]])
         p_mat_world = O_m_w.dot(-np.asarray(self.p_world_mat))
         B_m_w = np.concatenate((O_m_w, p_mat_world.T), axis=1)
         last_row = np.array([[0, 0, 0, 1]])
@@ -229,21 +261,21 @@ class PhysicalTrainer():
         m_data = B_m_w.dot(w_data)
         m_data = np.squeeze(np.asarray(m_data))
         #Convert this into taxels
-        taxels_x = (m_data[0]/ self.MAT_HEIGHT)*self.NUMOFTAXELS_X
-        taxels_y = (m_data[1]/ self.MAT_WIDTH)*self.NUMOFTAXELS_Y
+        taxels_x = (m_data[0]/ MAT_HEIGHT)*NUMOFTAXELS_X
+        taxels_y = (m_data[1]/ MAT_WIDTH)*NUMOFTAXELS_Y
         '''Typecast into int, so that we can highlight the right taxel 
         in the pressure matrix, and threshold the resulting values'''
         taxels_x = (taxels_x.astype(int) - 1)
         taxels_y = (taxels_y.astype(int) - 1)
         #Thresholding the taxels_* array
-        taxels_x = self.LOW_TAXEL_THRESH_X if (taxels_x <= 
-                self.LOW_TAXEL_THRESH_X) else taxels_x
-        taxels_y = self.LOW_TAXEL_THRESH_Y if (taxels_y <=
-                self.LOW_TAXEL_THRESH_Y) else taxels_y
-        taxels_x = self.HIGH_TAXEL_THRESH_X if (taxels_x >= 
-                self.HIGH_TAXEL_THRESH_X) else taxels_x
-        taxels_y = self.HIGH_TAXEL_THRESH_Y if (taxels_y >
-                self.HIGH_TAXEL_THRESH_Y) else taxels_y
+        taxels_x = LOW_TAXEL_THRESH_X if (taxels_x <= 
+                LOW_TAXEL_THRESH_X) else taxels_x
+        taxels_y = LOW_TAXEL_THRESH_Y if (taxels_y <=
+                LOW_TAXEL_THRESH_Y) else taxels_y
+        taxels_x = HIGH_TAXEL_THRESH_X if (taxels_x >= 
+                HIGH_TAXEL_THRESH_X) else taxels_x
+        taxels_y = HIGH_TAXEL_THRESH_Y if (taxels_y >
+                HIGH_TAXEL_THRESH_Y) else taxels_y
             
         return [taxels_x, taxels_y]
 
@@ -251,7 +283,7 @@ class PhysicalTrainer():
     def visualize_pressure_map(self, pressure_map_matrix):
         '''Visualizing a plot of the pressure map'''
         plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
-                plt.cm.Greys, origin='upper', vmin=0, vmax=100)
+                plt.cm.YlOrRd, origin='upper', vmin=0, vmax=300)
         return
 
 
