@@ -24,30 +24,43 @@ class JointTrajectoryTest():
                 self.init_physical)
         #Low pass filter design
         self.bin_numbers = 5
+        self.bin_numbers_for_leg_filter = 21
         self.collated_cal_angle = np.zeros((self.bin_numbers, 1))
+        self.collated_cal_angle_for_legs = np.zeros((
+            self.bin_numbers_for_leg_filter, 1))
         self.filtered_angle = None
         self.lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
+        self.lpf_for_legs = remez(self.bin_numbers_for_leg_filter, 
+                [0, 0.0005, 0.1, 0.5], [1.0, 0.0])
+
 
     def init_physical(self, data):
-        """Will initialize gazebo autobed to the actual autobed's intial angles
-        """
-        init_angle = data.data[POSE_DICT[self.controller]] 
+        '''Will initialize gazebo autobed to the actual autobed's intial angles
+        '''
 
-        self.collated_cal_angle = np.delete(self.collated_cal_angle, 0)
-        self.collated_cal_angle = np.append(self.collated_cal_angle, 
+        init_angle = data.data[POSE_DICT[self.controller]] 
+        if self.controller =='/autobed_legs_controller':
+            self.collated_cal_angle_for_legs = np.delete(
+                    self.collated_cal_angle_for_legs, 0)
+            self.collated_cal_angle_for_legs = np.append(
+                    self.collated_cal_angle_for_legs, [self.physical_to_gazebo(init_angle)])
+ 
+        else:
+            self.collated_cal_angle = np.delete(self.collated_cal_angle, 0)
+            self.collated_cal_angle = np.append(self.collated_cal_angle, 
                                 [self.physical_to_gazebo(init_angle)])
         self.filtered_angle = self.filter_data() 
 
 
     def physical_to_gazebo(self, data):
-        """Convert angles reported by the autobed into the angles that the 
-        gazebo autobed can read"""
+        '''Convert angles reported by the autobed into the angles that the 
+        gazebo autobed can read'''
         if self.controller=='/autobed_height_controller':
             cal_angle = data/100
         elif self.controller=='/autobed_head_controller':
             cal_angle = (data*pi/180 - 0.1)
         else:
-            cal_angle = (data*pi/180)
+            cal_angle = (data*pi/180 - 0.1)
         return cal_angle
 
         
@@ -57,9 +70,19 @@ class JointTrajectoryTest():
 
 
     def filter_data(self):
-        """Creates a low pass filter to filter out high frequency noise"""
-        filt_data = np.dot(self.lpf, self.collated_cal_angle)
+        '''Creates a low pass filter to filter out high frequency noise'''
+        if self.controller=='/autobed_legs_controller':
+            filt_data = self.truncate(np.dot(self.lpf_for_legs,
+                    self.collated_cal_angle_for_legs))
+        else:
+            filt_data = np.dot(self.lpf, self.collated_cal_angle)
         return filt_data
+
+
+    def truncate(self, f):
+        '''Truncates/pads a float f to 1 decimal place without rounding'''
+        fl_as_str = "%.2f" %f
+        return float(fl_as_str)
 
 
     def up_msg(self):
@@ -91,9 +114,9 @@ if __name__=='__main__':
     rospy.init_node('autobed_height_setup')
     JTT = JointTrajectoryTest(controller = '/autobed_height_controller')
     JTT_h = JointTrajectoryTest(controller='/autobed_head_controller')
-    #JTT_l = JointTrajectoryTest(controller='/autobed_legs_controller')
+    JTT_l = JointTrajectoryTest(controller='/autobed_legs_controller')
     while not rospy.is_shutdown():
         JTT.run()
         JTT_h.run()
-        #JTT_l.run()
+        JTT_l.run()
         rospy.sleep(2)
