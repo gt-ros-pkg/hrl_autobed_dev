@@ -74,7 +74,7 @@ class JointTrajectoryTest():
             filt_data = self.truncate(np.dot(self.lpf_for_legs,
                     self.collated_cal_angle_for_legs))
         elif self.controller=='/autobed_passive_joint_controller':
-            filt_data = -self.truncate(np.dot(self.lpf_for_legs,
+            filt_data = -(1+(4.0/9.0))*self.truncate(np.dot(self.lpf_for_legs,
                     self.collated_cal_angle_for_legs))
         else: 
             filt_data = np.dot(self.lpf, self.collated_cal_angle)
