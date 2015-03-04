@@ -2,6 +2,7 @@ import numpy as np
 import roslib; roslib.load_manifest('hrl_msgs')
 import rospy
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from hrl_msgs.msg import FloatArrayBare 
 
@@ -12,21 +13,24 @@ class Visualize3D():
 
         rospy.Subscriber("/fsascan", FloatArrayBare, self.pressure_map_callback)
         self.fig = plt.figure()
+        #self.ax = self.fig.add_subplot(111, projection='3d')
+        #self.ax = self.fig.gca(projection='3d')
         self.ax = self.fig.add_subplot(111, projection='3d')
         a=np.linspace(0, 3.14, 64)
         b=np.linspace(0, 3.14, 27)
-        self.physical_pressure_map=np.random.rand(64, 27)
+        self.physical_pressure_map = np.zeros((64, 27))    
+        
     def pressure_map_callback(self, data):
         '''This callback accepts incoming pressure map from 
         the Vista Medical Pressure Mat and sends it out. 
         Remember, this array needs to be binarized to be used'''
-        self.physical_pressure_map = np.resize(np.asarray(data.data), tuple(64, 27))
+        self.physical_pressure_map = np.resize(np.asarray(data.data), (64, 27))
 
     def run(self):
         x, y=np.meshgrid(np.linspace(0, 63, 64), np.linspace(0, 26, 27));
         z=self.physical_pressure_map
         
-        self.ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+        self.ax.plot_wireframe(x, y, z, rstride=10, cstride=10)
         plt.show()
         
 

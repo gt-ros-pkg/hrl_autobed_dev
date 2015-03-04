@@ -25,3 +25,17 @@ autobed_legs_controller:
       goal_time: 0.6
       leg_rest_upper_joint:
         goal: 1.0
+
+autobed_passive_joint_controller:
+  type: robot_mechanism_controllers/JointTrajectoryActionController
+  joints:
+    - leg_rest_upper_lower_joint 
+  gains:
+    leg_rest_upper_lower_joint: {p: 100000000, d: 300000, i: 0}
+  joint_trajectory_action_node:
+    joints:
+      - leg_rest_upper_lower_joint
+    constraints:
+      goal_time: 0.6
+      leg_rest_upper_lower_joint:
+        goal: 1.0        

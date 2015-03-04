@@ -11,7 +11,7 @@ from scipy.signal import lfilter
 import numpy as np
 
 POSE_DICT = {'/autobed_head_controller':0, '/autobed_height_controller':1,
-        '/autobed_legs_controller':2}
+        '/autobed_legs_controller':2, '/autobed_passive_joint_controller':2}
 
 class JointTrajectoryTest():
     def __init__(self, controller='/autobed_height_controller'):
@@ -37,14 +37,13 @@ class JointTrajectoryTest():
     def init_physical(self, data):
         '''Will initialize gazebo autobed to the actual autobed's intial angles
         '''
-
         init_angle = data.data[POSE_DICT[self.controller]] 
-        if self.controller =='/autobed_legs_controller':
+        if (self.controller =='/autobed_legs_controller') or (self.controller
+        =='/autobed_passive_joint_controller' ):
             self.collated_cal_angle_for_legs = np.delete(
                     self.collated_cal_angle_for_legs, 0)
             self.collated_cal_angle_for_legs = np.append(
                     self.collated_cal_angle_for_legs, [self.physical_to_gazebo(init_angle)])
- 
         else:
             self.collated_cal_angle = np.delete(self.collated_cal_angle, 0)
             self.collated_cal_angle = np.append(self.collated_cal_angle, 
@@ -74,8 +73,12 @@ class JointTrajectoryTest():
         if self.controller=='/autobed_legs_controller':
             filt_data = self.truncate(np.dot(self.lpf_for_legs,
                     self.collated_cal_angle_for_legs))
-        else:
+        elif self.controller=='/autobed_passive_joint_controller':
+            filt_data = -self.truncate(np.dot(self.lpf_for_legs,
+                    self.collated_cal_angle_for_legs))
+        else: 
             filt_data = np.dot(self.lpf, self.collated_cal_angle)
+
         return filt_data
 
 
@@ -115,8 +118,10 @@ if __name__=='__main__':
     JTT = JointTrajectoryTest(controller = '/autobed_height_controller')
     JTT_h = JointTrajectoryTest(controller='/autobed_head_controller')
     JTT_l = JointTrajectoryTest(controller='/autobed_legs_controller')
+    JTT_passive = JointTrajectoryTest(controller='/autobed_passive_joint_controller')
     while not rospy.is_shutdown():
         JTT.run()
         JTT_h.run()
         JTT_l.run()
+        JTT_passive.run()
         rospy.sleep(2)
