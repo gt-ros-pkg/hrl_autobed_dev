@@ -126,12 +126,14 @@ class PhysicalTrainer():
         #OPTIONAL: PCA STAGE
         #X = self.pca_pressure_map( self.train_y, False)
         #Now we train a linear classifier on the dataset of HoGs
-        regr = linear_model.LinearRegression()
+        self.regr = linear_model.LinearRegression()
 
         # Train the model using the training sets
-        regr.fit(pressure_hog_train, self.train_y)
+        self.regr.fit(pressure_hog_train, self.train_y)
 
-        #TODO: REMOVE THIS TESTING PART FROM HERE
+    
+    def test_learning_algorithm(self):
+        '''Tests the learning algorithm we're trying to implement'''
         test_x_lowres = (
             self.preprocessing_pressure_array_resize(self.test_x_flat))
         #Upsample the current map using bilinear interpolation
@@ -141,16 +143,16 @@ class PhysicalTrainer():
         test_hog = self.compute_HoG(test_x_highres)
 
         # The coefficients
-        print('Coefficients: \n', regr.coef_)
+        print('Coefficients: \n', self.regr.coef_)
         # The mean square error
         print("Residual sum of squares: %.8f"
-              % np.mean((regr.predict(test_hog) - self.test_y) **2))
+              % np.mean((self.regr.predict(test_hog) - self.test_y) **2))
         # Explained variance score: 1 is perfect prediction
-        print('Variance score: %.8f' % regr.score(test_hog, self.test_y))
+        print('Variance score: %.8f' % self.regr.score(test_hog, self.test_y))
 
         #Plot n test poses at random
 
-        estimated_y = regr.predict(test_hog)
+        estimated_y = self.regr.predict(test_hog)
 
         plt.subplot(131)
         taxel_est = []
@@ -294,6 +296,7 @@ if __name__ == "__main__":
     p = PhysicalTrainer(training_database_file) 
     if training_type == 'HoG_Linear':
         p.train_hog_linear()
+        p.test_learning_algorithm()
     else:
         'Please specify correct training type:1. HoG_Linear'
 
