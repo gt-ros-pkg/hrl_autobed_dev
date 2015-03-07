@@ -15,6 +15,6 @@
         pkg="pr2_controller_manager" type="spawner" output="screen"
         args="autobed_head_controller autobed_legs_controller autobed_passive_joint_controller" /> 
 
-  <!-- <node name="sim_setup" pkg="hrl_gazebo_autobed" type="height_setup.py" output="screen" /> -->
-  <node name="sim_setup" pkg="hrl_gazebo_autobed" type="init_imitate_physical.py" output="screen" /> 
+  <node name="sim_setup" pkg="hrl_gazebo_autobed" type="height_setup.py" output="screen" /> 
+  <!-- <node name="sim_setup" pkg="hrl_gazebo_autobed" type="init_imitate_physical.py" output="screen" /> --> 
 </launch>

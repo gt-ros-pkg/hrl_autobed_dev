@@ -30,7 +30,7 @@ class JointTrajectoryTest():
         while self.joint_names is None:
             print "Waiting for joint state information from %s/state topic" %self.controller
             rospy.sleep(2)
-        print "Received joint state information. Sending bed to default position (0.3m)"
+        print "Received joint state information. Sending bed to default position"
         up_msg = self.up_msg(angle)
         self.goal_pub.publish(up_msg)
         return
@@ -38,8 +38,10 @@ class JointTrajectoryTest():
 if __name__=='__main__':
     rospy.init_node('autobed_height_setup')
     JTT = JointTrajectoryTest()
-    JTT.run(0.3)
     JTT_h = JointTrajectoryTest(controller='/autobed_head_controller')
-    JTT_h.run(0.0)
     JTT_l = JointTrajectoryTest(controller='/autobed_legs_controller')
-    JTT_l.run(0.0)
+    JTT_passive = JointTrajectoryTest(controller='/autobed_passive_joint_controller')
+    JTT.run(0.3)
+    JTT_h.run(0.0)
+    JTT_passive.run(-0.3)
+    JTT_l.run(0.3)

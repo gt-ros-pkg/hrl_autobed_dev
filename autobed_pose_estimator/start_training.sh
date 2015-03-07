@@ -12,10 +12,10 @@ do
     rosrun autobed_pose_estimator training_database_generator.py $i /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/autobed_pose_estimator/database/training_data.p &
     sleep 6 
 
-
     gazebo /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/autobed.world &
     sleep 6 
 
+    roslaunch /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/launch/autobed_default_controllers.launch &
     name="new_ragdoll"
     echo "=================================================="
     echo "Tweaking Initial poses for Human" 
@@ -37,9 +37,6 @@ do
     cd /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/
     gzfactory spawn -f /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/sdf/new_ragdoll/correct_ragdoll_original.sdf -m $name 
  
-    sleep 6 
-    roslaunch /home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/hrl_gazebo_autobed/launch/autobed_default_controllers.launch &
-
     sleep 90 
     kill -9 `ps aux | grep ros | awk "{print $2}"`  
     sleep 1  
