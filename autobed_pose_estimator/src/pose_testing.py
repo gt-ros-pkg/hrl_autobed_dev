@@ -134,7 +134,7 @@ class PoseTester():
         it will update the co-ordinates of the limb COGs and will
         present an appropriate visualization of the pressure 
         map and the COGs'''
-        rate = rospy.Rate(1) #1Hz rate
+        rate = rospy.Rate(5) #5Hz rate
         max_pose_ID = 0
         while not rospy.is_shutdown():
             '''Binarize incoming pressure map'''
@@ -161,8 +161,9 @@ class PoseTester():
             '''Comment one of the two lines below based on what you want to visualize
             self.training_database will visualize the closest training image
             self.current_pressure_map will visualize the realtime test map'''
-            self.pressure_mat.visualize_pressure_map(self.training_database[max_pose_ID]['pressure_map'])
+            #self.pressure_mat.visualize_pressure_map(self.training_database[max_pose_ID]['pressure_map'])
             #self.pressure_mat.visualize_pressure_map(self.current_pressure_map)
+            self.pressure_mat.visualize_colorful_pressure_map(self.physical_pressure_map)
             ''' We will now compute the COGs of the links using fine adjustment
             and will display the same in a figure'''
             '''
