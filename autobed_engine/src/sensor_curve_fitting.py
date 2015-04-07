@@ -51,5 +51,28 @@ legend(loc='upper left')
 plt.title('SHARP IR Sensor 3 calibration result')
 
 show()
+#Sensor 4 readings
+
+
+ydata4 = np.array([3.2, 4.2, 5.2, 6.2, 7.2, 8.2, 9.2, 10.2, 11.2, 12.2, 13.2, 14.2, 15.2, 16.2, 17.2, 18.2, 19.2, 20.2, 21.2, 22.2, 23.2, 24.2, 25.2, 26.2, 27.2, 28.2, 29.2])
+
+xdata4 = np.array([2.42777347565, 2.30287098885, 1.93803715706, 1.71649897099, 1.55765628815, 1.44210934639, 1.34966313839, 1.26225590706, 1.18595707417, 1.12297856808, 1.06394040585, 0.994614243507, 0.958061516285, 0.91522949934, 0.869423806667, 0.820302724838, 0.783217787743, 0.761391580105, 0.72705078125, 0.700239241123, 0.671318352222, 0.651708960533, 0.628867208958, 0.607758760452, 0.586113274097, 0.563579082489, 0.592934548855])
+
+   
+popt, pcov = curve_fit(func, xdata4, ydata4,p0=(10.34297387,  -0.20397751,  -0.94007202))
+
+residuals = ydata4 - func(xdata4, popt[0],popt[1],popt[2])
+
+print 'Sensor 4 optimal values: {}'.format(popt)
+print 'Sensor 4 error: = {}'.format(sum(residuals**2))
+
+xcal4 = xdata4
+ycal4 = func(xcal4, popt[0], popt[1], popt[2])
+
+plot(xdata4, ydata4, color="blue", linewidth=2.5, linestyle="-", label="observed")
+plot(xcal4, ycal4, color="red", linewidth=2.5, linestyle="-", label="calibrated")
+legend(loc='upper left')
+plt.title('SHARP IR Sensor 4 calibration result')
+show()
 
 

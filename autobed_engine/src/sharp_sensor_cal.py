@@ -25,7 +25,7 @@ class SensorCalibrationEngine(object):
     def get_calibration_data(self):
         '''This function reads in serially, values from the FIRST SHARP SENSOR, and 
         packs them up into an array of two values: RAW_DATA_FROM_ADC, CONVERTED_VOLTAGE'''
-        raw_data_all_sensors = self.prox_driver.get_sensor_data()[-2]
+        raw_data_all_sensors = self.prox_driver.get_sensor_data()[-3]
         raw_data_first_sensor = raw_data_all_sensors[0]
         return raw_data_first_sensor, self.to_voltage(raw_data_first_sensor)
         
@@ -59,7 +59,7 @@ if __name__=='__main__':
     print 'Beginning calibration...'
 
     num_samples = 0 
-    raw_voltages = np.zeros(10000)
+    raw_voltages = np.zeros(1000)
     mean_voltage = 0.0
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
@@ -68,12 +68,12 @@ if __name__=='__main__':
         raw_voltages[num_samples] = data[1]
         #Print sampled values in terms of ADC output and voltages
         pub2.publish(Float32(mean_voltage)) 
-        pub0.publish(Float32(raw_data))
+        pub0.publish(raw_data)
         pub1.publish(Float32(raw_voltages[num_samples]))
         #After 10 secs of holding the apparatus still, we compute the mean volage and publish it
-        if num_samples >= 9999:
+        if num_samples >= 999:
             mean_voltage = raw_voltages.mean()
-            raw_voltages = np.zeros(10000)
+            raw_voltages = np.zeros(1000)
             num_samples = 0
             rospy.loginfo('[sharp_sensor_cal] Done with calibration')
         num_samples += 1
