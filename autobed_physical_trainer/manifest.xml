@@ -13,7 +13,7 @@
   <depend package="std_msgs"/>
   <depend package="hrl_msgs"/>
   <depend package="sttr_msgs"/>
-
+  <depend package="visualization_msgs"/>
 </package>
 
 

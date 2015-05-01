@@ -1,9 +1,9 @@
 <sdf version='1.4'>
   <model name='autobed'>
     <link name='base_link'>
-      <pose>1.070000 -0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+      <pose>0.000000 -0.000000 0.000000 0.000000 0.000000 1.570800</pose>
       <inertial>
-        <pose>1.070000 -0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <pose>0.000000 -0.000000 0.000000 0.000000 0.000000 0.000000</pose>
         <mass>582.602000</mass>
         <inertia>
           <ixx>1.149270</ixx>
@@ -52,7 +52,7 @@
       </axis>
     </joint>
     <link name='torso_lift_link'>
-      <pose>1.050000 -0.000000 0.280500 0.000000 0.000000 0.000000</pose>
+      <pose>-0.000000 -0.020000 0.280500 0.000000 0.000000 1.570800</pose>
       <inertial>
         <pose>1.049600 0.000000 0.082398 0.000000 0.000000 0.000000</pose>
         <mass>14.278300</mass>
@@ -122,7 +122,7 @@
       </axis>
     </joint>
     <link name='mid_body_link'>
-      <pose>1.832660 -0.000000 0.330500 1.570800 0.000000 -1.570800</pose>
+      <pose>0.000000 0.762660 0.330500 1.570800 0.000000 -0.000004</pose>
       <inertial>
         <pose>0.000000 0.185000 -0.140000 0.000000 0.000000 0.000000</pose>
         <mass>4.099200</mass>
@@ -191,7 +191,7 @@
       <child>mid_body_link</child>
       <parent>torso_lift_link</parent>
       <axis>
-        <xyz>-1.000000 0.000004 -0.000004</xyz>
+        <xyz>-0.000004 -1.000000 -0.000004</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>
@@ -202,7 +202,7 @@
       </axis>
     </joint>
     <link name='head_rest_link'>
-      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
+      <pose>0.000000 0.762659 0.540500 0.000796 -0.000800 1.570790</pose>
       <inertial>
         <pose>-0.400910 -0.000000 -0.010720 0.000000 0.000000 0.000000</pose>
         <mass>5.215380</mass>
@@ -271,7 +271,7 @@
       <child>head_rest_link</child>
       <parent>mid_body_link</parent>
       <axis>
-        <xyz>0.000004 1.000000 0.000796</xyz>
+        <xyz>-1.000000 0.000004 0.000796</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>1.570000</upper>
@@ -282,7 +282,7 @@
       </axis>
     </joint>
     <link name='head_rest_spring'>
-      <pose>1.832660 0.000000 0.540500 0.000796 -0.000800 -0.000004</pose>
+      <pose>0.000000 0.762659 0.540500 0.000796 -0.000800 1.570790</pose>
       <inertial>
         <pose>-0.360000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
         <mass>10.000000</mass>
@@ -341,7 +341,7 @@
       <child>head_rest_spring</child>
       <parent>head_rest_link</parent>
       <axis>
-        <xyz>-0.000800 -0.000796 0.999999</xyz>
+        <xyz>0.000796 -0.000800 0.999999</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>
@@ -352,7 +352,7 @@
       </axis>
     </joint>
     <link name='leg_rest_upper_link'>
-      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <pose>0.000001 1.042660 0.540501 -0.000004 0.000000 1.570790</pose>
       <inertial>
         <pose>0.185000 -0.000000 -0.025000 0.000000 0.000000 0.000000</pose>
         <mass>2.109550</mass>
@@ -421,7 +421,7 @@
       <child>leg_rest_upper_link</child>
       <parent>mid_body_link</parent>
       <axis>
-        <xyz>-0.000004 -1.000000 0.000004</xyz>
+        <xyz>1.000000 -0.000004 0.000004</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>1.000000</upper>
@@ -432,7 +432,7 @@
       </axis>
     </joint>
     <link name='leg_rest_lower_link'>
-      <pose>2.482660 -0.000002 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <pose>0.000002 1.412660 0.540501 -0.000004 0.000000 1.570790</pose>
       <inertial>
         <pose>0.345000 -0.000000 -0.025000 0.000000 0.000000 0.000000</pose>
         <mass>3.258350</mass>
@@ -501,7 +501,7 @@
       <child>leg_rest_lower_link</child>
       <parent>leg_rest_upper_link</parent>
       <axis>
-        <xyz>-0.000004 -1.000000 0.000004</xyz>
+        <xyz>1.000000 -0.000004 0.000004</xyz>
         <limit>
           <lower>-0.785000</lower>
           <upper>0.000000</upper>
@@ -512,7 +512,7 @@
       </axis>
     </joint>
     <link name='leg_rest_lower_spring'>
-      <pose>2.482660 -0.000002 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <pose>0.000002 1.412660 0.540501 -0.000004 0.000000 1.570790</pose>
       <inertial>
         <pose>0.345000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
         <mass>10.016000</mass>
@@ -571,7 +571,7 @@
       <child>leg_rest_lower_spring</child>
       <parent>leg_rest_lower_link</parent>
       <axis>
-        <xyz>0.000000 0.000004 1.000000</xyz>
+        <xyz>-0.000004 0.000000 1.000000</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>
@@ -582,7 +582,7 @@
       </axis>
     </joint>
     <link name='leg_rest_upper_spring'>
-      <pose>2.112660 -0.000001 0.540501 -0.000004 0.000000 -0.000004</pose>
+      <pose>0.000001 1.042660 0.540501 -0.000004 0.000000 1.570790</pose>
       <inertial>
         <pose>0.185000 -0.000000 -0.130000 0.000000 0.000000 0.000000</pose>
         <mass>5.000000</mass>
@@ -641,7 +641,7 @@
       <child>leg_rest_upper_spring</child>
       <parent>leg_rest_upper_link</parent>
       <axis>
-        <xyz>0.000000 0.000004 1.000000</xyz>
+        <xyz>-0.000004 0.000000 1.000000</xyz>
         <limit>
           <lower>0.000000</lower>
           <upper>0.000000</upper>

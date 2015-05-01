@@ -45,7 +45,6 @@ class PhysicalTrainer():
         except:
             print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
             print "[Warning] Either retrain system or get mat older mat_origin"
-
         #TODO:Write code for the dataset to store these vals
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
@@ -53,7 +52,7 @@ class PhysicalTrainer():
         print "Checking database for empty values."
         empty_count = 0
         for dict_entry in list(dat.keys()):
-            if len(dat[dict_entry]) < 9 or (len(dict_entry) <
+            if len(dat[dict_entry]) < (21) or (len(dict_entry) <
                     self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
                 del dat[dict_entry]
@@ -65,9 +64,9 @@ class PhysicalTrainer():
         random.shuffle(rand_keys)
         self.train_y = [] #Initialize the training coordinate list
         self.test_y = [] #Initialize the ground truth list
-        self.train_x_flat = rand_keys[:700]#Pressure maps
+        self.train_x_flat = rand_keys[:600]#Pressure maps
         [self.train_y.append(dat[key]) for key in self.train_x_flat]#Coordinates 
-        self.test_x_flat = rand_keys[700:800]#Pressure maps(test dataset)
+        self.test_x_flat = rand_keys[600:]#Pressure maps(test dataset)
         [self.test_y.append(dat[key]) for key in self.test_x_flat]#ground truth
         self.mat_frame_joints = []
 
@@ -130,8 +129,11 @@ class PhysicalTrainer():
 
         # Train the model using the training sets
         self.regr.fit(pressure_hog_train, self.train_y)
-
+        #Pickle the trained model
+        pkl.dump(self.regr, open('../dataset/trained_model_'+sys.argv[2]+'.p'
+                ,'wb'))
     
+
     def test_learning_algorithm(self):
         '''Tests the learning algorithm we're trying to implement'''
         test_x_lowres = (
@@ -154,54 +156,54 @@ class PhysicalTrainer():
 
         estimated_y = self.regr.predict(test_hog)
 
-        plt.subplot(131)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real
-        self.visualize_pressure_map(test_x_lowres[img])
+        #plt.subplot(131)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real
+        #self.visualize_pressure_map(test_x_lowres[img])
         
-        plt.subplot(132)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real 
-        self.visualize_pressure_map(test_x_lowres[img])
+        #plt.subplot(132)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real 
+        #self.visualize_pressure_map(test_x_lowres[img])
 
-        plt.subplot(133)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real 
-        self.visualize_pressure_map(test_x_lowres[img])
-        plt.show()
+        #plt.subplot(133)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real 
+        #self.visualize_pressure_map(test_x_lowres[img])
+        #plt.show()
 
 
     def chunks(self, l, n):
