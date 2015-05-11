@@ -34,7 +34,9 @@ class AutobedConverter():
     #callback for the pose messages from the autobed
     def pose_callback(self, data): 
         poses=np.asarray(data.data);
-        self.bed_height = poses[1]/100
+        
+        self.bed_height = ((poses[1]/100) - 0.09) if (((poses[1]/100) - 0.09) 
+                > 0) else 0
         head_angle = (poses[0]*pi/180 - 0.1)
         leg_angle = (poses[2]*pi/180 - 0.1)
         self.collated_head_angle = np.delete(self.collated_head_angle, 0)
