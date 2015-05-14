@@ -24,12 +24,12 @@ class BagfileToPickle():
                 self.mat_origin_callback)
         rospy.Subscriber("/head_o/pose", TransformStamped,
                 self.head_origin_callback)
-        #rospy.Subscriber("/torso_o/pose", TransformStamped,
-        #        self.torso_origin_callback)
-        #rospy.Subscriber("/l_elbow_o/pose", TransformStamped,
-                #self.l_elbow_origin_callback)
-        #rospy.Subscriber("/r_elbow_o/pose", TransformStamped,
-                #self.r_elbow_origin_callback)
+        rospy.Subscriber("/torso_o/pose", TransformStamped,
+                self.torso_origin_callback)
+        rospy.Subscriber("/l_elbow_o/pose", TransformStamped,
+                self.l_elbow_origin_callback)
+        rospy.Subscriber("/r_elbow_o/pose", TransformStamped,
+                self.r_elbow_origin_callback)
         rospy.Subscriber("/l_hand_o/pose", TransformStamped,
                 self.l_hand_origin_callback)
         rospy.Subscriber("/r_hand_o/pose", TransformStamped,
@@ -49,9 +49,9 @@ class BagfileToPickle():
         self.mat_pose = []
         self.head_pose = []
         #self.head_orientation = []
-        #self.torso_pose = []
-        #self.l_elbow_pose = []
-        #self.r_elbow_pose = []
+        self.torso_pose = []
+        self.l_elbow_pose = []
+        self.r_elbow_pose = []
         self.l_hand_pose = []
         self.r_hand_pose = []
         self.l_knee_pose = []
@@ -163,8 +163,8 @@ class BagfileToPickle():
                     print "Mat pose sampled."
 
                 self.training_database[self.pressure_map] = (self.head_pose +
-                    #self.torso_pose +
-                    #self.l_elbow_pose + self.r_elbow_pose + 
+                    self.torso_pose +
+                    self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
                     self.l_knee_pose + self.r_knee_pose +
                     self.l_ankle_pose + self.r_ankle_pose )
