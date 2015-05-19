@@ -17,7 +17,7 @@ class BagfileToPickle():
         self.ok_to_read_pose = False
         self.filename = filename
 
-        rospy.init_node('listener', anonymous=True)
+        rospy.init_node('pose_trainer_moving_bed', anonymous=True)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.current_physical_pressure_map_callback)
         rospy.Subscriber("/mat_o/pose", TransformStamped,
@@ -42,7 +42,12 @@ class BagfileToPickle():
                 self.l_ankle_origin_callback)
         rospy.Subscriber("/r_ankle_o/pose", TransformStamped,
                 self.r_ankle_origin_callback)
- 
+        rospy.Subscriber("/abdout0", FloatArrayBare,
+                self.autobed_angle_callback) 
+        rospy.Subscriber("/abdout1", FloatArrayBare,
+                self.autobed_status_callback) 
+
+        self.abdin0 = rospy.Publisher("/abdin0", FloatArrayBare)
         try:
             self.training_database = pkl.load(open(self.filename, 'rb'))
         except:
@@ -50,7 +55,7 @@ class BagfileToPickle():
             self.training_database = {}
         self.count = 0 #When to sample the mat_origin
 
-        self.mat_pose = []
+        self.autobed_pose = []
         self.head_pose = []
         #self.head_orientation = []
         self.torso_pose = []
@@ -63,6 +68,20 @@ class BagfileToPickle():
         self.l_ankle_pose = []
         self.r_ankle_pose = []
 
+
+    def autobed_status_callback(self, data):
+        '''This callback is used to sample data when the autobed reaches a
+        certain configuration. We will need only head and legs angles'''
+        self.autobed_pose = [data.data[0], data.data[2]]
+
+
+    def autobed_angle_callback(self, data):
+        '''This callback is used to store autobed angles'''
+        if data.data == True:
+            self.ok_to_read_pose = True
+            return
+        else:
+            return
 
 
     def current_physical_pressure_map_callback(self, data):
@@ -151,30 +170,52 @@ class BagfileToPickle():
                          data.transform.translation.y,
                          data.transform.translation.z]
 
+    def take_bed_through_one_motion_cycle(self):
+        '''This function moves the bed through a certain number of discrete
+        steps'''
+        head_angle_increment = 15
+        leg_angle_increment = 15
+        head_angle = 0
+        leg_angle = 0
+        while head_angle <= 90: 
+            self.abdin0.publish([head_angle, 0, 0])
+            if self.ok_to_read_pose == True:
+                X = [self.pressure_map, self.autobed_pose]
+                self.training_database[X] = (self.head_pose +
+                    self.torso_pose +
+                    self.l_elbow_pose + self.r_elbow_pose + 
+                    self.l_hand_pose + self.r_hand_pose + 
+                    self.l_knee_pose + self.r_knee_pose +
+                    self.l_ankle_pose + self.r_ankle_pose )
+                    + self.head_orientation)
+                self.ok_to_read_pose = False
+                head_angle += head_angle_increment
+
+        while leg_angle <= 60:
+            self.abdin0.publish([0, 0, leg_angle])
+            if self.ok_to_read_pose == True:
+                X = [self.pressure_map, self.autobed_pose]
+                self.training_database[X] = (self.head_pose +
+                    self.torso_pose +
+                    self.l_elbow_pose + self.r_elbow_pose + 
+                    self.l_hand_pose + self.r_hand_pose + 
+                    self.l_knee_pose + self.r_knee_pose +
+                    self.l_ankle_pose + self.r_ankle_pose )
+                    + self.head_orientation)
+                self.ok_to_read_pose = False
+                head_angle += head_angle_increment
+        return
 
 
     def run(self):
         '''This code just collects the first 1200 samples of the 
         pressure mat that will come in through the bagfile and
         will label them with the label'''
+        raw_input("Press Enter to Start Experiment")
+        print "Starting Experiment"
         while not rospy.is_shutdown():
-            if self.ok_to_read_pose == True:
-                self.count += 1
-                #After 20 seconds, we sample mat pose
-                if self.count == 100 and not self.mat_pose_sampled:
-                    self.training_database['mat_o'] = self.mat_pose
-                    self.mat_pose_sampled = True
-                    print "Mat pose sampled."
-
-                self.training_database[self.pressure_map] = (self.head_pose +
-                    #self.torso_pose +
-                    #self.l_elbow_pose + self.r_elbow_pose + 
-                    self.l_hand_pose + self.r_hand_pose + 
-                    self.l_knee_pose + self.r_knee_pose +
-                    self.l_ankle_pose + self.r_ankle_pose )
-                    #+ self.head_orientation)
-                self.ok_to_read_pose = False
-
+            raw_input("Hit Enter when user is ready with the next pose")
+            take_bed_through_one_motion_cycle()
         pkl.dump(self.training_database, open(self.filename, "wb"))
                  
 
