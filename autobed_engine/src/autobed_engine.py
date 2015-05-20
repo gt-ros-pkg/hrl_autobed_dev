@@ -24,11 +24,11 @@ ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
 '''This is the maximum error allowed in our control system.'''
 ERROR_OFFSET = [5, 2, 5]#degrees, centimeters , degrees
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'F', 'A'], [0, 'D', 'B'], [0, 'E', 'C']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
+AUTOBED_COMMANDS = [[0, 'A', 'B'], [0, 'C', 'D'], [0, 'E', 'F']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 'F', 'headDN': 'A', 'bedUP':'D', 'bedDN':'B', 'legsUP':'E', 'legsDN':'C'}
+CMDS = {'headUP': 'A', 'headDN': 'B', 'bedUP':'C', 'bedDN':'D', 'legsUP':'E', 'legsDN':'F'}
 
 ##
 #Class AutobedClient()
@@ -225,6 +225,8 @@ class AutobedClient():
             #then publish the error and a boolean that says we have reached
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
+	    else:
+		self.abdstatus0.publish(False)
             rate.sleep()
 
 '''Runs the Autobed robot using an object of the AutobedClient class and the run method provided therein'''
