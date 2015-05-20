@@ -228,6 +228,8 @@ class AutobedClient():
             #then publish the error and a boolean that says we have reached
             if self.reached_destination.all() == True:
                 self.abdstatus0.publish(True)
+            else:
+                self.abdstatus0.publish(False)
             rate.sleep()
 
 '''Runs the Autobed robot using an object of the AutobedClient class and the run method provided therein'''
