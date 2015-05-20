@@ -6,6 +6,7 @@ import numpy as np
 import roslib; roslib.load_manifest('autobed_physical_trainer')
 import rospy
 import cPickle as pkl
+from std_msgs.msg import Bool
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import TransformStamped
 
@@ -44,7 +45,7 @@ class BagfileToPickle():
                 self.r_ankle_origin_callback)
         rospy.Subscriber("/abdout0", FloatArrayBare,
                 self.autobed_angle_callback) 
-        rospy.Subscriber("/abdout1", FloatArrayBare,
+        rospy.Subscriber("/abdstatus0", Bool,
                 self.autobed_status_callback) 
 
         self.abdin0 = rospy.Publisher("/abdin0", FloatArrayBare)
@@ -69,14 +70,15 @@ class BagfileToPickle():
         self.r_ankle_pose = []
 
 
+    def autobed_angle_callback(self, data):
+        '''This callback is used to store autobed angles'''
+        self.autobed_pose = data.data
+
+
     def autobed_status_callback(self, data):
         '''This callback is used to sample data when the autobed reaches a
         certain configuration. We will need only head and legs angles'''
-        self.autobed_pose = [data.data[0], data.data[2]]
 
-
-    def autobed_angle_callback(self, data):
-        '''This callback is used to store autobed angles'''
         if data.data == True:
             self.ok_to_read_pose = True
             return
@@ -177,31 +179,34 @@ class BagfileToPickle():
         leg_angle_increment = 15
         head_angle = 0
         leg_angle = 0
+        r = rospy.Rate(1) #1Hz
         while head_angle <= 90: 
             self.abdin0.publish([head_angle, 0, 0])
+            r.sleep()
             if self.ok_to_read_pose == True:
-                X = [self.pressure_map, self.autobed_pose]
+                X = (self.pressure_map + tuple(self.autobed_pose))
                 self.training_database[X] = (self.head_pose +
-                    self.torso_pose +
-                    self.l_elbow_pose + self.r_elbow_pose + 
+                    #self.torso_pose +
+                    #self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
                     self.l_knee_pose + self.r_knee_pose +
                     self.l_ankle_pose + self.r_ankle_pose )
-                    + self.head_orientation)
+                    #+ self.head_orientation)
                 self.ok_to_read_pose = False
                 head_angle += head_angle_increment
 
         while leg_angle <= 60:
             self.abdin0.publish([0, 0, leg_angle])
+            r.sleep()
             if self.ok_to_read_pose == True:
-                X = [self.pressure_map, self.autobed_pose]
+                X = (self.pressure_map + tuple(self.autobed_pose))
                 self.training_database[X] = (self.head_pose +
                     self.torso_pose +
                     self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
                     self.l_knee_pose + self.r_knee_pose +
                     self.l_ankle_pose + self.r_ankle_pose )
-                    + self.head_orientation)
+                    #+ self.head_orientation)
                 self.ok_to_read_pose = False
                 head_angle += head_angle_increment
         return
@@ -215,7 +220,7 @@ class BagfileToPickle():
         print "Starting Experiment"
         while not rospy.is_shutdown():
             raw_input("Hit Enter when user is ready with the next pose")
-            take_bed_through_one_motion_cycle()
+            self.take_bed_through_one_motion_cycle()
         pkl.dump(self.training_database, open(self.filename, "wb"))
                  
 
