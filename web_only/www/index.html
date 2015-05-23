@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>AutoBed Controls | Web Interface</title>
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
+        <script type="text/javascript" src="autobed.js"></script>
+
+        <style>
+            body, html {
+                height:100%;
+                background-color: #C5CAE9;
+            }
+
+            h3 {
+                width: 100%;
+                text-align: center;
+                margin: 0.1em;
+            }
+
+            #controls {
+                height:100%;
+                text-align:center;
+                margin: 0.4em;
+                margin-bottom: 0.2em;
+            }
+            
+            #controls>div {
+                height:42%;
+            }
+
+            #controls button {
+                width: 30%;
+                height: 96%;
+                color: rgba(255,255,255,0.87);
+                display: inline-block;
+                margin: 0.25em;
+                border-radius: 1em;
+                background-color: #3F51b5;
+                font-size: 2em;
+                font-weight: bold;
+            }
+
+            #controls button:hover {
+                background-color: #5C6BC0;
+                color: rgba(0,0,0,0.87);
+            }
+
+            #controls button:active {
+                background-color: #536DFE;
+                color: rgba(0,0,0,0.87);
+            }
+
+            #log {
+                font-size: 2em;
+                font-weight: bold;
+                text-align: center;
+            }
+
+        </style>
+
+    </head>
+
+    <body onload="AutoBed.init()">
+        <div id="controls">
+            <h3>AutoBed Controls</h3>
+            <div id="controls-toprow">
+                <button id="head-up" value="headUP" >Head Up</button>
+                <button id="bed-up" value="bedUP" >Bed Up</button>
+                <button id="legs-up" value="legsUP" >Legs Up</button>
+            </div>
+            <div id="controls-bottomrow">
+                <button id="head-down" value="headDN" >Head Down</button>
+                <button id="bed-down" value="bedDN" >Bed Down</button>
+                <button id="legs-down" value="legsDN" >Legs Down</button>
+            </div>
+            <div id="log">Ready</div>
+        </div>
+    </body>
+
+</html>
