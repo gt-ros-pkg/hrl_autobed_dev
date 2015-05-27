@@ -5,13 +5,6 @@ import cgi
 import cgitb
 cgitb.enable()
 
-cmdMap = {'headUP': 'A',
-          'headDN': 'B',
-          'bedUP': 'C',
-          'bedDN': 'D',
-          'legsUP': 'E',
-          'legsDN': 'F'}
-
 def returnMsg(msg):
     print "Content-type:text/plain\r\n\r\n"
     print msg
