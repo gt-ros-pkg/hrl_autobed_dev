@@ -22,11 +22,11 @@ from autobed_engine.srv import *
 ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
 
 """List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'A', 'F'], [0, 'C', 'D'], [0, 'B', 'E']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
+AUTOBED_COMMANDS = [[0, 'A', 'B'], [0, 'C', 'D'], [0, 'E', 'F']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 'A', 'headDN': 'F', 'bedUP':'C', 'bedDN':'D', 'legsUP':'B', 'legsDN':'E'}
+CMDS = {'headUP': 'A', 'headDN': 'B', 'bedUP':'C', 'bedDN':'D', 'legsUP':'E', 'legsDN':'F'}
 
 ##
 #Class AutobedClient()
