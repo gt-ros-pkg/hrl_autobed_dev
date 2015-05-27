@@ -13,9 +13,9 @@
 
 1: {
     calibration: {    
-        coefficient: 31.97201475,
-        offset: 0.48957979,
-        exponent: -2.048227
+        coefficient: 20.08220505,
+        offset: 0.22697513,
+        exponent: -1.62724516
             },
     normal_pose: {
         frame: 1,
@@ -41,9 +41,9 @@
 
 3: {
     calibration: {    
-        coefficient: 31.97201475,
-        offset: 0.48957979,
-        exponent: -2.048227
+        coefficient: 20.08220505,
+        offset: 0.22697513,
+        exponent: -1.62724516
             },
     normal_pose: {
         frame: 1,

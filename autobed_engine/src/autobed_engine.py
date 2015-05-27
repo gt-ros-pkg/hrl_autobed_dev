@@ -90,14 +90,18 @@ class AutobedClient():
         For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees.
         and returns value of the head tilt in degrees'''
     
-        if distances[0] <= 12.25:
-            distances[0] = (3.197*distances[0] - 12.56)
-        elif distances[0] > 12.25 and distances[0] <= 19.5:
-            distances[0] = (3.16*distances[0] - 12.11)
-        elif distances[0] > 19.5 and distances[0] <= 22.4:
-            distances[0] = (3.61*distances[0] - 21.02)
-        elif distances[0] > 22.4 and distances[0] <= 27.5:
-            distances[0] = (3.96*distances[0] - 28.70)
+        if distances[0] <= 8.87:
+            distances[0] = (2.7615*distances[0] - 14.0838)
+        elif distances[0] > 8.87 and distances[0] <= 11.2:
+            distances[0] = (3.5416*distances[0] - 21.0032)
+        elif distances[0] > 11.2 and distances[0] <= 15.5:
+            distances[0] = (3.5337*distances[0] - 20.9147)
+        elif distances[0] > 15.5 and distances[0] <= 20.5:
+            distances[0] = (1.96*distances[0] + 3.53008)
+        elif distances[0] > 20.5 and distances[0] <= 23.5:
+            distances[0] = (3.7827*distances[0] - 33.9773)
+        elif distances[0] > 23.5 and distances[0] <= 26:
+            distances[0] = (10*distances[0] - 180)
         else:
             distances[0] = 80
             
