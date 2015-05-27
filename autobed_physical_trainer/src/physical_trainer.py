@@ -12,10 +12,9 @@ from skimage.feature import hog
 from skimage import data, color, exposure
 
 from sklearn.cluster import KMeans
-from sklearn import metrics
 from sklearn.preprocessing import scale
-from sklearn import linear_model
-from sklearn import decomposition 
+from sklearn import linear_model, decomposition, kernel_ridge, neighbors
+from sklearn import metrics, cross_validation
 
 MAT_WIDTH = 0.762 #metres
 MAT_HEIGHT = 1.854 #metres
@@ -45,7 +44,6 @@ class PhysicalTrainer():
         except:
             print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
             print "[Warning] Either retrain system or get mat older mat_origin"
-
         #TODO:Write code for the dataset to store these vals
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
@@ -53,7 +51,7 @@ class PhysicalTrainer():
         print "Checking database for empty values."
         empty_count = 0
         for dict_entry in list(dat.keys()):
-            if len(dat[dict_entry]) < 9 or (len(dict_entry) <
+            if len(dat[dict_entry]) < (21) or (len(dict_entry) <
                     self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
                 del dat[dict_entry]
@@ -65,10 +63,14 @@ class PhysicalTrainer():
         random.shuffle(rand_keys)
         self.train_y = [] #Initialize the training coordinate list
         self.test_y = [] #Initialize the ground truth list
-        self.train_x_flat = rand_keys[:700]#Pressure maps
+        self.dataset_y = [] #Initialization for the entire dataset 
+        self.train_x_flat = rand_keys[:6000]#Pressure maps
         [self.train_y.append(dat[key]) for key in self.train_x_flat]#Coordinates 
-        self.test_x_flat = rand_keys[700:800]#Pressure maps(test dataset)
+        self.test_x_flat = rand_keys[6000:6700]#Pressure maps(test dataset)
         [self.test_y.append(dat[key]) for key in self.test_x_flat]#ground truth
+        self.dataset_x_flat = rand_keys[:6000]#Pressure maps
+        [self.dataset_y.append(dat[key]) for key in self.dataset_x_flat]
+        self.cv_fold = 5 # Value of k in k-fold cross validation 
         self.mat_frame_joints = []
 
 
@@ -109,12 +111,12 @@ class PhysicalTrainer():
  
 
     def train_hog_linear(self):
-        '''Runs training on the dataset using the Upsample+ HoG + K-Means + SVM
+        '''Runs training on the dataset using the Upsample+ HoG 
         + Linear Regression technique'''
         
         #Resize incoming pressure map
         pressure_map_dataset_lowres_train = (
-                self.preprocessing_pressure_array_resize(self.train_x_flat))
+                self.preprocessing_pressure_array_resize(self.dataset_x_flat))
         #Upsample the lowres training dataset 
         pressure_map_dataset_highres_train = (
             self.preprocessing_pressure_map_upsample(
@@ -126,12 +128,176 @@ class PhysicalTrainer():
         #OPTIONAL: PCA STAGE
         #X = self.pca_pressure_map( self.train_y, False)
         #Now we train a linear classifier on the dataset of HoGs
+
         self.regr = linear_model.LinearRegression()
+        scores = cross_validation.cross_val_score(
+            self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        print("Accuracy after k-fold cross validation: %0.2f (+/- %0.2f)" 
+                % (scores.mean(), scores.std() * 2))
+
+        #predicted = cross_validation.cross_val_predict(
+                #self.regr, np.asarray(pressure_hog_train), 
+                #np.asarray(self.dataset_y), cv=self.cv_fold)
+        ##mean squared error
+        #print("residual sum of squares: %.8f"
+              #% np.mean((predicted - self.dataset_y) **2))
 
         # Train the model using the training sets
-        self.regr.fit(pressure_hog_train, self.train_y)
-
+        self.regr.fit(pressure_hog_train, self.dataset_y)
+        #Pickle the trained model
+        pkl.dump(self.regr, open('./dataset/trained_model_'+sys.argv[2]+'.p'
+                ,'wb'))
     
+
+    def train_hog_ridge(self):
+        '''Runs training on the dataset using the Upsample+ HoG+
+        + Ridge Regression technique'''
+        
+        #Resize incoming pressure map
+        pressure_map_dataset_lowres_train = (
+                self.preprocessing_pressure_array_resize(self.dataset_x_flat))
+        #Upsample the lowres training dataset 
+        pressure_map_dataset_highres_train = (
+            self.preprocessing_pressure_map_upsample(
+                pressure_map_dataset_lowres_train))
+        #Compute HoG of the current(training) pressure map dataset
+        pressure_hog_train = self.compute_HoG(
+                pressure_map_dataset_highres_train)
+
+        #OPTIONAL: PCA STAGE
+        #X = self.pca_pressure_map( self.train_y, False)
+        #Now we train a Ridge regression on the dataset of HoGs
+        self.regr = linear_model.Ridge(alpha=1.0)
+        scores = cross_validation.cross_val_score(
+            self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        print("Accuracy after k-fold cross validation: %0.2f (+/- %0.2f)" 
+                % (scores.mean(), scores.std() * 2))
+        #predicted = cross_validation.cross_val_predict(
+                #self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        ##Mean Squared Error
+        #print("Residual sum of squares: %.8f"
+              #% np.mean((predicted - self.dataset_y) **2))
+ 
+        # Train the model using the training sets
+        self.regr.fit(pressure_hog_train, self.dataset_y)
+        #Pickle the trained model
+        pkl.dump(self.regr, open('./dataset/trained_model_'
+            +sys.argv[2]+'.p', 'wb'))
+ 
+
+    def train_hog_krr(self):
+        '''Runs training on the dataset using the Upsample+ HoG+
+        + Kernel Ridge Regression technique'''
+        
+        #Resize incoming pressure map
+        pressure_map_dataset_lowres_train = (
+                self.preprocessing_pressure_array_resize(self.dataset_x_flat))
+        #Upsample the lowres training dataset 
+        pressure_map_dataset_highres_train = (
+            self.preprocessing_pressure_map_upsample(
+                pressure_map_dataset_lowres_train))
+        #Compute HoG of the current(training) pressure map dataset
+        pressure_hog_train = self.compute_HoG(
+                pressure_map_dataset_highres_train)
+        #OPTIONAL: PCA STAGE
+        #X = self.pca_pressure_map( self.train_y, False)
+        #Now we train a Ridge regression on the dataset of HoGs
+        self.regr = kernel_ridge.KernelRidge(alpha=1, kernel='rbf', gamma =
+                10)
+        scores = cross_validation.cross_val_score(
+            self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        print("Accuracy after k-fold cross validation: %0.2f (+/- %0.2f)" 
+                % (scores.mean(), scores.std() * 2))
+        #predicted = cross_validation.cross_val_predict(
+                #self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        ##Mean Squared Error
+        #print("Residual sum of squares: %.8f"
+              #% np.mean((predicted - self.dataset_y) **2))
+ 
+        # Train the model using the training sets
+        self.regr.fit(pressure_hog_train, self.dataset_y)
+        #Pickle the trained model
+        pkl.dump(self.regr, open('./dataset/trained_model_'
+            +sys.argv[2]+'.p', 'wb'))
+ 
+
+    def train_hog_knn(self):
+        '''Runs training on the dataset using the Upsample+ HoG+
+        + K Nearest Neighbor Regression technique'''
+        #Number of neighbors
+        n_neighbors = 5 
+        #Resize incoming pressure map
+        pressure_map_dataset_lowres_train = (
+                self.preprocessing_pressure_array_resize(self.dataset_x_flat))
+        #Upsample the lowres training dataset 
+        pressure_map_dataset_highres_train = (
+            self.preprocessing_pressure_map_upsample(
+                pressure_map_dataset_lowres_train))
+        #Compute HoG of the current(training) pressure map dataset
+        pressure_hog_train = self.compute_HoG(
+                pressure_map_dataset_highres_train)
+
+        #OPTIONAL: PCA STAGE
+        #X = self.pca_pressure_map( self.train_y, False)
+        #Now we train a Ridge regression on the dataset of HoGs
+        self.regr = neighbors.KNeighborsRegressor(n_neighbors,
+        weights='distance')
+
+        scores = cross_validation.cross_val_score(
+            self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        print("Accuracy after k-fold cross validation: %0.2f (+/- %0.2f)" 
+                % (scores.mean(), scores.std() * 2))
+
+        #predicted = cross_validation.cross_val_predict(
+                #self.regr, pressure_hog_train, self.dataset_y, cv=self.cv_fold)
+        ##Mean Squared Error
+        #print("Residual sum of squares: %.8f"
+              #% np.mean((predicted - self.dataset_y) **2))
+ 
+        
+        # Train the model using the training sets
+        self.regr.fit(pressure_hog_train, self.dataset_y)
+        #Pickle the trained model
+        pkl.dump(self.regr, open('./dataset/trained_model_'
+            +sys.argv[2]+'.p', 'wb'))
+ 
+
+    def train_hog_KMeans_SVM_Linear(self):
+        '''Runs training on the dataset using the Upsample+ HoG 
+        + KMeans + SVM + Ridge Regression technique'''
+        n_clusters = 3 #Number of KMeans Clusters 
+        #Resize incoming pressure map
+        pressure_map_dataset_lowres_train = (
+                self.preprocessing_pressure_array_resize(self.dataset_x_flat))
+        #Upsample the lowres training dataset 
+        pressure_map_dataset_highres_train = (
+            self.preprocessing_pressure_map_upsample(
+                pressure_map_dataset_lowres_train))
+        #Compute HoG of the current(training) pressure map dataset
+        pressure_hog_train = self.compute_HoG(
+                pressure_map_dataset_highres_train)
+
+        k_means = cluster.KMeans(n_clusters=n_clusters, n_init=4)
+        k_means.fit(pressure_hog_train)
+        labels = k_means.labels_
+        svm_classifier = svm.SVC()
+        svm_classifier.fit(pressure_hog_train, labels)
+        #OPTIONAL: PCA STAGE
+        #X = self.pca_pressure_map( self.train_y, False)
+        #Now we train a linear classifier on the dataset of HoGs
+        self.regr = linear_model.LinearRegression()
+        scores = cross_validation.cross_val_score(
+            self.regr, pressure_hog_train, self.dataset_y, cv=5)
+        print("Accuracy after k-fold cross validation: %0.2f (+/- %0.2f)" 
+                % (scores.mean(), scores.std() * 2))
+        # Train the model using the training sets
+        self.regr.fit(pressure_hog_train, self.dataset_y)
+        #Pickle the trained model
+        pkl.dump(self.regr, open('./dataset/trained_model_'+sys.argv[2]+'.p'
+                ,'wb'))
+    
+
+
     def test_learning_algorithm(self):
         '''Tests the learning algorithm we're trying to implement'''
         test_x_lowres = (
@@ -143,7 +309,10 @@ class PhysicalTrainer():
         test_hog = self.compute_HoG(test_x_highres)
 
         # The coefficients
-        print('Coefficients: \n', self.regr.coef_)
+        try:
+            print('Coefficients: \n', self.regr.coef_)
+        except AttributeError:
+            pass
         # The mean square error
         print("Residual sum of squares: %.8f"
               % np.mean((self.regr.predict(test_hog) - self.test_y) **2))
@@ -154,54 +323,54 @@ class PhysicalTrainer():
 
         estimated_y = self.regr.predict(test_hog)
 
-        plt.subplot(131)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real
-        self.visualize_pressure_map(test_x_lowres[img])
+        #plt.subplot(131)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real
+        #self.visualize_pressure_map(test_x_lowres[img])
         
-        plt.subplot(132)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real 
-        self.visualize_pressure_map(test_x_lowres[img])
+        #plt.subplot(132)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real 
+        #self.visualize_pressure_map(test_x_lowres[img])
 
-        plt.subplot(133)
-        taxel_est = []
-        taxel_real = []
-        img = random.randint(1, len(test_x_lowres)-1)
-        [taxel_est.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(estimated_y[img], 3)))]
-        for item in taxel_est:
-            test_x_lowres[img][item[0], item[1]] = 200
-        print taxel_est
-        [taxel_real.append(self.world_to_mat(item)) for item in (
-            list(self.chunks(self.test_y[img], 3)))]
-        for item in taxel_real:
-            test_x_lowres[img][item[0], item[1]] = 300
-        print taxel_real 
-        self.visualize_pressure_map(test_x_lowres[img])
-        plt.show()
+        #plt.subplot(133)
+        #taxel_est = []
+        #taxel_real = []
+        #img = random.randint(1, len(test_x_lowres)-1)
+        #[taxel_est.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(estimated_y[img], 3)))]
+        #for item in taxel_est:
+            #test_x_lowres[img][item[0], item[1]] = 200
+        #print taxel_est
+        #[taxel_real.append(self.world_to_mat(item)) for item in (
+            #list(self.chunks(self.test_y[img], 3)))]
+        #for item in taxel_real:
+            #test_x_lowres[img][item[0], item[1]] = 300
+        #print taxel_real 
+        #self.visualize_pressure_map(test_x_lowres[img])
+        #plt.show()
 
 
     def chunks(self, l, n):
@@ -296,7 +465,12 @@ if __name__ == "__main__":
     p = PhysicalTrainer(training_database_file) 
     if training_type == 'HoG_Linear':
         p.train_hog_linear()
-        p.test_learning_algorithm()
+    elif training_type == 'HoG_Ridge':
+        p.train_hog_ridge()
+    elif training_type == 'HoG_KNN':
+        p.train_hog_knn()
+    elif training_type == 'HoG_KRR':
+        p.train_hog_krr()
     else:
-        'Please specify correct training type:1. HoG_Linear'
-
+        'Please specify correct training type:1. HoG_Linear 2. HoG_Ridge'
+    p.test_learning_algorithm()

@@ -15,6 +15,7 @@
   <depend package="actionlib_msgs"/>
   <depend package="roslib"/>
   <depend package="hrl_msgs"/>
+  <depend package="tf"/>
 </package>
 
 
