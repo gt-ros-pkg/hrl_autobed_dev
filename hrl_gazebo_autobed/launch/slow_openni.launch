@@ -1,0 +1,6 @@
+<launch>
+  <param name="/camera/driver/data_skip" value="1" />
+  <include file="$(find openni_launch)/launch/openni.launch" >
+    <arg name="depth_registration" value="true"/>
+  </include>
+</launch>
