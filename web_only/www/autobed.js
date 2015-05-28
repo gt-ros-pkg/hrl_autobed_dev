@@ -8,7 +8,7 @@ var AutoBed = (function () {
         if (logTimer !== null) {
             clearTimeout(logTimer);
         }
-        logTimer = setTimeout( function () {logDiv.innerHTML = 'Ready';}, 3000);
+//        logTimer = setTimeout( function () {logDiv.innerHTML = 'Ready';}, 3000);
     }
 
     var handleAJAXResponse = function (event) {

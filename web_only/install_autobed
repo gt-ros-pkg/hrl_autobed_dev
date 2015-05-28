@@ -47,7 +47,7 @@ then
 else
     echo "[Autobed Install] Setting GPIO daemon to start on boot"
     sudo cp /etc/rc.local /etc/rc.local.bak
-    sudo sed --in-place "/^exit 0/i sudo $GPIO_DAEMON >> /var/log/autobed2.log 2>1&\n" /etc/rc.local
+    sudo sed --in-place "/^exit 0/i $GPIO_DAEMON >> /var/log/autobed2.log 2>1&\n" /etc/rc.local
 fi
 
 if which apache2

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import cgi
-from arduino_driver import AutobedDriver # use for version with arduino intermediary
-#from gpio_driver import AutobedDriver # use for version directly connected to GPIO of Raspberry Pi
+#from arduino_driver import AutobedDriver # use for version with arduino intermediary
+from gpio_driver import AutobedDriver # use for version directly connected to GPIO of Raspberry Pi
 
 import cgitb
 cgitb.enable()
