@@ -38,4 +38,6 @@ if __name__ == '__main__':
             cmd_txt = "Raise Legs"
         elif cmd == "legsDN":
             cmd_txt = "Lower Legs"
+
+        driver.close() # Clean up driver device/socket
         returncmd_txt(' '.join([cmd_txt, cmd_res]))

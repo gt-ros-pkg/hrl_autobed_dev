@@ -27,3 +27,6 @@ class AutobedDriver(object)
                 return "Failed"
         else:
             raise RuntimeException("[Autobed Driver] Received Unknown Command %s" %cmd)
+
+    def close(self):
+        self.socket.close()

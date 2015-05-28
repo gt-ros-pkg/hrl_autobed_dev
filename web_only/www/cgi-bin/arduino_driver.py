@@ -20,3 +20,6 @@ class AutobedDriver(object)
             self.serial.write(cmdMap[cmd])
         else:
             raise Exception("[Autobed Driver] Received Unknown Command %s" %cmd)
+
+    def close(self):
+        self.serial.close()
