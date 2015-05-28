@@ -15,28 +15,39 @@ else
 	cd ../
 fi
 
-if which pigpiod
-then
-	echo "[Autobed Install] PIGPIO already installed"
-else
-	echo "[Autobed Install] Installing PIGPIO daemon"
-	# From http://abyz.co.uk/rpi/pigpio/download.html
-	wget abyz.co.uk/rpi/pigpio/pigpio.zip
-	unzip pigpio.zip
-	cd PIGPIO
-	make
-	make install
-	rm pigpio.zip #cleanup
-fi
-
+#if which pigpiod
+#then
+#	echo "[Autobed Install] PIGPIO already installed"
+#else
+#	echo "[Autobed Install] Installing PIGPIO daemon"
+#	# From http://abyz.co.uk/rpi/pigpio/download.html
+#	wget abyz.co.uk/rpi/pigpio/pigpio.zip
+#	unzip pigpio.zip
+#	cd PIGPIO
+#	make
+#	make install
+#	rm pigpio.zip #cleanup
+#fi
+#
 # Add pigpiod to startup on rc.local
-if grep -q "/usr/local/bin/pigpiod" /etc/rc.local
+#if grep -q "/usr/local/bin/pigpiod" /etc/rc.local
+#then
+#    echo "[Autobed Install] PIGPIO already set to start on boot"
+#else
+#    echo "[Autobed Install] Setting PIGPIO daemon to start on boot"
+#    sudo cp /etc/rc.local /etc/rc.local.bak
+#    sudo sed --in-place "/^exit 0/i sudo /usr/local/bin/pigpiod \n" /etc/rc.local
+#fi
+
+# Add gpio daemon to startup on rc.local
+GPIO_DAEMON = "/home/$USER/Autobed/hrl_autobed_dev/web_only/gpio_daemon.py"
+if grep -q "$GPIO_DAEMON" /etc/rc.local
 then
-    echo "[Autobed Install] PIGPIO already set to start on boot"
+    echo "[Autobed Install] GPIO daemon already set to start on boot"
 else
-    echo "[Autobed Install] Setting PIGPIO daemon to start on boot"
+    echo "[Autobed Install] Setting GPIO daemon to start on boot"
     sudo cp /etc/rc.local /etc/rc.local.bak
-    sudo sed --in-place "/^exit 0/i sudo /usr/local/bin/pigpiod \n" /etc/rc.local
+    sudo sed --in-place "/^exit 0/i sudo $GPIO_DAEMON \n" /etc/rc.local
 fi
 
 if which apache2

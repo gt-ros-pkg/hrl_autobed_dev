@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import cgi
+from arduino_driver import AutobedDriver # use for version with arduino intermediary
+#from gpio_driver import AutobedDriver # use for version directly connected to GPIO of Raspberry Pi
 
-import cgitb
-cgitb.enable()
+#import cgitb
+#cgitb.enable()
 
 def returnMsg(msg):
     print "Content-type:text/plain\r\n\r\n"
@@ -16,19 +18,24 @@ if __name__ == '__main__':
     if cmd not in cmdMap:
         returnMsg("Error: Unknown Command \""+cmd+"\"")
     else:
-        ctrlChar = cmdMap[cmd];
+        ctrl_char = cmdMap[cmd];
+        try:
+            driver = AutobedDriver()
+            driver.send_command(ctrl_char)
+            cmd_res = "Successful"
+        except Exception as e:
+            cmd_res = "Failed"
 
         if cmd == "headUP":
-            msg = "Raise Head"
+            cmd_txt = "Raise Head"
         elif cmd == "headDN":
-            msg = "Lower Head"
+            cmd_txt = "Lower Head"
         elif cmd == "bedUP":
-            msg = "Raise Bed"
+            cmd_txt = "Raise Bed"
         elif cmd == "bedDN":
-            msg = "Lower Bed"
+            cmd_txt = "Lower Bed"
         elif cmd == "legsUP":
-            msg = "Raise Legs"
+            cmd_txt = "Raise Legs"
         elif cmd == "legsDN":
-            msg = "Lower Legs"
-
-        returnMsg(msg+" Successful")
+            cmd_txt = "Lower Legs"
+        returncmd_txt(' '.join([cmd_txt, cmd_res]))
