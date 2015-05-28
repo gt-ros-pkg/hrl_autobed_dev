@@ -12,22 +12,10 @@ var AutoBed = (function () {
     }
 
     var handleAJAXResponse = function (event) {
-        if (this.readyState === 4) {
-//        switch (this.readyState) {
-//            case 0:
-//                console.log("AJAX Request not initialized");
-//                break;
-//            case 1:
-//                console.log("AJAX: Server Connection Established");
-//                break;
-//            case 2:
-//                console.log("AJAX Request Received");
-//                break;
-//            case 3:
-//                console.log("AJAX Request being processed");
-//                break;
-//            case 4:
-            console.log("AJAX Request Finished, response received");
+        if (this.readyState < 4) {
+           console.log("State", this.readyState);
+	} else if (this.readyState === 4) {
+            console.log("AJAX Request Finished, response received: ", this.responseText);
             if (this.status === 200) {
                 log( this.responseText );
             } else {

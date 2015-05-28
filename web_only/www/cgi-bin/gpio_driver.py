@@ -9,7 +9,7 @@ cmdMap = {'headUP': 17,
           'legsUP': 23,
           'legsDN': 24}
 
-class AutobedDriver(object)
+class AutobedDriver(object):
     def __init(self, host="127.0.0.1", port=828):
         self.host = host
         self.port = port
