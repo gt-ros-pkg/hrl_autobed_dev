@@ -24,7 +24,7 @@ class AutobedWebSocketHandler(WebSocketHandler):
     
     def open(self):
         print "New Connection Opened from %s." %(self.request.remote_ip)
-#        self.set_nodelay(True)
+        self.set_nodelay(True)
 
     def on_message(self, message):
         self.write_message("Received: %s" % message)
