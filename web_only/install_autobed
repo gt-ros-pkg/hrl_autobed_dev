@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+sudo apt-get install build-essential python-dev python-pip
+sudo pip install --upgrade tornado
+
 mkdir -p ~/Autobed
 cd ~/Autobed
 
