@@ -3,7 +3,7 @@ var AutoBed = (function () {
 
     var logTimer = null;
     var log = function (txt, permanent) {
-	permanent = (permanent === undefined) ? False : permanent;
+	permanent = (permanent === undefined) ? false : permanent;
         var logDiv =  document.getElementById('log');
         logDiv.innerHTML = txt;
         if (logTimer !== null) {
