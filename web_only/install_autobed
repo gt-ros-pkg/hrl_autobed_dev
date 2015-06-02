@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+sudo apt-get install build-essential python-dev python-pip
+sudo pip install --upgrade tornado
+
+mkdir -p ~/Autobed
+cd ~/Autobed
+
+if [ ! -d "./hrl_autobed_dev" ]
+then
+	echo "[Autobed Install] Retrieving Autobed Software"
+	git clone https://github.com/gt-ros-pkg/hrl_autobed_dev.git --branch web-only
+else
+	echo "[Autobed Install] Autobed Software Found. Updating."
+	cd ./hrl_autobed_dev
+	git checkout web-only
+	git pull
+	cd ../
+fi
+
+#if which pigpiod
+#then
+#	echo "[Autobed Install] PIGPIO already installed"
+#else
+#	echo "[Autobed Install] Installing PIGPIO daemon"
+#	# From http://abyz.co.uk/rpi/pigpio/download.html
+#	wget abyz.co.uk/rpi/pigpio/pigpio.zip
+#	unzip pigpio.zip
+#	cd PIGPIO
+#	make
+#	make install
+#	rm pigpio.zip #cleanup
+#fi
+#
+# Add pigpiod to startup on rc.local
+#if grep -q "/usr/local/bin/pigpiod" /etc/rc.local
+#then
+#    echo "[Autobed Install] PIGPIO already set to start on boot"
+#else
+#    echo "[Autobed Install] Setting PIGPIO daemon to start on boot"
+#    sudo cp /etc/rc.local /etc/rc.local.bak
+#    sudo sed --in-place "/^exit 0/i sudo /usr/local/bin/pigpiod \n" /etc/rc.local
+#fi
+
+# Add gpio daemon to startup on rc.local
+#GPIO_DAEMON="/home/$USER/Autobed/hrl_autobed_dev/web_only/gpio_daemon.py"
+#if grep -q "$GPIO_DAEMON" /etc/rc.local
+#then
+#    echo "[Autobed Install] GPIO daemon already set to start on boot"
+#else
+#    echo "[Autobed Install] Setting GPIO daemon to start on boot"
+#    sudo cp /etc/rc.local /etc/rc.local.bak
+#    sudo sed --in-place "/^exit 0/i $GPIO_DAEMON >> /var/log/autobed2.log 2>1&\n" /etc/rc.local
+#fi
+
+if which apache2
+then
+	echo "[Autobed Install] Apache Web Server Already Installed"
+else
+	echo "[Autobed Install] Installing Apache Web Server"
+	sudo apt-get install apache2
+fi
+
+sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev/web_only/autobed_site_config >> /etc/apache2/sites-available/autobed"
+sudo a2ensite autobed
+sudo a2dissite default
+a2enmod cgid
+sudo service apache2 reload
+
+echo "[Autobed Install] Install Completed -- Please reboot"

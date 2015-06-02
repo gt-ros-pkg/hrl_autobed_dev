@@ -1,0 +1,38 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+	DocumentRoot /home/ABD-USER/Autobed/hrl_autobed_dev/web_only/www
+	<Directory />
+		Options Indexes FollowSymLinks MultiViews +ExecCGI
+        AddHandler cgi-script .py
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+    
+	<Directory "/home/ABD-USER/Autobed/hrl_autobed_dev/web_only/www/cgi-bin">
+		AllowOverride None
+		Options ExecCGI
+        SetHandler cgi-script
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>
