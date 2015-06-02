@@ -1,0 +1,62 @@
+body, html {
+  height:100%;
+  background-color: #C5CAE9;
+}
+
+body.disconnected, html.disconnected {
+  background-color: rgba(220,220,220,0.87);
+}
+
+h3 {
+  width: 100%;
+  text-align: center;
+  margin: 0.1em;
+}
+
+#controls {
+  height:100%;
+  text-align:center;
+  margin: 0.4em;
+  margin-bottom: 0.2em;
+}
+
+#controls>div {
+  height:42%;
+}
+
+#controls button {
+  width: 30%;
+  height: 96%;
+  display: inline-block;
+  margin: 0.25em;
+  border-radius: 1em;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+#controls button.disconnected {
+  color: rgba(150,150,150,0.47);
+  background-color: rgba(200,200,200,0.67);
+}
+
+#controls button.connected {
+  color: rgba(255,255,255,0.87);
+  background-color: #3F51b5;
+}
+
+#controls button.connected:hover {
+  background-color: #5C6BC0;
+  color: rgba(0,0,0,0.87);
+}
+
+#controls button.connected:active {
+  background-color: #536DFE;
+  color: rgba(0,0,0,0.87);
+}
+
+#log {
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+}
+

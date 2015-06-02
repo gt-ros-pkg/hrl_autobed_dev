@@ -44,8 +44,16 @@ var AutoBed = (function () {
                     sendCmd(event.target.value);
                     });
     };
+    var heartBeatTimer, lastBeatTime;
+    var checkHeartBeat = function (ws) {
+
+    }
 
     var onOpen = function () {
+	var disconElems = document.querySelectorAll('.disconnected')
+	for (var i=0; i<disconElems.length; i+=1) {
+            disconElems[i].className = disconElems[i].className.replace("disconnected", "connected")
+ 	}
         setupButtonCBs(document.getElementById("head-up"));
         setupButtonCBs(document.getElementById("bed-up"));
         setupButtonCBs(document.getElementById("legs-up"));
@@ -62,6 +70,10 @@ var AutoBed = (function () {
     var onClose = function () {
         console.log("Cannot connect to Autobed Server");
 	log("Cannot connect to Autobed Server.", true)
+	var conElems = document.querySelectorAll('.connected')
+	for (var i=0; i<conElems.length; i+=1) {
+            conElems[i].className = conElems[i].className.replace("connected", "disconnected")
+ 	}
     }
 
     var ws;

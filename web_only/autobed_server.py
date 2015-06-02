@@ -28,7 +28,9 @@ class AutobedWebSocketHandler(WebSocketHandler):
 
     def on_message(self, message):
 #        self.write_message("Received: %s" % message)
-        if message not in cmdMap:
+	if message == '---heartbeat---':
+	    self.write_message('--heartbeat--')
+        elif message not in cmdMap:
             print "Received unknown command: %s" %message
             self.write_message("Received unknown command: %s" %message)
         else:
