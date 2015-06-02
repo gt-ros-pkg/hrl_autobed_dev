@@ -43,15 +43,15 @@ fi
 #fi
 
 # Add gpio daemon to startup on rc.local
-GPIO_DAEMON="/home/$USER/Autobed/hrl_autobed_dev/web_only/gpio_daemon.py"
-if grep -q "$GPIO_DAEMON" /etc/rc.local
-then
-    echo "[Autobed Install] GPIO daemon already set to start on boot"
-else
-    echo "[Autobed Install] Setting GPIO daemon to start on boot"
-    sudo cp /etc/rc.local /etc/rc.local.bak
-    sudo sed --in-place "/^exit 0/i $GPIO_DAEMON >> /var/log/autobed2.log 2>1&\n" /etc/rc.local
-fi
+#GPIO_DAEMON="/home/$USER/Autobed/hrl_autobed_dev/web_only/gpio_daemon.py"
+#if grep -q "$GPIO_DAEMON" /etc/rc.local
+#then
+#    echo "[Autobed Install] GPIO daemon already set to start on boot"
+#else
+#    echo "[Autobed Install] Setting GPIO daemon to start on boot"
+#    sudo cp /etc/rc.local /etc/rc.local.bak
+#    sudo sed --in-place "/^exit 0/i $GPIO_DAEMON >> /var/log/autobed2.log 2>1&\n" /etc/rc.local
+#fi
 
 if which apache2
 then

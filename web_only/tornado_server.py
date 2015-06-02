@@ -8,13 +8,13 @@ import RPi.GPIO as GPIO
 
 import atexit
 
-PORT = 8028
-cmdMap = {'headUP': 17,
-          'headDN': 18,
-          'bedUP': 27,
-          'bedDN': 22,
-          'legsUP': 23,
-          'legsDN': 24}
+PORT = 828
+cmdMap = {'headUP': 23,
+          'headDN': 27,
+          'bedUP': 25,
+          'bedDN': 24,
+          'legsUP': 4,
+          'legsDN': 17}
 timers = {}
 
 class AutobedWebSocketHandler(WebSocketHandler):

@@ -64,7 +64,7 @@ var AutoBed = (function () {
 
     var init = function () {
         if ("WebSocket" in window) {
-        ws = new WebSocket("ws://"+window.location.host+":8028");
+        ws = new WebSocket("ws://"+window.location.host+":828");
         ws.onopen = onOpen;
         ws.onmessage = onMessage;
         ws.onclose = onClose;
