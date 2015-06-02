@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import serial
+import time
 import numpy as np
 
 import roslib; roslib.load_manifest('autobed_engine')
@@ -10,38 +11,44 @@ import sharp_prox_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
+import RPi.GPIO as GPIO
+import atexit
 
 from std_msgs.msg import Bool, Float32, String, Int16
 from hrl_msgs.msg import FloatArrayBare, StringArray
 from geometry_msgs.msg import Transform, Vector3, Quaternion
-
-from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse, None_String, None_StringResponse
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
 ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
-
-"""List of positive movements"""
-AUTOBED_COMMANDS = [[0, 'A', 'B'], [0, 'C', 'D'], [0, 'E', 'F']]#Don't ask why this isn't in alphbetical order, its Henry Clever's boo-boo. Needs to change on the Arduino.
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 'A', 'headDN': 'B', 'bedUP':'C', 'bedDN':'D', 'legsUP':'E', 'legsDN':'F'}
+CMDS = {'headUP': 23, 
+        'headDN': 27, 
+        'bedUP':25, 
+        'bedDN':24, 
+        'legsUP':4, 
+        'legsDN':17}
+"""List of positive movements"""
+AUTOBED_COMMANDS = [[0, 'headUP', 'headDN'], 
+                    [0, 'bedUP', 'bedDN'], 
+                    [0, 'legsUP', 'legsDN']]
+timers = {}
 
 ##
 #Class AutobedClient()
-#gives interface to connect to the Autobed, that contains methods to run the autobed engine,
-#and access the sharp IR sensors on board the bed.
+#gives interface to connect to the Autobed, that contains methods to run the 
+#autobed engine, and access the sharp IR sensors on board the bed.
 #
-
 class AutobedClient():
-    """  Gives interface to connect to the Autobed, that contains methods to run the autobed engine,
-         and access the sharp IR sensors on board the bed."""
-
-    def __init__(self, dev, autobed_config_file, param_file, baudrate, num_of_sensors):
-        '''Autobed engine node that listens into the base selection output data array
-        and feeds the same as an input to the autobed control system. Further, it listens to the sensor
-        position'''
+    """Gives interface to connect to the Autobed, that contains methods to run
+    the autobed engine, and access the sharp IR sensors on board the bed."""
+    def __init__(self, dev, autobed_config_file, param_file, 
+            baudrate, num_of_sensors):
+        '''Autobed engine node that listens into the base selection output data 
+        array and feeds the same as an input to the autobed control system. 
+        Further, it listens to the sensor position'''
         self.dev = dev
         self.autobed_config_file = autobed_config_file
         self.param_file = param_file
@@ -49,29 +56,31 @@ class AutobedClient():
         self.num_of_sensors = num_of_sensors
         self.reached_destination = True * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
-        #Create a serial object for the Autobed to communicate with sensors and actuators.
-        self.autobed_sender = serial.Serial(dev, baudrate = baudrate)
         #Create a proximity sensor object
-        self.prox_driver = sharp_prox_driver.ProximitySensorDriver(int(num_of_sensors),
-                                                                   param_file = self.param_file,
-                                                                   dev = self.dev,
-                                                                   baudrate = self.baudrate)
+        self.prox_driver = (
+                sharp_prox_driver.ProximitySensorDriver(
+                    int(num_of_sensors), 
+                    param_file = self.param_file,
+                    dev = self.dev,
+                    baudrate = self.baudrate))
         # Input to the control system.
-        self.autobed_u = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
+        self.autobed_u = (self.positions_in_autobed_units(
+            self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
         #Start a publisher to publish autobed status and error
         self.abdout0 = rospy.Publisher("/abdout0", FloatArrayBare)
         self.abdstatus0 = rospy.Publisher("/abdstatus0", Bool)
-
         self.abdout1 = rospy.Publisher("/abdout1", StringArray, latch=True)
         #Start a subscriber to run the autobed engine when we get a command
-        rospy.Subscriber("/abdin0", FloatArrayBare, self.autobed_engine_callback)
-        #Start a subscriber that takes a differential input and just relays it to the autobed.
+        rospy.Subscriber("/abdin0", FloatArrayBare, 
+                self.autobed_engine_callback)
+        #Start a subscriber that takes a differential input & relays it to bed
         rospy.Subscriber("/abdin1", String, self.differential_control_callback)
-        #Set up the service that stores present Autobed configuration in the yaml file
-        rospy.Service('add_autobed_config', update_bed_config, self.add_autobed_configuration)
-        #Set up the service that deletes specified Autobed configuration  in the yaml file
-        rospy.Service('delete_autobed_config', update_bed_config, self.delete_autobed_configuration)
-
+        #Set up the service that stores present Autobed configuration
+        rospy.Service('add_autobed_config', update_bed_config, 
+                self.add_autobed_configuration)
+        #Set up the service that deletes specified Autobed configuration  
+        rospy.Service('delete_autobed_config', update_bed_config, 
+                self.delete_autobed_configuration)
         try:
             init_autobed_config_data = load_pickle(self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
@@ -79,17 +88,41 @@ class AutobedClient():
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
+        self.GPIO_setup()
         #Let the sensors warm up
-        print 'Initializing Autobed 1.5 ...'
+        print '*** Autobed 2.0 Ready ***'
         rospy.sleep(1.)
+
+
+    def GPIO_setup():
+        GPIO.setmode(GPIO.BCM)
+        for pin in cmdMap.values():
+            GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
+        print "AutoBed GPIO configuration complete."
+
+
+    def GPIO_cleanup():
+        for pin in cmdMap.values():
+            GPIO.output(pin, GPIO.LOW)
+        GPIO.cleanup()
+
+
+    def diff_motion(self, message):
+        '''Will power the autobed for 0.5 seconds on the pin specified in the
+        message'''
+        pin = CMDS[message]
+        GPIO.output(pin, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(pin, GPIO.LOW)
+
 
     def positions_in_autobed_units(self, distances):
         ''' Accepts position of the obstacle which is placed at 
         4.92 cm(I tried to keep it 5 cm away) from sensor at 0.0 degrees 
         and is at 18.37 cm away from sensor at 74.64 degrees(which is maximum),
-        For the foot sensor, the sensor shows a reading of about 10.70cm for maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees.
+        For the foot sensor, the sensor shows a reading of about 10.70cm for 
+        maximum angle of 61 degrees and value of 15.10 for an angle of 0 degrees
         and returns value of the head tilt in degrees'''
-    
         if distances[0] <= 8.87:
             distances[0] = (2.7615*distances[0] - 14.0838)
         elif distances[0] > 8.87 and distances[0] <= 11.2:
@@ -105,7 +138,6 @@ class AutobedClient():
         else:
             distances[0] = 80
             
-        
         if distances[2] >= 23.00:
             distances[2] = 0
         elif distances[2] >= 20.4 and distances[2] < 23.00:
@@ -122,41 +154,48 @@ class AutobedClient():
 
 
     def differential_control_callback(self, data):
-        ''' Accepts incoming differential control values and simply relays them to the Autobed.
-        This mode is used when Henry wants to control the autobed manually even if no sensors are present'''
-        #print "Got: ", data.data
+        ''' Accepts incoming differential control values and simply relays them 
+        to the Autobed. This mode is used when Henry wants to control the 
+        autobed manually even if no sensors are present'''
         autobed_config_data = load_pickle(self.autobed_config_file) 
         if data.data in CMDS: 
-            self.autobed_sender.write(CMDS[data.data])
+            self.diff_motion(data.data)
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
             u_thresh = np.array([80.0, 30.0, 50.0])
             l_thresh = np.array([1.0, 9.0, 1.0])
-            self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
-            self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
-            #Make reached_destination boolean flase for all the actuators on the bed.
+            self.autobed_u[self.autobed_u > u_thresh] = (
+                    u_thresh[self.autobed_u > u_thresh])
+            self.autobed_u[self.autobed_u < l_thresh] = (
+                    l_thresh[self.autobed_u < l_thresh])
+            #Make reached_destination boolean false for all the actuators 
             self.reached_destination = False * np.ones(NUM_ACTUATORS)
             self.actuator_number = 0
 
-    def autobed_engine_callback(self, data):
-        ''' Accepts incoming position values from the base selection algorithm and assigns it to a
-            global variable. This variable is then used to guide the autobed to the desired position
-            using the engine'''
 
-        #rospy.loginfo('[Autobed Engine Listener Callback] I heard the message: {}'.format(data.data))
+    def autobed_engine_callback(self, data):
+        ''' Accepts incoming position values from the base selection algorithm 
+        and assigns it to a global variable. This variable is then used to guide 
+        the autobed to the desired position using the engine'''
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
         u_thresh = np.array([80.0, 30.0, 50.0])
         l_thresh = np.array([1.0, 9.0, 1.0])
-        self.autobed_u[self.autobed_u > u_thresh] = u_thresh[self.autobed_u > u_thresh]
-        self.autobed_u[self.autobed_u < l_thresh] = l_thresh[self.autobed_u < l_thresh]
-        #Make reached_destination boolean flase for all the actuators on the bed.
+        self.autobed_u[self.autobed_u > u_thresh] = (
+                u_thresh[self.autobed_u > u_thresh])
+        self.autobed_u[self.autobed_u < l_thresh] = (
+                l_thresh[self.autobed_u < l_thresh])
+        #Make reached_destination boolean flase for all the actuators on the bed
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
 
+
     def delete_autobed_configuration(self, req):
-        """ Is the callback from the GUI Interaction Service. This service is called when a user wants to delete a saved position. 
-        This function will update the autobed_config_data.yaml file by removing the data corresponding to the string specified. If successful, it will return a boolean value"""
+        """ Is the callback from the GUI Interaction Service. This service is 
+        called when a user wants to delete a saved position. This function will 
+        update the autobed_config_data.yaml file by removing the data 
+        corresponding to the string specified. If successful, it will return a 
+        boolean value"""
         try:
             #Get Autobed pickle file from the params directory into a dictionary
             current_autobed_config_data = load_pickle(self.autobed_config_file)
@@ -180,9 +219,13 @@ class AutobedClient():
         except:
             return update_bed_configResponse(False)
 
+
     def add_autobed_configuration(self, req):
-        ''' Is the callback from the GUI interaction Service. This service is called when the user wants to 
-        save a position to the Autobed. This function will update the autobed_config_data.yaml file with the input string and the present configuration of the bed. Once this is done, it will output success to the client'''
+        ''' Is the callback from the GUI interaction Service. This service is 
+        called when the user wants to save a position to the Autobed. This 
+        function will update the autobed_config_data.yaml file with the input 
+        string and the present configuration of the bed. Once this is done, it 
+        will output success to the client'''
         try:
             #Get Autobed pickle file from the params directory into a dictionary
             current_autobed_config_data = load_pickle(self.autobed_config_file)
@@ -195,10 +238,13 @@ class AutobedClient():
             return update_bed_configResponse(False)
         else:
             #Append present Autobed positions and angles to the dictionary
-            current_autobed_config_data[req.config] = self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])
+            current_autobed_config_data[req.config] = (
+                    self.positions_in_autobed_units((
+                        self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             try:
                 #Update param file
-                save_pickle(current_autobed_config_data, self.autobed_config_file)
+                save_pickle(current_autobed_config_data, 
+                        self.autobed_config_file)
                 #Publish list of keys to the abdout1 topic
                 self.abdout1.publish(current_autobed_config_data.keys())
                 #Return success if param file correctly updated
@@ -206,27 +252,38 @@ class AutobedClient():
             except:
                 return add_bed_configResponse(False)
 
+
     def run(self):
         rate = rospy.Rate(5) #5 Hz
-        self.actuator_number = 0 #Variable that denotes what actuator is presently being controlled
-        '''Initialize the autobed input to the current sensor values, so that the autobed doesn't move unless commanded'''
-        autobed_u =   np.asarray(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-
+        #Variable that denotes what actuator is presently being controlled
+        self.actuator_number = 0 
+        '''Initialize the autobed input to the current sensor values, 
+        so that the autobed doesn't move unless commanded'''
+        autobed_u =   np.asarray(self.positions_in_autobed_units((
+            self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
         while not rospy.is_shutdown():
             #Compute error vector
-            autobed_error = np.asarray(self.autobed_u - self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-            #rospy.loginfo('autobed_u = {}, sensor_data= {}, error = {}, reached_destination = {}, self.actuator_number = {}'.format(self.autobed_u, self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]), autobed_error, self.reached_destination, self.actuator_number))
+            autobed_error = np.asarray(self.autobed_u - 
+                    (self.positions_in_autobed_units((
+                        self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS])))
             #Publish present Autobed sensor readings
-            self.abdout0.publish(self.positions_in_autobed_units((self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
+            self.abdout0.publish(self.positions_in_autobed_units((
+                self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
             if self.reached_destination.all() == False:
-                #If the error is greater than some allowed offset, then we actuate the motors to get closer to desired position'''
+                '''If the error is greater than some allowed offset, 
+                then we actuate the motors to get closer to desired position'''
                 if self.actuator_number < (NUM_ACTUATORS):
-                    if abs(autobed_error[self.actuator_number]) > ERROR_OFFSET[self.actuator_number]:
-                        self.autobed_sender.write(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))])
+                    if abs(autobed_error[self.actuator_number]) > (
+                            ERROR_OFFSET[self.actuator_number]):
+                        diff_motion(
+                                AUTOBED_COMMANDS[self.actuator_number][int(
+                                    autobed_error[self.actuator_number]/abs(
+                                        autobed_error[self.actuator_number]))])
                         self.reached_destination[self.actuator_number] = False
                     else:
                         self.reached_destination[self.actuator_number] = True
-                        #We have reached destination for actuator self.actuator_number. Upgrade the actuation count
+                        #We have reached destination for current actuator 
+                        #Upgrade the actuation count
                         self.actuator_number += 1
             #If we have reached the destination position at all the actuators,
             #then publish the error and a boolean that says we have reached
@@ -236,15 +293,23 @@ class AutobedClient():
                 self.abdstatus0.publish(False)
             rate.sleep()
 
-'''Runs the Autobed robot using an object of the AutobedClient class and the run method provided therein'''
+
 if __name__ == "__main__":
+    '''Runs the Autobed robot using an object of the 
+    AutobedClient class and the run method provided therein'''
+    atexit.register(GPIO_cleanup)
     import argparse
     parser = argparse.ArgumentParser(description="ROS Interface for AutoBed")
-    parser.add_argument("serial_device", type=str, help="The serial device for the AutoBed Arduino serial connection.")
-    parser.add_argument("baudrate", type=int, help="AutoBed Serial Baudrate")
-    parser.add_argument("sensor_param_file", type=str, help="The paramter file describing the autobed sensors")
-    parser.add_argument("number_of_sensors", type=int, help="Number of sensors on the AutoBed", default=4)
-    parser.add_argument("autobed_config_file", type=str, help="Configuration file fo the AutoBed")
+    parser.add_argument("serial_device", type=str, 
+            help="The serial device for the AutoBed Arduino serial connection.")
+    parser.add_argument("baudrate", 
+            type=int, help="AutoBed Serial Baudrate")
+    parser.add_argument("sensor_param_file", 
+            type=str, help="The paramter file describing the autobed sensors")
+    parser.add_argument("number_of_sensors", 
+            type=int, help="Number of sensors on the AutoBed", default=4)
+    parser.add_argument("autobed_config_file", 
+            type=str, help="Configuration file fo the AutoBed")
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
     rospy.init_node('autobed_engine', anonymous = True)
