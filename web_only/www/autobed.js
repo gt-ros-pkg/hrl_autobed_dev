@@ -20,7 +20,7 @@ var AutoBed = (function () {
     var sendCmd = function (cmd) {
         if (sendOKFlag) {
             ws.send(cmd.toString())
-            sendTimer = setTimeout(function(){ sendCmd(cmd) }, 100)
+            sendTimer = setTimeout(function(){ sendCmd(cmd) }, 75)
         } else {
             clearTimeout(sendTimer);
         }
