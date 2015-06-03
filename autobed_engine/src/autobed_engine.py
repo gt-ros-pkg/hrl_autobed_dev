@@ -94,15 +94,15 @@ class AutobedClient():
         rospy.sleep(1.)
 
 
-    def GPIO_setup():
+    def GPIO_setup(self):
         GPIO.setmode(GPIO.BCM)
-        for pin in cmdMap.values():
+        for pin in CMDS.values():
             GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
         print "AutoBed GPIO configuration complete."
 
 
-    def GPIO_cleanup():
-        for pin in cmdMap.values():
+    def GPIO_cleanup(self):
+        for pin in CMDS.values():
             GPIO.output(pin, GPIO.LOW)
         GPIO.cleanup()
 
@@ -297,7 +297,6 @@ class AutobedClient():
 if __name__ == "__main__":
     '''Runs the Autobed robot using an object of the 
     AutobedClient class and the run method provided therein'''
-    atexit.register(GPIO_cleanup)
     import argparse
     parser = argparse.ArgumentParser(description="ROS Interface for AutoBed")
     parser.add_argument("serial_device", type=str, 
@@ -318,4 +317,6 @@ if __name__ == "__main__":
                             args.sensor_param_file,
                             args.baudrate,
                             args.number_of_sensors)
+
+    atexit.register(autobed.GPIO_cleanup)
     autobed.run()

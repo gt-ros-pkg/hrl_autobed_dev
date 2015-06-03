@@ -1,5 +1,5 @@
 <launch>
-    <arg name="dev" default="/dev/ttyUSB0" />
+    <arg name="dev" default="/dev/ttyACM0" />
     <arg name="param_file" default="$(find autobed_engine)/params/darpa_arm_prox_sensors_link_1.yaml" />
     <arg name="num_sensors" default="4" />
     <arg name="baudrate" default="9600" />
