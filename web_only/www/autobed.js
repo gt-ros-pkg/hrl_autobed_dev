@@ -6,6 +6,7 @@ var AutoBed = (function () {
 	permanent = (permanent === undefined) ? false : permanent;
         var logDiv =  document.getElementById('log');
         logDiv.innerHTML = txt;
+        console.log(txt);
         if (logTimer !== null) {
             clearTimeout(logTimer);
         }
@@ -28,25 +29,30 @@ var AutoBed = (function () {
 
     var setupButtonCBs = function (buttonElement) {
         buttonElement.addEventListener("mouseup", function(event){
-                    sendOKFlag = false;
-                    clearTimeout(sendTimer);
-                    });
+    	        sendOKFlag = false;
+	        clearTimeout(sendTimer);
+	    });
         buttonElement.addEventListener("mouseout", function(event){
-                    sendOKFlag = false;
-                    clearTimeout(sendTimer);
-                    });
+	        sendOKFlag = false;
+	        clearTimeout(sendTimer);
+	    });
         buttonElement.addEventListener("mouseleave", function(event){
-                    sendOKFlag = false;
-                    clearTimeout(sendTimer);
-                    });
+	        sendOKFlag = false;
+	        clearTimeout(sendTimer);
+	    });
         buttonElement.addEventListener("mousedown", function(event) {
-                    sendOKFlag = true;
-                    sendCmd(event.target.value);
-                    });
+            if (event.which === 1) { // Only respond to left mouse button (right will stick button down)
+	            sendOKFlag = true;
+	            sendCmd(event.target.value);
+	    }
+	    });
     };
     var heartBeatTimer, lastBeatTime;
-    var checkHeartBeat = function (ws) {
-
+    var checkHeartBeat = function () {
+        if (new Date() - lastBeatTime > 5000) {
+            ws.close()
+	}
+	ws.send('----heartbeat----')
     }
 
     var onOpen = function () {
@@ -54,6 +60,7 @@ var AutoBed = (function () {
 	for (var i=0; i<disconElems.length; i+=1) {
             disconElems[i].className = disconElems[i].className.replace("disconnected", "connected")
  	}
+	heartBeatTimer = setInterval(checkHeartBeat, 1000);
         setupButtonCBs(document.getElementById("head-up"));
         setupButtonCBs(document.getElementById("bed-up"));
         setupButtonCBs(document.getElementById("legs-up"));
@@ -65,11 +72,13 @@ var AutoBed = (function () {
 
     var onMessage = function (msg) {
         console.log("WS Received: ", msg);
+	if (msg.data === '----heartbeat----') {
+            lastBeatTime = new Date();
+        }
     }
 
     var onClose = function () {
-        console.log("Cannot connect to Autobed Server");
-	log("Cannot connect to Autobed Server.", true)
+	log("Connection to Autobed Controller Closed", true)
 	var conElems = document.querySelectorAll('.connected')
 	for (var i=0; i<conElems.length; i+=1) {
             conElems[i].className = conElems[i].className.replace("connected", "disconnected")
