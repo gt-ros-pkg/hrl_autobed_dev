@@ -49,10 +49,12 @@ var AutoBed = (function () {
     };
     var heartBeatTimer, lastBeatTime;
     var checkHeartBeat = function () {
-        if (new Date() - lastBeatTime > 5000) {
+        if (new Date() - lastBeatTime > 11000) {
             ws.close()
+            ws.onclose()
+	} else {
+	    ws.send('----heartbeat----')
 	}
-	ws.send('----heartbeat----')
     }
 
     var onOpen = function () {
@@ -60,7 +62,7 @@ var AutoBed = (function () {
 	for (var i=0; i<disconElems.length; i+=1) {
             disconElems[i].className = disconElems[i].className.replace("disconnected", "connected")
  	}
-	heartBeatTimer = setInterval(checkHeartBeat, 1000);
+	heartBeatTimer = setInterval(checkHeartBeat, 5000);
         setupButtonCBs(document.getElementById("head-up"));
         setupButtonCBs(document.getElementById("bed-up"));
         setupButtonCBs(document.getElementById("legs-up"));
@@ -71,7 +73,6 @@ var AutoBed = (function () {
     }
 
     var onMessage = function (msg) {
-        console.log("WS Received: ", msg);
 	if (msg.data === '----heartbeat----') {
             lastBeatTime = new Date();
         }
@@ -79,6 +80,7 @@ var AutoBed = (function () {
 
     var onClose = function () {
 	log("Connection to Autobed Controller Closed", true)
+        clearTimeout(heartBeatTimer);
 	var conElems = document.querySelectorAll('.connected')
 	for (var i=0; i<conElems.length; i+=1) {
             conElems[i].className = conElems[i].className.replace("connected", "disconnected")
