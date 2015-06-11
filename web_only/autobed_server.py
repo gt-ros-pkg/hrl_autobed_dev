@@ -10,6 +10,7 @@ import signal
 from sys import exit
 
 PORT = 828
+LED_PIN = 5
 cmdMap = {'headUP': 23,
           'headDN': 27,
           'bedUP': 25,
@@ -37,6 +38,7 @@ class AutobedWebSocketHandler(WebSocketHandler):
             pin = cmdMap[message]
             if timers[pin] is None:
                 GPIO.output(pin, GPIO.HIGH)
+                GPIO.output(LED_PIN, GPIO.LOW)
             else:
                 IOLoop.current().remove_timeout(timers[pin])
             #client sends msgs at 75ms intervals, this will stay up if one is missed entirely
@@ -47,6 +49,7 @@ class AutobedWebSocketHandler(WebSocketHandler):
 
     def reset_pin(self, pin):
         GPIO.output(pin, GPIO.LOW)
+        GPIO.output(LED_PIN, GPIO.HIGH)
         timers[pin] = None
         print "Reset %d" %pin
 
@@ -55,11 +58,13 @@ def GPIO_setup():
     for pin in cmdMap.values():
         GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
         timers[pin] = None
+    GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.LOW)
     print "AutoBed GPIO configuration complete."
 
 def GPIO_cleanup(signalnum, frame):
     for pin in cmdMap.values():
         GPIO.output(pin, GPIO.LOW)
+    GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
     print "Autobed GPIO cleanup complete. Exiting."
     exit(0)
@@ -72,4 +77,5 @@ if __name__=='__main__':
     application = Application([url(r"/", AutobedWebSocketHandler)])
     application.listen(PORT)
     print "Autobed Server Running..."
+    GPIO.output(LED_PIN, GPIO.HIGH)
     IOLoop.current().start()
