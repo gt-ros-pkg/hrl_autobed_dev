@@ -44,7 +44,7 @@ else
 fi
 
 # Copy website config file into apache config directory
-sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev-2.0/web_only/autobed_site_config >> /etc/apache2/sites-available/autobed"
+sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev-2.0/web_only/autobed_site_config > /etc/apache2/sites-available/autobed"
 sudo a2ensite autobed #enable autobed web interface site in apache
 sudo a2dissite default #disable existing default site in apache
 sudo service apache2 reload #reload sites in apache to apply changes
