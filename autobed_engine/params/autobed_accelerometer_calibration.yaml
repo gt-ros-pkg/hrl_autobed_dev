@@ -1,0 +1,13 @@
+0: { #Each channel on a specific arduino
+    calibration:{
+        coefficient: 1.0, 
+        offset: 0.0,
+        exponent: 0.0
+    },
+    normal_pose: {
+        frame: 1,
+        position: [0., 0., 0.],
+        orientation: [0, 0, 0, 1]
+    }
+}
+
