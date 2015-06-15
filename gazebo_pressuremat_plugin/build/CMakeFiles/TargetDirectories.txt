@@ -1,1 +1,0 @@
-/home/yashc/fuerte_workspace/sandbox/git/hrl_autobed_dev/gazebo_pressuremat_plugin/build/CMakeFiles/ros_pressuremat_plugin.dir

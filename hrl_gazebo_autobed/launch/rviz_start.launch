@@ -1,9 +1,0 @@
-<launch>
-	<arg name="model" />
-	<arg name="gui" default="False" />
-	<param name="robot_description" textfile="$(find hrl_gazebo_autobed)/urdf/autobed.URDF" />
-	<param name="use_gui" value="$(arg gui)"/>
-	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
-	<node name="autobed_state_publisher" pkg="hrl_gazebo_autobed" type="physical_to_rviz.py"/> 
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find urdf_tutorial)/urdf.vcg" />
-</launch>
