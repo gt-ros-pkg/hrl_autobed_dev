@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
+# Update package lists
 sudo apt-get update
+# Install python-dev, build tools, and pip (needed to install recent version of tornado)
 sudo apt-get install build-essential python-dev python-pip
+# Install tornado for websocket server, upgrade to recent version
 sudo pip install --upgrade tornado
 
+# Make Autobed directory in user home.  All install activities occur here.
 mkdir -p ~/Autobed
 cd ~/Autobed
 
+# Grab code from github, or pull latest version if already present
 if [ ! -d "./hrl_autobed_dev" ]
 then
 	echo "[Autobed Install] Retrieving Autobed Software"
@@ -18,17 +23,18 @@ else
 	cd ../
 fi
 
-# Add autobed_server to startup on rc.local
+# Add autobed_server to  /etc/rc.local so that it starts on boot
 AUTOBED_SERVER="/home/$USER/Autobed/hrl_autobed_dev/web_only/autobed_server.py"
 if grep -q "$AUTOBED_SERVER" /etc/rc.local
 then
     echo "[Autobed Install] Autobed Server already set to start on boot"
 else
     echo "[Autobed Install] Setting Autobed Server to start on boot"
-    sudo cp /etc/rc.local /etc/rc.local.bak
+    sudo cp /etc/rc.local /etc/rc.local.bak # Back up rc.local before modifying
     sudo sed --in-place "/^exit 0/i $AUTOBED_SERVER >> /var/log/autobed.log 2>1&\n" /etc/rc.local
 fi
 
+# Install apache web server
 if which apache2
 then
 	echo "[Autobed Install] Apache Web Server Already Installed"
@@ -37,9 +43,10 @@ else
 	sudo apt-get install apache2
 fi
 
+# Copy website config file into apache config directory
 sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev/web_only/autobed_site_config >> /etc/apache2/sites-available/autobed"
-sudo a2ensite autobed
-sudo a2dissite default
-sudo service apache2 reload
+sudo a2ensite autobed #enable autobed web interface site in apache
+sudo a2dissite default #disable existing default site in apache
+sudo service apache2 reload #reload sites in apache to apply changes
 
 echo "[Autobed Install] Install Complete"
