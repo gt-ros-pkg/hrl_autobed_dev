@@ -7,19 +7,19 @@ sudo pip install --upgrade tornado
 mkdir -p ~/Autobed
 cd ~/Autobed
 
-if [ ! -d "./hrl_autobed_dev" ]
+if [ ! -d "./hrl_autobed_dev-2.0" ]
 then
 	echo "[Autobed Install] Retrieving Autobed Software"
-	git clone https://github.com/gt-ros-pkg/hrl_autobed_dev.git
+#	git clone https://github.com/gt-ros-pkg/hrl_autobed_dev.git
+	wget https://github.com/gt-ros-pkg/hrl_autobed_dev/archive/v2.0.zip
+	unzip v2.0.zip
+	rm v2.0.zip
 else
-	echo "[Autobed Install] Autobed Software Found. Updating."
-	cd ./hrl_autobed_dev
-	git pull
-	cd ../
+	echo "[Autobed Install] Autobed Software Found."
 fi
 
 # Add autobed_server to startup on rc.local
-AUTOBED_SERVER="/home/$USER/Autobed/hrl_autobed_dev/web_only/autobed_server.py"
+AUTOBED_SERVER="/home/$USER/Autobed/hrl_autobed_dev-2.0/web_only/autobed_server.py"
 if grep -q "$AUTOBED_SERVER" /etc/rc.local
 then
     echo "[Autobed Install] Autobed Server already set to start on boot"
@@ -37,7 +37,7 @@ else
 	sudo apt-get install apache2
 fi
 
-sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev/web_only/autobed_site_config >> /etc/apache2/sites-available/autobed"
+sudo sh -c "sed \"s/ABD-USER/$USER/g\" /home/$USER/Autobed/hrl_autobed_dev-2.0/web_only/autobed_site_config >> /etc/apache2/sites-available/autobed"
 sudo a2ensite autobed
 sudo a2dissite default
 sudo service apache2 reload
