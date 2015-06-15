@@ -17,7 +17,6 @@ class BagfileToPickle():
         self.mat_pose_sampled = False
         self.ok_to_read_pose = False
         self.filename = filename
-
         rospy.init_node('pose_trainer_moving_bed', anonymous=True)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.current_physical_pressure_map_callback)
@@ -47,8 +46,11 @@ class BagfileToPickle():
                 self.autobed_angle_callback) 
         rospy.Subscriber("/abdstatus0", Bool,
                 self.autobed_status_callback) 
-
-        self.abdin0 = rospy.Publisher("/abdin0", FloatArrayBare)
+        rospy.Subscriber("/abd_head_angle/pose", TransformStamped, 
+                self.autobed_head_angle_cb)
+        rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
+                self.autobed_leg_angle_cb)
+        self.abdin1 = rospy.Publisher("/abdin1", String)
         try:
             self.training_database = pkl.load(open(self.filename, 'rb'))
         except:
@@ -57,6 +59,9 @@ class BagfileToPickle():
         self.count = 0 #When to sample the mat_origin
 
         self.autobed_pose = []
+        self.head_angle = []
+        self.leg_angle = []
+
         self.head_pose = []
         #self.head_orientation = []
         self.torso_pose = []
@@ -68,11 +73,23 @@ class BagfileToPickle():
         self.r_knee_pose = []
         self.l_ankle_pose = []
         self.r_ankle_pose = []
-
+    
 
     def autobed_angle_callback(self, data):
         '''This callback is used to store autobed angles'''
         self.autobed_pose = data.data
+
+
+    def autobed_head_angle_cb(self, data):
+        '''These angles are the ground truth obtained from the markers placed
+        on the autobed'''
+        self.autobed_head_angle = data.data
+
+
+    def autobed_leg_angle_cb(self, data):
+        '''These angles are the ground truth obtained from the markers placed
+        on the autobed'''
+        self.autobed_leg_angle = data.data
 
 
     def autobed_status_callback(self, data):
@@ -112,6 +129,7 @@ class BagfileToPickle():
                                 #data.transform.rotation.z,
                                 #data.transform.rotation.w]
 
+
     def torso_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
         self.torso_pose = [data.transform.translation.x,
@@ -146,6 +164,7 @@ class BagfileToPickle():
                          data.transform.translation.y,
                          data.transform.translation.z]
 
+
     def l_knee_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
         self.l_knee_pose = [data.transform.translation.x,
@@ -158,6 +177,7 @@ class BagfileToPickle():
         self.r_knee_pose = [data.transform.translation.x,
                          data.transform.translation.y,
                          data.transform.translation.z]
+
 
     def l_ankle_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
@@ -172,16 +192,13 @@ class BagfileToPickle():
                          data.transform.translation.y,
                          data.transform.translation.z]
 
+
     def take_bed_through_one_motion_cycle(self):
         '''This function moves the bed through a certain number of discrete
         steps'''
-        head_angle_increment = 15
-        leg_angle_increment = 15
-        head_angle = 0
-        leg_angle = 0
-        r = rospy.Rate(1) #1Hz
-        while head_angle <= 90: 
-            self.abdin0.publish([head_angle, 0, 0])
+        r = rospy.Rate(1) #Hz
+        while self.head_angle <= 70: 
+            self.abdin1.publish('headUP')
             r.sleep()
             if self.ok_to_read_pose == True:
                 X = (self.pressure_map + tuple(self.autobed_pose))
@@ -193,10 +210,10 @@ class BagfileToPickle():
                     self.l_ankle_pose + self.r_ankle_pose )
                     #+ self.head_orientation)
                 self.ok_to_read_pose = False
-                head_angle += head_angle_increment
-
-        while leg_angle <= 60:
-            self.abdin0.publish([0, 0, leg_angle])
+        while self.head_angle >= 2: 
+            self.abdin1.publish('headDN')
+        while self.leg_angle <= 44:
+            self.abdin1.publish('legsUP')
             r.sleep()
             if self.ok_to_read_pose == True:
                 X = (self.pressure_map + tuple(self.autobed_pose))
@@ -208,7 +225,9 @@ class BagfileToPickle():
                     self.l_ankle_pose + self.r_ankle_pose )
                     #+ self.head_orientation)
                 self.ok_to_read_pose = False
-                head_angle += head_angle_increment
+        while self.leg_angle >= 2: 
+            self.abdin1.publish('legsDN')
+ 
         return
 
 
