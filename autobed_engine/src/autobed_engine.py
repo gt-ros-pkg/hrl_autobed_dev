@@ -11,7 +11,7 @@ import sharp_prox_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
-import RPi.GPIO as GPIO
+import websocket
 import atexit
 
 from std_msgs.msg import Bool, Float32, String, Int16
@@ -88,32 +88,21 @@ class AutobedClient():
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
-        self.GPIO_setup()
+	self.ws = websocket.create_connection("ws://localhost:828")
         #Let the sensors warm up
+        rospy.sleep(3.)
         print '*** Autobed 2.0 Ready ***'
-        rospy.sleep(1.)
 
 
-    def GPIO_setup(self):
-        GPIO.setmode(GPIO.BCM)
-        for pin in CMDS.values():
-            GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
-        print "AutoBed GPIO configuration complete."
-
-
-    def GPIO_cleanup(self):
-        for pin in CMDS.values():
-            GPIO.output(pin, GPIO.LOW)
-        GPIO.cleanup()
-
+    def websocket_cleanup(self):
+	ws.close()
 
     def diff_motion(self, message):
-        '''Will power the autobed for 0.5 seconds on the pin specified in the
-        message'''
-        pin = CMDS[message]
-        GPIO.output(pin, GPIO.HIGH)
-        time.sleep(0.5)
-        GPIO.output(pin, GPIO.LOW)
+        '''will send differential command message to websocket'''
+	try:
+	    ws.send(message)
+	except:
+	    return
 
 
     def positions_in_autobed_units(self, distances):
