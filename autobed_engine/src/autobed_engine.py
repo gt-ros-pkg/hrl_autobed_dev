@@ -24,12 +24,12 @@ ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
-CMDS = {'headUP': 23, 
-        'headDN': 27, 
-        'bedUP':25, 
-        'bedDN':24, 
-        'legsUP':4, 
-        'legsDN':17}
+CMDS = ['headUP', 
+        'headDN', 
+        'bedUP', 
+        'bedDN', 
+        'legsUP', 
+        'legsDN']
 """List of positive movements"""
 AUTOBED_COMMANDS = [[0, 'headUP', 'headDN'], 
                     [0, 'bedUP', 'bedDN'], 
@@ -49,6 +49,8 @@ class AutobedClient():
         '''Autobed engine node that listens into the base selection output data 
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
+        self.u_thresh = np.array([75.0, 30.0, 45.0])
+        self.l_thresh = np.array([1.0, 9.0, 1.0])
         self.dev = dev
         self.autobed_config_file = autobed_config_file
         self.param_file = param_file
@@ -88,7 +90,7 @@ class AutobedClient():
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
-	self.ws = websocket.create_connection("ws://localhost:828")
+	    self.ws = websocket.create_connection("ws://localhost:828")
         #Let the sensors warm up
         rospy.sleep(3.)
         print '*** Autobed 2.0 Ready ***'
@@ -151,12 +153,12 @@ class AutobedClient():
             self.diff_motion(data.data)
         else:
             self.autobed_u = np.asarray(autobed_config_data[data.data])
-            u_thresh = np.array([80.0, 30.0, 50.0])
-            l_thresh = np.array([1.0, 9.0, 1.0])
-            self.autobed_u[self.autobed_u > u_thresh] = (
-                    u_thresh[self.autobed_u > u_thresh])
-            self.autobed_u[self.autobed_u < l_thresh] = (
-                    l_thresh[self.autobed_u < l_thresh])
+            self.u_thresh = np.array([80.0, 30.0, 50.0])
+            self.l_thresh = np.array([1.0, 9.0, 1.0])
+            self.autobed_u[self.autobed_u > self.u_thresh] = (
+                    self.u_thresh[self.autobed_u > self.u_thresh])
+            self.autobed_u[self.autobed_u < self.l_thresh] = (
+                    self.l_thresh[self.autobed_u < self.l_thresh])
             #Make reached_destination boolean false for all the actuators 
             self.reached_destination = False * np.ones(NUM_ACTUATORS)
             self.actuator_number = 0
@@ -168,12 +170,10 @@ class AutobedClient():
         the autobed to the desired position using the engine'''
         self.autobed_u = np.asarray(data.data)
         #We threshold the incoming data
-        u_thresh = np.array([80.0, 30.0, 50.0])
-        l_thresh = np.array([1.0, 9.0, 1.0])
-        self.autobed_u[self.autobed_u > u_thresh] = (
-                u_thresh[self.autobed_u > u_thresh])
-        self.autobed_u[self.autobed_u < l_thresh] = (
-                l_thresh[self.autobed_u < l_thresh])
+        self.autobed_u[self.autobed_u > self.u_thresh] = (
+                self.u_thresh[self.autobed_u > self.u_thresh])
+        self.autobed_u[self.autobed_u < self.l_thresh] = (
+                self.l_thresh[self.autobed_u < self.l_thresh])
         #Make reached_destination boolean flase for all the actuators on the bed
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
@@ -307,5 +307,5 @@ if __name__ == "__main__":
                             args.baudrate,
                             args.number_of_sensors)
 
-    atexit.register(autobed.GPIO_cleanup)
+    atexit.register(autobed.websocket_cleanup)
     autobed.run()
