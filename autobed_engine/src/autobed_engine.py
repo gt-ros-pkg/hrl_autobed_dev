@@ -90,19 +90,19 @@ class AutobedClient():
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
-	    self.ws = websocket.create_connection("ws://localhost:828")
+	self.ws = websocket.create_connection("ws://localhost:828")
         #Let the sensors warm up
         rospy.sleep(3.)
         print '*** Autobed 2.0 Ready ***'
 
 
     def websocket_cleanup(self):
-	ws.close()
+	self.ws.close()
 
     def diff_motion(self, message):
         '''will send differential command message to websocket'''
 	try:
-	    ws.send(message)
+	    self.ws.send(message)
 	except:
 	    return
 
@@ -243,7 +243,7 @@ class AutobedClient():
 
 
     def run(self):
-        rate = rospy.Rate(5) #5 Hz
+        rate = rospy.Rate(20) #5 Hz
         #Variable that denotes what actuator is presently being controlled
         self.actuator_number = 0 
         '''Initialize the autobed input to the current sensor values, 
@@ -264,7 +264,7 @@ class AutobedClient():
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
-                        diff_motion(
+                        self.diff_motion(
                                 AUTOBED_COMMANDS[self.actuator_number][int(
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
