@@ -38,7 +38,7 @@ AutoBed.rosInit = function () {
             AutoBed.controlsPub.publish({'data':string});
             AutoBed.diffTimer = setTimeout(function () {
                     AutoBed.sendDiffCmd(string)}
-                    , 250)
+                    , 75)
         } else {
             clearTimeout(AutoBed.diffTimer);
         }

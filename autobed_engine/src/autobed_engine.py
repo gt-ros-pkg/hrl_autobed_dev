@@ -17,11 +17,12 @@ import atexit
 
 from std_msgs.msg import Bool, Float32, String, Int16
 from hrl_msgs.msg import FloatArrayBare, StringArray
+from geometry_msgs.msg import TransformStamped 
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [2, 2, 2] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -46,11 +47,11 @@ class AutobedClient():
     """Gives interface to connect to the Autobed, that contains methods to run
     the autobed engine, and access the sharp IR sensors on board the bed."""
     def __init__(self, dev, autobed_config_file, param_file, 
-            baudrate, num_of_sensors):
+            baudrate, num_of_sensors, sensor_type):
         '''Autobed engine node that listens into the base selection output data 
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
-        self.SENSOR_TYPE = 'MOCAP'
+        self.SENSOR_TYPE = sensor_type
         self.u_thresh = np.array([75.0, 30.0, 45.0])
         self.l_thresh = np.array([1.0, 9.0, 1.0])
         self.dev = dev
@@ -67,6 +68,16 @@ class AutobedClient():
                     param_file = self.param_file,
                     dev = self.dev,
                     baudrate = self.baudrate))
+
+        if self.SENSOR_TYPE == 'MOCAP':
+            self.leg_angle = 0
+            self.head_angle = 0
+            rospy.Subscriber("/abd_head_angle/pose", TransformStamped, 
+                                                self.autobed_head_angle_cb)
+            rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
+                                                self.autobed_leg_angle_cb)
+        #Let the sensors warm up
+        rospy.sleep(3.)
         # Input to the control system.
         self.autobed_u = (self.get_sensor_data())
         #Start a publisher to publish autobed status and error
@@ -91,27 +102,17 @@ class AutobedClient():
             init_autobed_config_data = {}
             save_pickle(init_autobed_config_data, self.autobed_config_file)
             self.abdout1.publish(init_autobed_config_data.keys())
-	    self.ws = websocket.create_connection("ws://localhost:828")
-        if self.SENSOR_TYPE == 'MOCAP':
-            self.leg_angle = 0
-            self.head_angle = 0
-            rospy.Subscriber("/abd_head_angle/pose", TransformStamped, 
-                                                self.autobed_head_angle_cb)
-            rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
-                                                self.autobed_leg_angle_cb)
-
-        #Let the sensors warm up
-        rospy.sleep(3.)
+	self.ws = websocket.create_connection("ws://localhost:828")
         print '*** Autobed 2.0 Ready ***'
 
 
     def websocket_cleanup(self):
-	ws.close()
+	self.ws.close()
 
     def diff_motion(self, message):
         '''will send differential command message to websocket'''
 	try:
-	    ws.send(message)
+	    self.ws.send(message)
 	except:
 	    return
 
@@ -163,7 +164,6 @@ class AutobedClient():
         self.head_angle = 180 + math.atan2(2*(q0*q3 + q1*q2), (1 - 
                                     2*(q2**2 + q3**2)))*(180.0/ math.pi) 
 
-
     def autobed_leg_angle_cb(self, data):
         '''These angles are the ground truth obtained from the markers placed
         on the autobed'''
@@ -173,7 +173,6 @@ class AutobedClient():
         q3 = data.transform.rotation.w
         self.leg_angle = 180 - math.atan2(2*(q0*q3 + q1*q2), (1 - 
                                     2*(q2**2 + q3**2)))*(180.0/ math.pi) 
-
 
 
     def differential_control_callback(self, data):
@@ -207,8 +206,9 @@ class AutobedClient():
                 self.u_thresh[self.autobed_u > self.u_thresh])
         self.autobed_u[self.autobed_u < self.l_thresh] = (
                 self.l_thresh[self.autobed_u < self.l_thresh])
-        ([self.autobed_u[i] = current_autobed_pose[i] 
-                for i in range(len(self.autobed_u)) if math.isnan(self.autobed_u[i])])
+	for i in range(len(self.autobed_u)):
+	    if math.isnan(self.autobed_u[i]):
+                self.autobed_u[i] = current_autobed_pose[i] 
         #Make reached_destination boolean flase for all the actuators on the bed
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
@@ -288,16 +288,16 @@ class AutobedClient():
 
 
     def run(self):
-        rate = rospy.Rate(5) #5 Hz
+        rate = rospy.Rate(20) #5 Hz
         #Variable that denotes what actuator is presently being controlled
         self.actuator_number = 0 
         '''Initialize the autobed input to the current sensor values, 
         so that the autobed doesn't move unless commanded'''
-        autobed_u =  self.get_sensor_data() 
+        self.autobed_u =  self.get_sensor_data() 
         while not rospy.is_shutdown():
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.get_sensor_data())
-            #Publish present Autobed sensor readings
+	    #Publish present Autobed sensor readings
             self.abdout0.publish(self.get_sensor_data())
             if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, 
@@ -305,7 +305,7 @@ class AutobedClient():
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
-                        diff_motion(
+                        self.diff_motion(
                                 AUTOBED_COMMANDS[self.actuator_number][int(
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
@@ -339,6 +339,10 @@ if __name__ == "__main__":
             type=int, help="Number of sensors on the AutoBed", default=4)
     parser.add_argument("autobed_config_file", 
             type=str, help="Configuration file fo the AutoBed")
+    parser.add_argument("sensor_type", 
+            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP"
+	    , default="MOCAP")
+
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
     rospy.init_node('autobed_engine', anonymous = True)
@@ -346,7 +350,8 @@ if __name__ == "__main__":
                             args.autobed_config_file,
                             args.sensor_param_file,
                             args.baudrate,
-                            args.number_of_sensors)
+                            args.number_of_sensors,
+			    args.sensor_type)
 
     atexit.register(autobed.websocket_cleanup)
     autobed.run()
