@@ -2,11 +2,13 @@
 import sys
 import operator
 import numpy as np
+import math
+from time import sleep
 
 import roslib; roslib.load_manifest('autobed_physical_trainer')
 import rospy
 import cPickle as pkl
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import TransformStamped
 
@@ -42,26 +44,32 @@ class BagfileToPickle():
                 self.l_ankle_origin_callback)
         rospy.Subscriber("/r_ankle_o/pose", TransformStamped,
                 self.r_ankle_origin_callback)
-        rospy.Subscriber("/abdout0", FloatArrayBare,
-                self.autobed_angle_callback) 
-        rospy.Subscriber("/abdstatus0", Bool,
-                self.autobed_status_callback) 
         rospy.Subscriber("/abd_head_angle/pose", TransformStamped, 
                 self.autobed_head_angle_cb)
         rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
                 self.autobed_leg_angle_cb)
-        self.abdin1 = rospy.Publisher("/abdin1", String)
+        self.abdin0 = rospy.Publisher("/abdin0", FloatArrayBare)
+        rospy.Subscriber("/abdout0", FloatArrayBare,
+                self.autobed_angle_callback) 
+        rospy.Subscriber("/abdstatus0", Bool,
+                self.autobed_status_callback) 
+
         try:
             self.training_database = pkl.load(open(self.filename, 'rb'))
         except:
             print "Pickle file didn't exist. Creating new pickle dataset."
             self.training_database = {}
         self.count = 0 #When to sample the mat_origin
-
+        self.SIZE_OF_CHECK_BUFFER = 20
+        self.check_buffer = ([True]*(self.SIZE_OF_CHECK_BUFFER/2) + 
+                                [False]*(self.SIZE_OF_CHECK_BUFFER/2))
+        self.comparison_buffer = self.check_buffer[:]
+        self.reached_goal = False
         self.autobed_pose = []
-        self.head_angle = []
-        self.leg_angle = []
+        self.head_angle = 0
+        self.leg_angle = 0
 
+        self.pressure_map = []
         self.head_pose = []
         #self.head_orientation = []
         self.torso_pose = []
@@ -83,25 +91,35 @@ class BagfileToPickle():
     def autobed_head_angle_cb(self, data):
         '''These angles are the ground truth obtained from the markers placed
         on the autobed'''
-        self.autobed_head_angle = data.data
+        q0 = data.transform.rotation.x
+        q1 = data.transform.rotation.y
+        q2 = data.transform.rotation.z
+        q3 = data.transform.rotation.w
+        self.head_angle = 180 + math.atan2(2*(q0*q3 + q1*q2), (1 - 
+                                    2*(q2**2 + q3**2)))*(180.0/ math.pi) 
 
 
     def autobed_leg_angle_cb(self, data):
         '''These angles are the ground truth obtained from the markers placed
         on the autobed'''
-        self.autobed_leg_angle = data.data
+        q0 = data.transform.rotation.x
+        q1 = data.transform.rotation.y
+        q2 = data.transform.rotation.z
+        q3 = data.transform.rotation.w
+        self.leg_angle = 180 - math.atan2(2*(q0*q3 + q1*q2), (1 - 
+                                    2*(q2**2 + q3**2)))*(180.0/ math.pi) 
+
 
 
     def autobed_status_callback(self, data):
         '''This callback is used to sample data when the autobed reaches a
         certain configuration. We will need only head and legs angles'''
-
-        if data.data == True:
-            self.ok_to_read_pose = True
-            return
+        self.check_buffer.append(data.data)
+        self.check_buffer.pop(0)
+        if self.check_buffer > self.comparison_buffer:
+            self.reached_goal = True
         else:
-            return
-
+            self.reached_goal = False
 
     def current_physical_pressure_map_callback(self, data):
         '''This callback accepts incoming pressure map from 
@@ -196,40 +214,58 @@ class BagfileToPickle():
     def take_bed_through_one_motion_cycle(self):
         '''This function moves the bed through a certain number of discrete
         steps'''
-        r = rospy.Rate(1) #Hz
-        while self.head_angle <= 70: 
-            self.abdin1.publish('headUP')
-            r.sleep()
+        print "Beginning training cycle. Will move head now"
+        print "Head Angle at start is {}".format(self.head_angle)
+        while self.reached_goal ==True and not rospy.is_shutdown():
+            self.abdin0.publish([75.0, float('nan'), float('nan')])
+            sleep(2)
+        while self.reached_goal == False and not rospy.is_shutdown():
+            print "Head Angle:{}".format(self.head_angle)
             if self.ok_to_read_pose == True:
-                X = (self.pressure_map + tuple(self.autobed_pose))
+                '''X = (self.pressure_map + tuple(self.autobed_pose))
                 self.training_database[X] = (self.head_pose +
                     #self.torso_pose +
                     #self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
                     self.l_knee_pose + self.r_knee_pose +
                     self.l_ankle_pose + self.r_ankle_pose )
-                    #+ self.head_orientation)
+                    #+ self.head_orientation)'''
                 self.ok_to_read_pose = False
-        while self.head_angle >= 2: 
-            self.abdin1.publish('headDN')
-        while self.leg_angle <= 44:
-            self.abdin1.publish('legsUP')
-            r.sleep()
+        print "Bringing the head down.."
+        print "Head Angle:{}".format(self.head_angle)
+        while self.reached_goal == True and not rospy.is_shutdown():
+            self.abdin0.publish([0.0, float('nan'), float('nan')])
+            sleep(2)
+        while self.reached_goal == False and not rospy.is_shutdown():
+            continue
+        print "Head completely down. Will raise the legs now"
+        print "Leg Angle at start is {}".format(self.leg_angle)
+        while self.reached_goal ==True and not rospy.is_shutdown():
+            self.abdin0.publish([float('nan'), float('nan'), 45.0])
+            sleep(2)
+        while self.reached_goal == False and not rospy.is_shutdown():
+            print "Leg Angle:{}".format(self.leg_angle)
             if self.ok_to_read_pose == True:
-                X = (self.pressure_map + tuple(self.autobed_pose))
+                '''X = (self.pressure_map + tuple(self.autobed_pose))
                 self.training_database[X] = (self.head_pose +
-                    self.torso_pose +
-                    self.l_elbow_pose + self.r_elbow_pose + 
+                    #self.torso_pose +
+                    #self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
                     self.l_knee_pose + self.r_knee_pose +
                     self.l_ankle_pose + self.r_ankle_pose )
-                    #+ self.head_orientation)
+                    #+ self.head_orientation)'''
                 self.ok_to_read_pose = False
-        while self.leg_angle >= 2: 
-            self.abdin1.publish('legsDN')
- 
-        return
+        print "Bringing the legs down.."
+        print "Leg Angle:{}".format(self.leg_angle)
+        while self.reached_goal == True and not rospy.is_shutdown():
+            self.abdin0.publish([float('nan'), float('nan'), 0.0])
+            sleep(2)
+        while self.reached_goal == False and not rospy.is_shutdown():
+            continue
+        print "***CURRENT POSE TESTED. MOVE TO NEXT POSE"
 
+        return
+    
 
     def run(self):
         '''This code just collects the first 1200 samples of the 
@@ -244,5 +280,5 @@ class BagfileToPickle():
                  
 
 if __name__ == "__main__":
-    convertor = BagfileToPickle(sys.argv[1])
+    convertor = BagfileToPickle(sys.argv[1])                                         
     convertor.run()
