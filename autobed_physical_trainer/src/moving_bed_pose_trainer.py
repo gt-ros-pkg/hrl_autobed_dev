@@ -5,6 +5,8 @@ import numpy as np
 import math
 import atexit
 from time import sleep
+import thread
+import time
 
 import roslib; roslib.load_manifest('autobed_physical_trainer')
 import rospy
@@ -12,6 +14,29 @@ import cPickle as pkl
 from std_msgs.msg import Bool, String
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import TransformStamped
+try:
+    from msvcrt import getch  # try to import Windows version
+except ImportError:
+    def getch():   # define non-Windows version
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+key_pressed = None
+
+ 
+def keypress():
+    global key_pressed
+    key_pressed = getch()
+              
+thread.start_new_thread(keypress, ())
+
 
 
 class BagfileToPickle():
@@ -83,12 +108,6 @@ class BagfileToPickle():
         self.l_ankle_pose = []
         self.r_ankle_pose = []
     
-
-    def keypress(self, event):
-        if event.keysym == 'p':
-            print 'p'
-        else:
-            print 'wrong key'
 
     def autobed_angle_callback(self, data):
         '''This callback is used to store autobed angles'''
@@ -222,18 +241,21 @@ class BagfileToPickle():
         '''This function starts recording the bed pressure and pose ground 
         truth, without moving the bed.'''
         print "Playing record"
-        while self.reached_goal ==True and not rospy.is_shutdown():
-            if self.ok_to_read_pose == True:
-                X = (self.pressure_map + tuple(self.autobed_pose))
-                self.training_database[X] = (self.head_pose +
-                    self.torso_pose +
-                    self.l_elbow_pose + self.r_elbow_pose + 
-                    self.l_hand_pose + self.r_hand_pose + 
-                    self.l_knee_pose + self.r_knee_pose +
-                    self.l_ankle_pose + self.r_ankle_pose )
-                    #+ self.head_orientation)
-                self.ok_to_read_pose = False
+        while not rospy.is_shutdown():
+            if key_pressed != 'p':
+                if self.ok_to_read_pose == True:
+                    X = (self.pressure_map + tuple(self.autobed_pose))
+                    self.training_database[X] = (self.head_pose +
+                        self.torso_pose +
+                        self.l_elbow_pose + self.r_elbow_pose + 
+                        self.l_hand_pose + self.r_hand_pose + 
+                        self.l_knee_pose + self.r_knee_pose +
+                        self.l_ankle_pose + self.r_ankle_pose )
+                        #+ self.head_orientation)
+                    self.ok_to_read_pose = False
 
+            else:
+                return
 
     def take_bed_through_one_motion_cycle(self):
         '''This function moves the bed through a certain number of discrete
