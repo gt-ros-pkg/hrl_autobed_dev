@@ -3,6 +3,7 @@ import sys
 import operator
 import numpy as np
 import math
+import atexit
 from time import sleep
 
 import roslib; roslib.load_manifest('autobed_physical_trainer')
@@ -83,6 +84,12 @@ class BagfileToPickle():
         self.r_ankle_pose = []
     
 
+    def keypress(self, event):
+        if event.keysym == 'p':
+            print 'p'
+        else:
+            print 'wrong key'
+
     def autobed_angle_callback(self, data):
         '''This callback is used to store autobed angles'''
         self.autobed_pose = data.data
@@ -110,7 +117,6 @@ class BagfileToPickle():
                                     2*(q2**2 + q3**2)))*(180.0/ math.pi) 
 
 
-
     def autobed_status_callback(self, data):
         '''This callback is used to sample data when the autobed reaches a
         certain configuration. We will need only head and legs angles'''
@@ -120,6 +126,7 @@ class BagfileToPickle():
             self.reached_goal = True
         else:
             self.reached_goal = False
+
 
     def current_physical_pressure_map_callback(self, data):
         '''This callback accepts incoming pressure map from 
@@ -211,19 +218,37 @@ class BagfileToPickle():
                          data.transform.translation.z]
 
 
+    def record_data_without_moving_bed(self):
+        '''This function starts recording the bed pressure and pose ground 
+        truth, without moving the bed.'''
+        print "Playing record"
+        while self.reached_goal ==True and not rospy.is_shutdown():
+            if self.ok_to_read_pose == True:
+                X = (self.pressure_map + tuple(self.autobed_pose))
+                self.training_database[X] = (self.head_pose +
+                    self.torso_pose +
+                    self.l_elbow_pose + self.r_elbow_pose + 
+                    self.l_hand_pose + self.r_hand_pose + 
+                    self.l_knee_pose + self.r_knee_pose +
+                    self.l_ankle_pose + self.r_ankle_pose )
+                    #+ self.head_orientation)
+                self.ok_to_read_pose = False
+
+
     def take_bed_through_one_motion_cycle(self):
         '''This function moves the bed through a certain number of discrete
         steps'''
         print "Beginning training cycle. Will move head now"
         print "Head Angle at start is {}".format(self.head_angle)
         while self.reached_goal ==True and not rospy.is_shutdown():
-            self.abdin0.publish([75.0, float('nan'), float('nan')])
+            self.abdin0.publish([40.0, float('nan'), float('nan')])
             sleep(2)
         while self.reached_goal == False and not rospy.is_shutdown():
             print "Head Angle:{}".format(self.head_angle)
             if self.ok_to_read_pose == True:
-                '''X = (self.pressure_map + tuple(self.autobed_pose))
-                self.training_database[X] = (self.head_pose +
+                X = (self.pressure_map + tuple(self.autobed_pose))
+                self.training_database[X] = 1
+                '''(self.head_pose +
                     #self.torso_pose +
                     #self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
@@ -231,6 +256,25 @@ class BagfileToPickle():
                     self.l_ankle_pose + self.r_ankle_pose )
                     #+ self.head_orientation)'''
                 self.ok_to_read_pose = False
+        print "ASK THE USER TO ADJUST THEMSELF"
+        rospy.sleep(10)
+        while self.reached_goal ==True and not rospy.is_shutdown():
+            self.abdin0.publish([75.0, float('nan'), float('nan')])
+            sleep(2)
+        while self.reached_goal == False and not rospy.is_shutdown():
+            print "Head Angle:{}".format(self.head_angle)
+            if self.ok_to_read_pose == True:
+                X = (self.pressure_map + tuple(self.autobed_pose))
+                self.training_database[X] = 1
+                '''(self.head_pose +
+                    #self.torso_pose +
+                    #self.l_elbow_pose + self.r_elbow_pose + 
+                    self.l_hand_pose + self.r_hand_pose + 
+                    self.l_knee_pose + self.r_knee_pose +
+                    self.l_ankle_pose + self.r_ankle_pose )
+                    #+ self.head_orientation)'''
+                self.ok_to_read_pose = False
+
         print "Bringing the head down.."
         print "Head Angle:{}".format(self.head_angle)
         while self.reached_goal == True and not rospy.is_shutdown():
@@ -246,8 +290,9 @@ class BagfileToPickle():
         while self.reached_goal == False and not rospy.is_shutdown():
             print "Leg Angle:{}".format(self.leg_angle)
             if self.ok_to_read_pose == True:
-                '''X = (self.pressure_map + tuple(self.autobed_pose))
-                self.training_database[X] = (self.head_pose +
+                X = (self.pressure_map + tuple(self.autobed_pose))
+                self.training_database[X] = 1
+                '''(self.head_pose +
                     #self.torso_pose +
                     #self.l_elbow_pose + self.r_elbow_pose + 
                     self.l_hand_pose + self.r_hand_pose + 
@@ -263,9 +308,17 @@ class BagfileToPickle():
         while self.reached_goal == False and not rospy.is_shutdown():
             continue
         print "***CURRENT POSE TESTED. MOVE TO NEXT POSE"
-
         return
-    
+
+
+    def exit_training(self):
+        try:
+            pkl.dump(self.training_database, open(self.filename, "wb"))
+            print "Successfully saved data in {}. Exiting now...".format(
+                self.filename)
+        except:
+            print "Couldnt save data to pickle file. Repeat test now!"
+
 
     def run(self):
         '''This code just collects the first 1200 samples of the 
@@ -274,9 +327,18 @@ class BagfileToPickle():
         raw_input("Press Enter to Start Experiment")
         print "Starting Experiment"
         while not rospy.is_shutdown():
-            raw_input("Hit Enter when user is ready with the next pose")
-            self.take_bed_through_one_motion_cycle()
-        pkl.dump(self.training_database, open(self.filename, "wb"))
+            user_ip = str(raw_input(
+                "Hit [m/p] when user is ready with the next pose"))
+            if user_ip == 'm':
+                self.take_bed_through_one_motion_cycle()
+            elif user_ip == 'p':
+                print "Hit [CTRL + C] to stop recording..."
+                self.record_data_without_moving_bed()
+            else:
+                print "Wrong input."
+                print "Enter [m] to move bed."
+                print "Enter [p] to start recording data."
+        atexit.register(self.exit_training)
                  
 
 if __name__ == "__main__":
