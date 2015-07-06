@@ -206,8 +206,8 @@ class AutobedClient():
                 self.u_thresh[self.autobed_u > self.u_thresh])
         self.autobed_u[self.autobed_u < self.l_thresh] = (
                 self.l_thresh[self.autobed_u < self.l_thresh])
-	    for i in range(len(self.autobed_u)):
-	        if math.isnan(self.autobed_u[i]):
+	for i in range(len(self.autobed_u)):
+	    if math.isnan(self.autobed_u[i]):
                 self.autobed_u[i] = current_autobed_pose[i] 
         if math.isnan(self.autobed_u.all()):
             self.autobed_kill()
