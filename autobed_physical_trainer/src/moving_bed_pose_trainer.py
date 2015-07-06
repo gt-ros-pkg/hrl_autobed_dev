@@ -5,7 +5,6 @@ import numpy as np
 import math
 import atexit
 from time import sleep
-import thread
 import time
 
 import roslib; roslib.load_manifest('autobed_physical_trainer')
@@ -14,30 +13,7 @@ import cPickle as pkl
 from std_msgs.msg import Bool, String
 from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import TransformStamped
-try:
-    from msvcrt import getch  # try to import Windows version
-except ImportError:
-    def getch():   # define non-Windows version
-        import sys, tty, termios
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-
-key_pressed = None
-
- 
-def keypress():
-    global key_pressed
-    key_pressed = getch()
-              
-thread.start_new_thread(keypress, ())
-
-
+from hrl_lib.keyboard_input import KeyboardInput
 
 class BagfileToPickle():
     '''Converts pressure map bagfile to a pickle file with labels'''
@@ -107,7 +83,13 @@ class BagfileToPickle():
         self.r_knee_pose = []
         self.l_ankle_pose = []
         self.r_ankle_pose = []
-    
+        self.key_ip = KeyboardInput()
+        self.key_pressed = None 
+
+    def keypress(self):
+        self.key_pressed = self.key_ip.getch()
+        print self.key_pressed              
+
 
     def autobed_angle_callback(self, data):
         '''This callback is used to store autobed angles'''
@@ -240,9 +222,10 @@ class BagfileToPickle():
     def record_data_without_moving_bed(self):
         '''This function starts recording the bed pressure and pose ground 
         truth, without moving the bed.'''
-        print "Playing record"
+        print "Recording data now..."
         while not rospy.is_shutdown():
-            if key_pressed != 'p':
+            self.keypress()
+            if self.key_pressed != 'p':
                 if self.ok_to_read_pose == True:
                     X = (self.pressure_map + tuple(self.autobed_pose))
                     self.training_database[X] = (self.head_pose +
@@ -253,9 +236,10 @@ class BagfileToPickle():
                         self.l_ankle_pose + self.r_ankle_pose )
                         #+ self.head_orientation)
                     self.ok_to_read_pose = False
-
             else:
+                print "Pausing Now"
                 return
+
 
     def take_bed_through_one_motion_cycle(self):
         '''This function moves the bed through a certain number of discrete
@@ -335,6 +319,10 @@ class BagfileToPickle():
 
     def exit_training(self):
         try:
+            while self.reached_goal ==True and not rospy.is_shutdown():
+                self.abdin0.publish([float('nan'), float('nan'), float('nan')])
+                sleep(2)
+
             pkl.dump(self.training_database, open(self.filename, "wb"))
             print "Successfully saved data in {}. Exiting now...".format(
                 self.filename)
@@ -351,10 +339,11 @@ class BagfileToPickle():
         while not rospy.is_shutdown():
             user_ip = str(raw_input(
                 "Hit [m/p] when user is ready with the next pose"))
+            print user_ip
             if user_ip == 'm':
                 self.take_bed_through_one_motion_cycle()
             elif user_ip == 'p':
-                print "Hit [CTRL + C] to stop recording..."
+                print "Hit [p] again to pause recording..."
                 self.record_data_without_moving_bed()
             else:
                 print "Wrong input."

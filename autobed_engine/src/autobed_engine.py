@@ -206,9 +206,12 @@ class AutobedClient():
                 self.u_thresh[self.autobed_u > self.u_thresh])
         self.autobed_u[self.autobed_u < self.l_thresh] = (
                 self.l_thresh[self.autobed_u < self.l_thresh])
-	for i in range(len(self.autobed_u)):
-	    if math.isnan(self.autobed_u[i]):
+	    for i in range(len(self.autobed_u)):
+	        if math.isnan(self.autobed_u[i]):
                 self.autobed_u[i] = current_autobed_pose[i] 
+        if math.isnan(self.autobed_u.all()):
+            self.autobed_kill()
+            return
         #Make reached_destination boolean flase for all the actuators on the bed
         self.reached_destination = False * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
@@ -287,6 +290,11 @@ class AutobedClient():
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
 
 
+    def autobed_kill(self):
+        '''Kills the autobed, while its going to a predefined location'''
+        self.autobed_u = self.get_sensor_data() 
+        self.reached_destination = True*np.ones(len(self.reached_destination))
+
     def run(self):
         rate = rospy.Rate(20) #5 Hz
         #Variable that denotes what actuator is presently being controlled
@@ -297,7 +305,7 @@ class AutobedClient():
         while not rospy.is_shutdown():
             #Compute error vector
             autobed_error = np.asarray(self.autobed_u - self.get_sensor_data())
-	    #Publish present Autobed sensor readings
+	        #Publish present Autobed sensor readings
             self.abdout0.publish(self.get_sensor_data())
             if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, 
