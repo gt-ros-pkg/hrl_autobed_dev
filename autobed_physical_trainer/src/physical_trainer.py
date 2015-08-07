@@ -454,7 +454,7 @@ class PhysicalTrainer():
     def visualize_pressure_map(self, pressure_map_matrix):
         '''Visualizing a plot of the pressure map'''
         plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
-                plt.cm.YlOrRd, origin='upper', vmin=0, vmax=300)
+                plt.cm.bwr, origin='upper', vmin=0, vmax=100)
         return
 
 

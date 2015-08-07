@@ -359,7 +359,7 @@ if __name__ == "__main__":
                             args.sensor_param_file,
                             args.baudrate,
                             args.number_of_sensors,
-			    args.sensor_type)
+			                args.sensor_type)
 
     atexit.register(autobed.websocket_cleanup)
     autobed.run()
