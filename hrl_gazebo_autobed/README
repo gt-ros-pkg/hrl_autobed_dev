@@ -1,0 +1,35 @@
+**IMPORTANT INSTRUCTIONS FOR RUNNING GAZEBO AND RVIZ DEMOS OF AUTOBED:
+GAZEBO LAUNCH INSTRUCTIONS:
+[Under Construction]
+RVIZ LAUNCH NOTES:
+1. This demo can only be constructed with the closed-loop Autobed.
+2. The closed loop autobed can be equipped with two types of sensors:
+    2.1 In the lab, we shall use the motion capture data to get autobed angles. For this purpose, we have equipped the auto-bed with markers on its side.
+    2.2 In the field (Henry Evans' home, etc.) we will use the accelerometer
+and sharp sensors to measure angles.
+    
+3. This demo will work only in the lab in its current form.
+
+RVIZ LAUNCH INSTRUCTIONS:
+Step 1: Boot up the Autobed running the ROS RPi.
+Step 2: On the machine that runs the motion capture software, set up three
+markers: abd_head_angle, abd_leg_angle, camera_o. Attach abd_head_angle and
+abd_leg_angle to the head and lower end of the bed respectively. Zero out the
+marker angles by making sure the bed is supine and then reset all orientations.
+Similarly, set up the camera_o marker on the kinect in the lab.
+
+Step 3: Make sure the Kinect and the FSA pressure mat are connected to the Mac
+Mini (OR any computer that is communicating with the Windows machine runnning
+the MOCAP software)
+
+Step 4: Turn on the machine that communicates with the motion capture software
+and run the following instructions:
+roscd autobed_physical_trainer
+source boot_autobed_sensors.sh
+
+Step 5: On your computer or any computer that has the ROS Master pointed to the Autobed RPi master, run the following:
+roscd hrl_gazebo_autobed
+source rviz_start_autobed.sh
+
+Step 6: You should see the RViz interface set up with a PCL of the test
+chamber, URDF of the bed, and a simulation of the pressure mat. 
