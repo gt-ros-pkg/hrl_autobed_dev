@@ -33,3 +33,8 @@ source rviz_start_autobed.sh
 
 Step 6: You should see the RViz interface set up with a PCL of the test
 chamber, URDF of the bed, and a simulation of the pressure mat. 
+
+
+GENERAL NOTES: 
+1. If you change the URDF of the Autobed, please run generate_sdf_from_urdf.sh
+. Only then will the changes be updated.
