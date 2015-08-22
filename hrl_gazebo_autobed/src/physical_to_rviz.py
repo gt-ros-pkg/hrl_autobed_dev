@@ -38,15 +38,16 @@ class AutobedConverter():
         self.sendToRviz=tf.TransformBroadcaster()
         self.listener = tf.TransformListener() 
         rospy.Subscriber("/abdout0", FloatArrayBare, self.bed_pose_cb)
-        rospy.Subscriber("/camera_o/pose", TransformStamped, 
-                self.camera_pose_cb)
+        #rospy.Subscriber("/camera_o/pose", TransformStamped, 
+        #        self.camera_pose_cb)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.pressure_map_cb)       
 
         #Initialize camera pose to standard position of Kinect in the test
         #chamber
-        self.camera_p = (1.49, 1.33, 1.34)
-        self.camera_q = (0.27, -0.011, -0.958, 0.0975)
+        self.camera_p = (-0.1093, 1.108, 2.86)
+        #self.camera_q = (0.27, -0.011, -0.958, 0.0975)
+        self.camera_q = tuple(quaternion_from_euler(1.57, 1.57, 0.0))
         #Low pass filter design
         self.bed_height = 0
         self.bin_numbers = 5
@@ -83,7 +84,7 @@ class AutobedConverter():
         
         self.bed_height = ((poses[1]/100) - 0.09) if (((poses[1]/100) - 0.09) 
                 > 0) else 0
-        head_angle = (poses[0]*pi/180 - 0.1)
+        head_angle = (poses[0]*pi/180)
         leg_angle = (poses[2]*pi/180 - 0.1)
         self.collated_head_angle = np.delete(self.collated_head_angle, 0)
         self.collated_head_angle = np.append(self.collated_head_angle,
