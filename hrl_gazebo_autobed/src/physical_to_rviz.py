@@ -41,7 +41,21 @@ class AutobedConverter():
         #rospy.Subscriber("/camera_o/pose", TransformStamped, 
         #        self.camera_pose_cb)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
-                self.pressure_map_cb)       
+                self.pressure_map_cb)
+        #Publisher for Markers (can send them all as one marker message instead of an array because they're all spheres of the same size
+        self.marker_pub=rospy.Publisher('visualization_marker', Marker)
+
+        #Subscribers for each of the joint markers
+        rospy.Subscriber("head_o/pose", TransformStamped, self.head_marker_cb)
+        rospy.Subscriber("torso_o/pose", TransformStamped, self.torso_marker_cb)
+        rospy.Subscriber("r_elbow_o/pose", TransformStamped, self.r_elbow_marker_cb)
+        rospy.Subscriber("l_elbow_o/pose", TransformStamped, self.l_elbow_marker_cb)     
+        rospy.Subscriber("r_hand_o/pose", TransformStamped, self.r_hand_marker_cb)
+        rospy.Subscriber("l_hand_o/pose", TransformStamped, self.l_hand_marker_cb)
+        rospy.Subscriber("r_knee_o/pose", TransformStamped, self.r_knee_marker_cb)
+        rospy.Subscriber("l_knee_o/pose", TransformStamped, self.l_knee_marker_cb)
+        rospy.Subscriber("r_ankle_o/pose", TransformStamped, self.r_ankle_marker_cb)
+        rospy.Subscriber("l_ankle_o/pose", TransformStamped, self.l_ankle_marker_cb)      
 
         #Initialize camera pose to standard position of Kinect in the test
         #chamber
@@ -60,6 +74,68 @@ class AutobedConverter():
                 [0, 0.0005, 0.1, 0.5], [1.0, 0.0])
         self.pressuremap_flat = np.zeros((1, NUMOFTAXELS_X*NUMOFTAXELS_Y))
 
+        #callback for markers
+    def head_marker_cb(self, msg):
+        self.head_pose=msg          
+        self.compose_marker_msg()
+    def torso_marker_cb(self, msg):
+        self.torso_pose=msg
+    
+    def r_elbow_marker_cb(self, msg):
+        self.r_elbow_pose=msg
+
+    def l_elbow_marker_cb(self, msg):
+        self.l_elbow_pose=msg
+
+    def r_hand_marker_cb(self, msg):
+        self.r_hand_pose=msg
+
+    def l_hand_marker_cb(self, msg):
+        self.l_hand_pose=msg
+
+    def r_knee_marker_cb(self, msg):
+        self.r_knee_pose=msg
+
+    def l_knee_marker_cb(self, msg):
+        self.l_knee_pose=msg
+
+    def r_ankle_marker_cb(self, msg):
+        self.r_ankle_pose=msg
+
+    def l_ankle_marker_cb(self, msg):
+        self.l_ankle_pose=msg
+
+    def compose_marker_msg(self):
+        self.marker_msg=Marker()
+        self.marker_msg.header.frame_id="/world"
+        self.marker_msg.header.stamp=rospy.Time.now()
+        self.marker_msg.ns="motion_capture_trackables"
+        self.marker_msg.id=0
+        self.marker_msg.type=Marker.SPHERE_LIST #if numbers needed SPHERE_LIST=7
+        self.marker_msg.action=Marker.ADD # if numbers needed ADD=0
+        self.marker_msg.pose.position.x=0.05
+        self.marker_msg.pose.position.y=0.1 #TODO: check this offset. It should line up with the pressure mat      
+        self.marker_msg.pose.position.z=1.0
+        self.marker_msg.pose.orientation.x=0.0        
+        self.marker_msg.pose.orientation.y=0.0
+        self.marker_msg.pose.orientation.z=0.0
+        self.marker_msg.pose.orientation.w=1.0
+        list_of_markers=[self.head_pose.transform.translation, self.torso_pose.transform.translation, 
+                                self.r_elbow_pose.transform.translation, self.l_elbow_pose.transform.translation, 
+                                self.r_hand_pose.transform.translation, self.l_hand_pose.transform.translation, 
+                                self.r_knee_pose.transform.translation, self.l_knee_pose.transform.translation, 
+                                self.r_ankle_pose.transform.translation, self.l_ankle_pose.transform.translation]   
+        for i in list_of_markers:
+            self.marker_msg.points.append(i)
+            
+        self.marker_msg.scale.x=0.1
+        self.marker_msg.scale.y=0.1
+        self.marker_msg.scale.z=0.1 
+        self.marker_msg.color.a=1.0
+        self.marker_msg.color.r=1.0 
+        self.marker_msg.color.g=0.0
+        self.marker_msg.color.b=0.0
+        self.marker_pub.publish(self.marker_msg)
 
     #callback for the pose messages from the kinect in the testing chamber
     def camera_pose_cb(self, data): 
