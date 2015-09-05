@@ -17,7 +17,7 @@ class BagfileToPickle():
         self.ok_to_read_pose = False
         self.filename = filename
 
-        rospy.init_node('listener', anonymous=True)
+        rospy.init_node('bag_to_pkl', anonymous=False)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.current_physical_pressure_map_callback)
         rospy.Subscriber("/mat_o/pose", TransformStamped,
@@ -158,21 +158,43 @@ class BagfileToPickle():
         pressure mat that will come in through the bagfile and
         will label them with the label'''
         while not rospy.is_shutdown():
-            if self.ok_to_read_pose == True:
+            self.curr_pose = np.asarray([self.head_pose, 
+                self.torso_pose, self.l_elbow_pose,self.r_elbow_pose, 
+                self.l_hand_pose, self.r_hand_pose, self.l_knee_pose, 
+                self.r_knee_pose, self.l_ankle_pose, 
+                self.r_ankle_pose])
+            if self.ok_to_read_pose == True and np.size(self.curr_pose)==30:
                 self.count += 1
+                dist_array = []
                 #After 20 seconds, we sample mat pose
                 if self.count == 100 and not self.mat_pose_sampled:
                     self.training_database['mat_o'] = self.mat_pose
                     self.mat_pose_sampled = True
                     print "Mat pose sampled."
+                #This is to make sure the first pose is sampled
+                if self.count == 1:
+                    self.prev_pose = np.add(np.asarray(self.curr_pose),
+                                    5.0*np.ones(np.shape(self.curr_pose)))
 
-                self.training_database[self.pressure_map] = (self.head_pose +
-                    #self.torso_pose +
-                    #self.l_elbow_pose + self.r_elbow_pose + 
-                    self.l_hand_pose + self.r_hand_pose + 
-                    self.l_knee_pose + self.r_knee_pose +
-                    self.l_ankle_pose + self.r_ankle_pose )
-                    #+ self.head_orientation)
+
+                for joint_num in range(len(self.curr_pose)):
+                    dist_array.append(np.linalg.norm(
+                        np.asarray(self.curr_pose[joint_num]) - 
+                        np.asarray(self.prev_pose[joint_num])))
+                #If the ground truth between consecutive samples is greater
+                #than a certain threshold in Eucledian distance, only then log
+                #this sample
+                dist_mean = np.mean(dist_array)
+                if dist_mean >= 0.01:
+                    self.training_database[self.pressure_map] = (
+                        self.head_pose + self.torso_pose +
+                        self.l_elbow_pose + self.r_elbow_pose + 
+                        self.l_hand_pose + self.r_hand_pose + 
+                        self.l_knee_pose + self.r_knee_pose +
+                        self.l_ankle_pose + self.r_ankle_pose )
+                        #+ self.head_orientation)
+                    self.prev_pose = self.curr_pose[:]
+
                 self.ok_to_read_pose = False
 
         pkl.dump(self.training_database, open(self.filename, "wb"))

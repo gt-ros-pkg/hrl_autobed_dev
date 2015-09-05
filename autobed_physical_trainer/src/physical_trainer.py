@@ -51,7 +51,7 @@ class PhysicalTrainer():
         print "Checking database for empty values."
         empty_count = 0
         for dict_entry in list(dat.keys()):
-            if len(dat[dict_entry]) < (21) or (len(dict_entry) <
+            if len(dat[dict_entry]) < (30) or (len(dict_entry) <
                     self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
                 del dat[dict_entry]
@@ -64,11 +64,11 @@ class PhysicalTrainer():
         self.train_y = [] #Initialize the training coordinate list
         self.test_y = [] #Initialize the ground truth list
         self.dataset_y = [] #Initialization for the entire dataset 
-        self.train_x_flat = rand_keys[:6000]#Pressure maps
+        self.train_x_flat = rand_keys[:200]#Pressure maps
         [self.train_y.append(dat[key]) for key in self.train_x_flat]#Coordinates 
-        self.test_x_flat = rand_keys[6000:6700]#Pressure maps(test dataset)
+        self.test_x_flat = rand_keys[201:]#Pressure maps(test dataset)
         [self.test_y.append(dat[key]) for key in self.test_x_flat]#ground truth
-        self.dataset_x_flat = rand_keys[:6000]#Pressure maps
+        self.dataset_x_flat = rand_keys[:200]#Pressure maps
         [self.dataset_y.append(dat[key]) for key in self.dataset_x_flat]
         self.cv_fold = 5 # Value of k in k-fold cross validation 
         self.mat_frame_joints = []

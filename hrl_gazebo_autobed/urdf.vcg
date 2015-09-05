@@ -1,7 +1,7 @@
 Background\ ColorB=0.466667
 Background\ ColorG=0
 Background\ ColorR=0.0941176
-Camera\ Config=0.257791 1.31079 3.37955 0 0 0
+Camera\ Config=1.2648 0.0107896 5.78563 0 0 0
 Camera\ Type=rviz::OrbitViewController
 Fixed\ Frame=/base_link
 Grid.Alpha=0.5
@@ -23,9 +23,16 @@ Marker.=1
 Marker.Enabled=1
 Marker.Marker\ Topic=/pressure_grid
 Marker.Queue\ Size=100
+Marker2.Enabled=1
+Marker2.Marker\ Topic=visualization_marker
+Marker2.Queue\ Size=100
+Marker2.motion_capture_trackables=1
 MarkerArray.Enabled=1
 MarkerArray.Marker\ Array\ Topic=visualization_marker_array
 MarkerArray.Queue\ Size=100
+MarkerArray2.Enabled=1
+MarkerArray2.Marker\ Array\ Topic=/rviz_pose
+MarkerArray2.Queue\ Size=100
 PointCloud2..AxisColorAutocompute\ Value\ Bounds=1
 PointCloud2..AxisColorAxis=2
 PointCloud2..AxisColorMax\ Value=10
@@ -49,15 +56,15 @@ PointCloud2.Alpha=1
 PointCloud2.Billboard\ Size=0.01
 PointCloud2.Color\ Transformer=RGB8
 PointCloud2.Decay\ Time=0
-PointCloud2.Enabled=1
+PointCloud2.Enabled=0
 PointCloud2.Position\ Transformer=XYZ
 PointCloud2.Queue\ Size=10
 PointCloud2.Selectable=1
 PointCloud2.Style=1
 PointCloud2.Topic=/camera/depth_registered/points
-Property\ Grid\ Splitter=799,78
-Property\ Grid\ State=expanded=.Global Options,Grid.Enabled,Robot Model.Enabled,PointCloud2.Enabled,MarkerArray.Enabled,Marker.Enabled,Marker.Namespaces;splitterratio=0.5
-QMainWindow=000000ff00000000fd00000003000000000000011d000003bffc0200000001fb000000100044006900730070006c006100790073010000001d000003bf000000ee00ffffff0000000100000131000003bffc0200000003fb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000001d000000f80000006700fffffffb0000000a00560069006500770073010000011b000001c3000000bb00fffffffb0000001200530065006c0065006300740069006f006e01000002e4000000f80000006700ffffff000000030000074b0000003efc0100000001fb0000000800540069006d006501000000000000074b000002bf00ffffff000004f1000003bf00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+Property\ Grid\ Splitter=871,78
+Property\ Grid\ State=expanded=.Global Options,Grid.Enabled,Robot Model.Enabled,PointCloud2.Enabled,MarkerArray.Enabled,Marker.Enabled,Marker.Namespaces,MarkerArray2.Enabled,Marker2.Enabled,Marker2.Namespaces;splitterratio=0.5
+QMainWindow=000000ff00000000fd00000003000000000000011d00000407fc0200000001fb000000100044006900730070006c006100790073010000001d00000407000000ee00ffffff000000010000013100000407fc0200000003fb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000001d0000010a0000006700fffffffb0000000a00560069006500770073010000012d000001e7000000bb00fffffffb0000001200530065006c0065006300740069006f006e010000031a0000010a0000006700ffffff000000030000076b0000003efc0100000001fb0000000800540069006d006501000000000000076b000002bf00ffffff000005110000040700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
 Robot\ Model.Alpha=1
 Robot\ Model.Collision\ Enabled=0
 Robot\ Model.Enabled=1
@@ -119,8 +126,14 @@ Name=MarkerArray
 [Display4]
 ClassName=rviz::MarkerDisplay
 Name=Marker
+[Display5]
+ClassName=rviz::MarkerArrayDisplay
+Name=MarkerArray2
+[Display6]
+ClassName=rviz::MarkerDisplay
+Name=Marker2
 [Window]
-Height=1092
-Width=1883
-X=-8
-Y=-28
+Height=1164
+Width=1915
+X=-24
+Y=-84
