@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import cPickle as pkl
 import random
 from scipy import ndimage
-from skimage import data, color, exposure
+## from skimage import data, color, exposure
 
 from sklearn.decomposition import PCA
 
@@ -124,12 +124,32 @@ class DatabaseCreator():
         rot_targets_mat = self.pca_mat.transform(targets_mat)
         rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
                                                 np.array([[0, -1],[-1, 0]]))
-        print rot_targets_mat
+        
+        ## print rot_targets_mat 
         rot_trans_targets_mat = np.asarray(
             [np.asarray(elem) + 
             INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
             for elem in rot_targets_mat]) 
-        print rot_trans_targets_mat
+
+        #Run matching function to find the best rotation offset
+        ang_offset, trans_offset = self.getOffset(rot_trans_targets_mat, rotated_p_map)
+        rot_trans_targets_mat = np.dot(np.asarray(rot_trans_targets_mat),
+                                       np.array([[np.cos(ang_offset), -np.sin(ang_offset)],
+                                                 [np.sin(ang_offset), np.cos(ang_offset)]]))
+        rot_trans_targets_mat = rot_trans_targets_mat + trans_offset        
+        
+        # Visualzation of head and ankle part only
+        ## part_map = np.zeros(np.shape(rotated_p_map))
+        ## for i in xrange(len(rotated_p_map)):
+        ##     for j in xrange(len(rotated_p_map[i])):
+        ##         if i>1 and i<13 and rotated_p_map[i,j] > 10.0:
+        ##             part_map[i,j] = 50.0
+        ##         if i>len(rotated_p_map)-8 and i < len(rotated_p_map)-2 and rotated_p_map[i,j] > 10.0:
+        ##             part_map[i,j] = 50.0        
+        ## rotated_p_map = part_map
+        
+        
+        ## print rot_trans_targets_mat
         rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
                 rot_trans_targets_mat]) 
 
@@ -201,6 +221,101 @@ class DatabaseCreator():
         return
 
 
+    def getOffset(self, target_mat, p_map):
+        '''Find the best angular and translation offset''' 
+
+        iteration   = 500
+        ang_offset  = 0.0
+        ang_range   = [0.0, 10.0/180.0*np.pi]
+        x_range     = [0.0, 0.15]
+        y_range     = [0.0, 0.15]
+        max_score   = 0.
+        min_variance = 1000.0
+        best_offset = np.array([0.,0.,0.]) #ang, x, y
+        window_size = 2
+
+        map_pressure_thres = 10.0
+        head_pixel_range  = [2,12]
+        ankle_pixel_range = [-8,-2]
+        
+        # get head and food parts in map
+        part_map = np.zeros(np.shape(p_map))
+        for i in xrange(len(p_map)):
+            for j in xrange(len(p_map[i])):
+                if i>=head_pixel_range[0] and i<=head_pixel_range[1] and p_map[i,j] > map_pressure_thres:
+                    part_map[i,j] = 50.0
+                if i>len(p_map)+ankle_pixel_range[0] and i < len(p_map)+ankle_pixel_range[1] \
+                  and p_map[i,j] > map_pressure_thres:
+                    part_map[i,j] = 50.0        
+        ## part_map[0:13,:] = p_map[0:13,:]
+        ## part_map[-5:-1,:] = p_map[-5:-1,:]
+        p_map = part_map        
+
+        # Q: p_map is not normalized and scale is really different
+        while iteration>0:
+            iteration = iteration - 1
+
+            # random angle
+            ang = random.uniform(ang_range[0], ang_range[1])
+            x   = random.uniform(x_range[0], x_range[1])
+            y   = random.uniform(y_range[0], y_range[1])
+
+            # rotate target mat
+            rot_trans_targets_mat = np.dot(np.asarray(target_mat),
+                                           np.array([[np.cos(ang), -np.sin(ang)],
+                                                     [np.sin(ang), np.cos(ang)]]))        
+            ## print np.shape(rot_trans_targets_mat), rot_trans_targets_mat[0]
+            rot_trans_targets_mat = rot_trans_targets_mat + np.array([x,y])
+
+            rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+                    rot_trans_targets_mat]) 
+
+            rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                        elem[0]]) for elem in rot_trans_targets_pixels])
+            
+            # sum of scores
+            score = self.pressure_score_in_window(p_map, rotated_target_coord[0], window_size) +\
+              self.pressure_score_in_window(p_map, rotated_target_coord[-2], window_size) +\
+              self.pressure_score_in_window(p_map, rotated_target_coord[-1], window_size)
+              
+            ## print iteration, " : ", score
+            if score[0] > max_score or (score[0] == max_score and score[1] < min_variance):
+                max_score    = score[0]
+                min_variance = score[1]
+                best_offset[0] = ang
+                best_offset[1] = x
+                best_offset[2] = y
+
+        print "Best offset (ang, x, y) is ", best_offset, " with score ", max_score, min_variance
+    
+        # get the best angular offset
+        return best_offset[0], best_offset[1:]
+
+    def pressure_score_in_window(self, p_map, idx, window_size):
+
+        n = idx[0]
+        m = idx[1]
+
+        l = 1
+        if window_size%2 == 0:
+            l = window_size/2
+        else:
+            l = (window_size-1)/2
+
+        count = 0
+        score_l  = []
+        for i in range(n-l, n+l+1):
+            for j in range(m-l, m+l+1):
+                if i >=0 and i<len(p_map) and j>=0 and j<len(p_map[0]):
+
+                    x = n-i
+                    y = m-j
+                    dist = float(2.0*window_size -x -y)/float(2.0*window_size) #np.sqrt(float(x*x+y*y))
+                    score_l.append(p_map[i,j] * dist)
+                    count = count + 1
+
+        return np.array([np.mean(score_l), np.std(score_l)])
+        
     def run(self):
         '''Uses the Rotation, translation, and slices obtained in
         initialization to create a synthetic database of images and ground 
