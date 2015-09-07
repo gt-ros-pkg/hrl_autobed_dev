@@ -60,10 +60,10 @@ class DatabaseCreator():
         home_sup_joint_pos = (
                 [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
 
-        ([self.R_sup, self.COM_sup, self.image_slices_sup,
-            self.target_slices_sup]) = self.preprocess_home_position(
-                                    home_sup_pressure_map, home_sup_joint_pos)
-
+        ([R_sup_pixels, R_sup_mat, self.split_matrices, self.split_targets]) = (
+                                    self.preprocess_home_position(
+                                    home_sup_pressure_map, home_sup_joint_pos))
+        
 
     def preprocess_home_position(self, p_map_flat, target):
         '''Performs PCA on binarized pressure map, rotates and translates
@@ -82,10 +82,10 @@ class DatabaseCreator():
             nzero_indices[1])]
 
         #Perform PCA in the space of pressure mat pixels
-        self.pca_pixels = PCA(n_components=2)
-        self.pca_pixels.fit(pca_x_pixels)
+        pca_pixels = PCA(n_components=2)
+        pca_pixels.fit(pca_x_pixels)
         #The output of PCA needs rotation by -90 
-        rot_x_pixels = self.pca_pixels.transform(pca_x_pixels)
+        rot_x_pixels = pca_pixels.transform(pca_x_pixels)
         rot_x_pixels = np.dot(np.asarray(rot_x_pixels),
                                                 np.array([[0, -1],[-1, 0]]))
         rot_trans_x_pixels = np.asarray(
@@ -118,10 +118,10 @@ class DatabaseCreator():
         targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
 
         #Perform PCA in the 3D Space with the mat origin
-        self.pca_mat = PCA(n_components=2)
-        self.pca_mat.fit(pca_x_mat)
+        pca_mat = PCA(n_components=2)
+        pca_mat.fit(pca_x_mat)
         #The output of PCA needs rotation by -90 
-        rot_targets_mat = self.pca_mat.transform(targets_mat)
+        rot_targets_mat = pca_mat.transform(targets_mat)
         rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
                                                 np.array([[0, -1],[-1, 0]]))
         print rot_targets_mat
@@ -141,7 +141,39 @@ class DatabaseCreator():
             rotated_p_map[rotated_target_coord[i]] = 100
         self.visualize_pressure_map(rotated_p_map)
         plt.show()
+        
+        #Now we slice the image into parts
+        upper_lower_torso_cut = max(rotated_target_coord[4][0],
+                                rotated_target_coord[5][0]) + 3
+        left_right_side_cut = np.floor(NUMOFTAXELS_Y/2) 
+        head_horz_cut = rotated_target_coord[0][0] + 3
+        head_vert_cut = ([rotated_target_coord[0][1] - 3 ,
+                          rotated_target_coord[0][1] + 3]) 
+        
+        template_image = np.zeros(self.mat_size)
+        #Head Slice 
+        slice_0 = template_image[:]
+        slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1 
+        #Right Arm Slice 
+        slice_1 = template_image[:]
+        slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 100
+        slice_1[:head_horz_cut, head_vert_cut[0]:left_right_side_cut] = 0
+        #Left Arm Slice 
+        slice_2 = template_image[:]
+        slice_2[:upper_lower_torso_cut, left_right_side_cut + 1:] = 1
+        slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
+        #Right leg Slice 
+        slice_3 = template_image[:]
+        slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1
+        #Left leg Slice 
+        slice_4 = template_image[:]
+        slice_4[upper_lower_torso_cut:, left_right_side_cut + 1:] = 1
 
+        self.visualize_pressure_map(slice_1)
+        plt.show()
+
+        image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
+        return pca_pixels, pca_mat, image_slices, target_slices
 
 
 
@@ -201,10 +233,80 @@ class DatabaseCreator():
         return
 
 
+    def pca_transformation_sup(p_map_raw, target_raw):
+        '''Perform PCA and any additional rotations and translations that we 
+        made to the home image'''
+        
     def run(self):
         '''Uses the Rotation, translation, and slices obtained in
         initialization to create a synthetic database of images and ground 
         truth values'''
+        RH_sup = pkl.load(
+                open(training_database_pkl_directory+'RH_sup.p', "rb")) 
+        LH_sup = pkl.load(
+                open(training_database_pkl_directory+'LH_sup.p', "rb")) 
+        RL_sup = pkl.load(
+                open(training_database_pkl_directory+'RL_sup.p', "rb")) 
+        LL_sup = pkl.load(
+                open(training_database_pkl_directory+'LL_sup.p', "rb")) 
+        #Slice each image using the slices computed earlier
+        RH_sliced = {}
+        LH_sliced = {}
+        RL_sliced = {}
+        LL_sliced = {}
+
+        for p_map_raw in RH_sup.keys():
+                target_raw = RH_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[1])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[1])
+                RH_sliced[sliced_p_map] = sliced_target
+
+        for p_map_raw in LH_sup.keys():
+                target_raw = LH_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[2])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[2])
+                LH_sliced[sliced_p_map] = sliced_target
+
+        for p_map_raw in RL_sup.keys():
+                target_raw = RL_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[3])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[3])
+                RL_sliced[sliced_p_map] = sliced_target
+
+        for p_map_raw in LL_sup.keys():
+                target_raw = LL_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[4])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[4])
+                LL_sliced[sliced_p_map] = sliced_target
+
+        final_database = {}
+        for RH_p_map in RH_sliced.keys():
+            for LH_p_map in LH_sliced.keys():
+                for RL_p_map in RL_sliced.keys():
+                    for LL_p_map in LL_sliced.keys():
+                        final_p_map = RH_p_map + LH_p_map + RL_p_map + LL_p_map
+                        final_target = RH_sliced(RH_p_map) + 
+                                       LH_sliced(LH_p_map) + 
+                                       RL_sliced(RL_p_map) +
+                                       LL_sliced(LL_p_map)
+                        final_database[final_p_map] = final_target
+
 
 if __name__ == "__main__":
     #Initialize trainer with a training database file
