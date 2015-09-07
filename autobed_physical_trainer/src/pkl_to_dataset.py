@@ -60,7 +60,7 @@ class DatabaseCreator():
         home_sup_joint_pos = (
                 [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
 
-        ([R_sup_pixels, R_sup_mat, self.split_matrices, self.split_targets]) = (
+        ([self.split_matrices, self.split_targets]) = (
                                     self.preprocess_home_position(
                                     home_sup_pressure_map, home_sup_joint_pos))
         
@@ -151,29 +151,42 @@ class DatabaseCreator():
                           rotated_target_coord[0][1] + 3]) 
         
         template_image = np.zeros(self.mat_size)
+        template_target = np.zeros(np.size(target))
         #Head Slice 
         slice_0 = template_image[:]
+        target_slice_0 = template_target[:]
         slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1 
+        target_slice_0[:2] = 1 
         #Right Arm Slice 
         slice_1 = template_image[:]
-        slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 100
+        target_slice_1 = template_target[:]
+        slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 1
         slice_1[:head_horz_cut, head_vert_cut[0]:left_right_side_cut] = 0
+        target_slice_1[3:5] = 1 
+        target_slice_1[6:11] = 1
         #Left Arm Slice 
         slice_2 = template_image[:]
+        target_slice_2 = template_target[:]
         slice_2[:upper_lower_torso_cut, left_right_side_cut + 1:] = 1
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
+        target_slice_2[12:17] = 1
         #Right leg Slice 
         slice_3 = template_image[:]
         slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1
+        target_slice_3[18:23] = 1
         #Left leg Slice 
         slice_4 = template_image[:]
         slice_4[upper_lower_torso_cut:, left_right_side_cut + 1:] = 1
-
-        self.visualize_pressure_map(slice_1)
-        plt.show()
+        target_slice_4[24:30] = 1
 
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
-        return pca_pixels, pca_mat, image_slices, target_slices
+        target_slices = ([target_slice_0, 
+                          target_slice_1, 
+                          target_slice_2, 
+                          target_slice_3, 
+                          target_slice_4])
+
+        return image_slices, target_slices
 
 
 
@@ -241,6 +254,8 @@ class DatabaseCreator():
         '''Uses the Rotation, translation, and slices obtained in
         initialization to create a synthetic database of images and ground 
         truth values'''
+        head_sup = pkl.load(
+                open(training_database_pkl_directory+'head_sup.p', "rb")) 
         RH_sup = pkl.load(
                 open(training_database_pkl_directory+'RH_sup.p', "rb")) 
         LH_sup = pkl.load(
@@ -250,10 +265,22 @@ class DatabaseCreator():
         LL_sup = pkl.load(
                 open(training_database_pkl_directory+'LL_sup.p', "rb")) 
         #Slice each image using the slices computed earlier
+        head_sliced = {}
         RH_sliced = {}
         LH_sliced = {}
         RL_sliced = {}
         LL_sliced = {}
+
+        for p_map_raw in head_sup.keys():
+                target_raw = head_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[0])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[0])
+                head_sliced[sliced_p_map] = sliced_target
+
 
         for p_map_raw in RH_sup.keys():
                 target_raw = RH_sup[p_map_raw]
@@ -296,16 +323,22 @@ class DatabaseCreator():
                 LL_sliced[sliced_p_map] = sliced_target
 
         final_database = {}
-        for RH_p_map in RH_sliced.keys():
-            for LH_p_map in LH_sliced.keys():
-                for RL_p_map in RL_sliced.keys():
-                    for LL_p_map in LL_sliced.keys():
-                        final_p_map = RH_p_map + LH_p_map + RL_p_map + LL_p_map
-                        final_target = RH_sliced(RH_p_map) + 
-                                       LH_sliced(LH_p_map) + 
-                                       RL_sliced(RL_p_map) +
-                                       LL_sliced(LL_p_map)
-                        final_database[final_p_map] = final_target
+        for head_p_map in head_sliced.keys():
+            for RH_p_map in RH_sliced.keys():
+                for LH_p_map in LH_sliced.keys():
+                    for RL_p_map in RL_sliced.keys():
+                        for LL_p_map in LL_sliced.keys():
+                            final_p_map = (head_p_map + 
+                                           RH_p_map + 
+                                           LH_p_map + 
+                                           RL_p_map + 
+                                           LL_p_map)
+                            final_target = (head_sliced(head_p_map) +
+                                            RH_sliced(RH_p_map) + 
+                                            LH_sliced(LH_p_map) + 
+                                            RL_sliced(RL_p_map) +
+                                            LL_sliced(LL_p_map))
+                            final_database[final_p_map] = final_target
 
 
 if __name__ == "__main__":
