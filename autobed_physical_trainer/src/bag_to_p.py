@@ -166,8 +166,8 @@ class BagfileToPickle():
             if self.ok_to_read_pose == True and np.size(self.curr_pose)==30:
                 self.count += 1
                 dist_array = []
-                #After 20 seconds, we sample mat pose
-                if self.count == 100 and not self.mat_pose_sampled:
+                #After 10 seconds, we sample mat pose
+                if self.count == 50 and not self.mat_pose_sampled:
                     self.training_database['mat_o'] = self.mat_pose
                     self.mat_pose_sampled = True
                     print "Mat pose sampled."

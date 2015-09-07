@@ -17,6 +17,7 @@ MAT_HEIGHT = 1.854 #metres
 MAT_HALF_WIDTH = MAT_WIDTH/2 
 NUMOFTAXELS_X = 64#73 #taxels
 NUMOFTAXELS_Y = 27#30 
+INTER_SENSOR_DISTANCE = 0.0286#metres
 LOW_TAXEL_THRESH_X = 0
 LOW_TAXEL_THRESH_Y = 0
 HIGH_TAXEL_THRESH_X = (NUMOFTAXELS_X - 1) 
@@ -29,13 +30,15 @@ class DatabaseCreator():
     def __init__(self, training_database_pkl_directory):
 
         home_sup_dat = pkl.load(
-                open(training_database_pkl_directory'/home_sup.p', "rb")) 
+                open(training_database_pkl_directory+'home_sup.p', "rb")) 
        #Pop the mat coordinates from the dataset
         try:
             self.p_world_mat = home_sup_dat.pop('mat_o') 
         except:
             print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
             print "[Warning] Either retrain system or get mat older mat_origin"
+            self.p_world_mat = [0.289, 1.861, 0.546]
+
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
         #Capture issues.
@@ -50,7 +53,13 @@ class DatabaseCreator():
                 empty_count)
 
         home_sup_pressure_map = home_sup_dat.keys()[0]
-        home_sup_joint_pos = home_sup_dat[home_sup_pressure_map] 
+        home_sup_joint_pos_world = self.preprocess_targets(
+                                            home_sup_dat[home_sup_pressure_map]) 
+
+        #Targets in the mat frame
+        home_sup_joint_pos = (
+                [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
+
         ([self.R_sup, self.COM_sup, self.image_slices_sup,
             self.target_slices_sup]) = self.preprocess_home_position(
                                     home_sup_pressure_map, home_sup_joint_pos)
@@ -63,22 +72,133 @@ class DatabaseCreator():
         position pressure map into 6 regions and returns sliced matrices'''
         #Reshape to create 2D pressure map
         p_map = np.asarray(np.reshape(p_map_flat, self.mat_size))
-        #Binarize pressure map
-        p_map_bin = np.asarray(p_map[:])
-        p_map_bin[p_map_bin > 0] = 1  # All low values set to 0
         #Get the nonzero indices
-        nzero_indices = np.nonzero(p_map)  
+        nzero_indices = np.nonzero(p_map)
         #Perform PCA on the non-zero elements of the pressure map
-        pca_x_tuples = zip([nzero_indices[0]*(-1) + (MAT_HEIGHT-1),
-                            nzero_indices[1])
-        pca_x = [list(elem) for elem in pca_x_tuples]  
-        pca_y = [p_map[elem] for elem in zip(nzero_indices[0],
+        pca_x_tuples = zip(nzero_indices[1], 
+                                    nzero_indices[0]*(-1) + (NUMOFTAXELS_X-1))
+        pca_x_pixels = np.asarray([list(elem) for elem in pca_x_tuples])
+        pca_y_pixels = [p_map[elem] for elem in zip(nzero_indices[0],
             nzero_indices[1])]
-        pca = PCA(n_components=3)
-        pca.fit(pca_x)
-        rot_x = pca.transform(pca_x)
-        
 
+        #Perform PCA in the space of pressure mat pixels
+        self.pca_pixels = PCA(n_components=2)
+        self.pca_pixels.fit(pca_x_pixels)
+        #The output of PCA needs rotation by -90 
+        rot_x_pixels = self.pca_pixels.transform(pca_x_pixels)
+        rot_x_pixels = np.dot(np.asarray(rot_x_pixels),
+                                                np.array([[0, -1],[-1, 0]]))
+        rot_trans_x_pixels = np.asarray(
+                [np.asarray(elem) + np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
+                for elem in rot_x_pixels]) 
+        rot_trans_x_pixels = rot_trans_x_pixels.astype(int)
+        #Thresholding the rotated matrices
+        rot_trans_x_pixels[rot_trans_x_pixels < LOW_TAXEL_THRESH_X] = (
+                                                 LOW_TAXEL_THRESH_X)            
+        rot_trans_x_pixels[rot_trans_x_pixels[:, 1] >= NUMOFTAXELS_X] = (
+                                                            NUMOFTAXELS_X - 1)
+
+        rot_trans_x_pixels[rot_trans_x_pixels[:, 0] >= NUMOFTAXELS_Y] = (
+                                                            NUMOFTAXELS_Y - 1)
+
+        rotated_p_map_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                    elem[0]]) for elem in rot_trans_x_pixels])
+        #Creating rotated p_map
+        rotated_p_map = np.zeros([NUMOFTAXELS_X, NUMOFTAXELS_Y])
+        print rotated_p_map_coord
+        for i in range(len(pca_y_pixels)):
+            print rotated_p_map_coord[i]
+            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]/2.0
+        #self.visualize_pressure_map(rotated_p_map)
+        #plt.show()
+
+        #Taxels in 3D space in the mat frame
+        pca_x_mat = INTER_SENSOR_DISTANCE*pca_x_pixels
+        #We need only X,Y coordinates in the mat frame
+        targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
+
+        #Perform PCA in the 3D Space with the mat origin
+        self.pca_mat = PCA(n_components=2)
+        self.pca_mat.fit(pca_x_mat)
+        #The output of PCA needs rotation by -90 
+        rot_targets_mat = self.pca_mat.transform(targets_mat)
+        rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
+                                                np.array([[0, -1],[-1, 0]]))
+        print rot_targets_mat
+        rot_trans_targets_mat = np.asarray(
+            [np.asarray(elem) + 
+            INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
+            for elem in rot_targets_mat]) 
+        print rot_trans_targets_mat
+        rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+                rot_trans_targets_mat]) 
+
+        rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                    elem[0]]) for elem in rot_trans_targets_pixels])
+
+        print rotated_target_coord
+        for i in range(len(rotated_target_coord)):
+            rotated_p_map[rotated_target_coord[i]] = 100
+        self.visualize_pressure_map(rotated_p_map)
+        plt.show()
+
+
+
+
+    def preprocess_targets(self, targets):
+        '''Converts the target values from a single list to a list of lists'''
+        output = []
+        index = 0
+        while index <= (len(targets)-3):
+            output.append([targets[index], targets[index+1], targets[index+2]])
+            index += 3
+        return output
+
+
+    def world_to_mat(self, w_data):
+        '''Converts a vector in the world frame to a vector in the map frame.
+        Depends on the calibration of the MoCap room. Be sure to change this 
+        when the calibration file changes. This function mainly helps in
+        visualizing the joint coordinates on the pressure mat.
+        Input: w_data: which is a 3 x 1 vector in the world frame'''
+        #The homogenous transformation matrix from world to mat
+        O_m_w = np.matrix([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
+        p_mat_world = O_m_w.dot(-np.asarray(self.p_world_mat))
+        B_m_w = np.concatenate((O_m_w, p_mat_world.T), axis=1)
+        last_row = np.array([[0, 0, 0, 1]])
+        B_m_w = np.concatenate((B_m_w, last_row), axis=0)
+        w_data = np.append(w_data, np.array([1]))
+        #Convert input to the mat frame vector
+        m_data = B_m_w.dot(w_data)
+        m_data = np.squeeze(np.asarray(m_data))
+        return m_data
+
+
+    def mat_to_taxels(self, m_data):
+        #Convert coordinates in 3D space in the mat frame into taxels
+        taxels_x = (m_data[1]/ INTER_SENSOR_DISTANCE)
+        taxels_y = (m_data[0]/ INTER_SENSOR_DISTANCE)
+        '''Typecast into int, so that we can highlight the right taxel 
+        in the pressure matrix, and threshold the resulting values'''
+        taxels_x = (taxels_x.astype(int) )
+        taxels_y = (taxels_y.astype(int) )
+        #Thresholding the taxels_* array
+        taxels_x = LOW_TAXEL_THRESH_X if (taxels_x <= 
+                LOW_TAXEL_THRESH_X) else taxels_x
+        taxels_y = LOW_TAXEL_THRESH_Y if (taxels_y <=
+                LOW_TAXEL_THRESH_Y) else taxels_y
+        taxels_x = HIGH_TAXEL_THRESH_X if (taxels_x >= 
+                HIGH_TAXEL_THRESH_X) else taxels_x
+        taxels_y = HIGH_TAXEL_THRESH_Y if (taxels_y >
+                HIGH_TAXEL_THRESH_Y) else taxels_y
+        return [taxels_y, taxels_x]
+
+
+    def visualize_pressure_map(self, pressure_map_matrix):
+        '''Visualizing a plot of the pressure map'''
+        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
+                plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+        return
 
 
     def run(self):
@@ -88,6 +208,6 @@ class DatabaseCreator():
 
 if __name__ == "__main__":
     #Initialize trainer with a training database file
-    training_database_pkl_directory = sys.argv[1] #Where is the training database is 
+    training_database_pkl_directory = sys.argv[1] #path to the training database  
     p = DatabaseCreator(training_database_pkl_directory) 
-    p.run()
+    #p.run()

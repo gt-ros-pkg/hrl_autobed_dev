@@ -11,8 +11,7 @@ from scipy.signal import remez
 from scipy.signal import lfilter
 
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import TransformStamped 
-from geometry_msgs.msg import Point 
+from geometry_msgs.msg import TransformStamped, Point, Pose, PoseStamped 
 from std_msgs.msg import ColorRGBA
 from tf.transformations import quaternion_from_euler
 
@@ -42,20 +41,6 @@ class AutobedConverter():
         #        self.camera_pose_cb)
         rospy.Subscriber("/fsascan", FloatArrayBare, 
                 self.pressure_map_cb)
-        #Publisher for Markers (can send them all as one marker message instead of an array because they're all spheres of the same size
-        self.marker_pub=rospy.Publisher('visualization_marker', Marker)
-
-        #Subscribers for each of the joint markers
-        rospy.Subscriber("head_o/pose", TransformStamped, self.head_marker_cb)
-        rospy.Subscriber("torso_o/pose", TransformStamped, self.torso_marker_cb)
-        rospy.Subscriber("r_elbow_o/pose", TransformStamped, self.r_elbow_marker_cb)
-        rospy.Subscriber("l_elbow_o/pose", TransformStamped, self.l_elbow_marker_cb)     
-        rospy.Subscriber("r_hand_o/pose", TransformStamped, self.r_hand_marker_cb)
-        rospy.Subscriber("l_hand_o/pose", TransformStamped, self.l_hand_marker_cb)
-        rospy.Subscriber("r_knee_o/pose", TransformStamped, self.r_knee_marker_cb)
-        rospy.Subscriber("l_knee_o/pose", TransformStamped, self.l_knee_marker_cb)
-        rospy.Subscriber("r_ankle_o/pose", TransformStamped, self.r_ankle_marker_cb)
-        rospy.Subscriber("l_ankle_o/pose", TransformStamped, self.l_ankle_marker_cb)      
 
         #Initialize camera pose to standard position of Kinect in the test
         #chamber
@@ -73,6 +58,21 @@ class AutobedConverter():
         self.lpf_for_legs = remez(self.bin_numbers_for_leg_filter, 
                 [0, 0.0005, 0.1, 0.5], [1.0, 0.0])
         self.pressuremap_flat = np.zeros((1, NUMOFTAXELS_X*NUMOFTAXELS_Y))
+        #Publisher for Markers (can send them all as one marker message instead of an array because they're all spheres of the same size
+        self.marker_pub=rospy.Publisher('visualization_marker', Marker)
+
+        #Subscribers for each of the joint markers
+        rospy.Subscriber("head_o/pose", TransformStamped, self.head_marker_cb)
+        rospy.Subscriber("torso_o/pose", TransformStamped, self.torso_marker_cb)
+        rospy.Subscriber("r_elbow_o/pose", TransformStamped, self.r_elbow_marker_cb)
+        rospy.Subscriber("l_elbow_o/pose", TransformStamped, self.l_elbow_marker_cb)     
+        rospy.Subscriber("r_hand_o/pose", TransformStamped, self.r_hand_marker_cb)
+        rospy.Subscriber("l_hand_o/pose", TransformStamped, self.l_hand_marker_cb)
+        rospy.Subscriber("r_knee_o/pose", TransformStamped, self.r_knee_marker_cb)
+        rospy.Subscriber("l_knee_o/pose", TransformStamped, self.l_knee_marker_cb)
+        rospy.Subscriber("r_ankle_o/pose", TransformStamped, self.r_ankle_marker_cb)
+        rospy.Subscriber("l_ankle_o/pose", TransformStamped, self.l_ankle_marker_cb)
+
 
         #callback for markers
     def head_marker_cb(self, msg):
@@ -113,12 +113,12 @@ class AutobedConverter():
         self.marker_msg.id=0
         self.marker_msg.type=Marker.SPHERE_LIST #if numbers needed SPHERE_LIST=7
         self.marker_msg.action=Marker.ADD # if numbers needed ADD=0
-        self.marker_msg.pose.position.x=0.05
-        self.marker_msg.pose.position.y=0.1 #TODO: check this offset. It should line up with the pressure mat      
-        self.marker_msg.pose.position.z=1.0
+        self.marker_msg.pose.position.x=0.0
+        self.marker_msg.pose.position.y=1.0 #TODO: check this offset. It should line up with the pressure mat      
+        self.marker_msg.pose.position.z=2.0
         self.marker_msg.pose.orientation.x=0.0        
         self.marker_msg.pose.orientation.y=0.0
-        self.marker_msg.pose.orientation.z=0.0
+        self.marker_msg.pose.orientation.z=1.0
         self.marker_msg.pose.orientation.w=1.0
         list_of_markers=[self.head_pose.transform.translation, self.torso_pose.transform.translation, 
                                 self.r_elbow_pose.transform.translation, self.l_elbow_pose.transform.translation, 
