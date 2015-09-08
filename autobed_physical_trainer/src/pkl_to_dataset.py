@@ -180,7 +180,7 @@ class DatabaseCreator():
         template_target = np.zeros(np.shape(rot_trans_targets_mat))
         #Head Slice 
         slice_0 = template_image[:]
-        target_slice_0 = template_target
+        target_slice_0 = template_target[:]
         slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1.0 
         target_slice_0[0] += 1.0 
         #Right Arm Slice 
