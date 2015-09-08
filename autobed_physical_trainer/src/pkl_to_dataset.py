@@ -184,30 +184,30 @@ class DatabaseCreator():
         #Head Slice 
         slice_0 = np.copy(template_image)
         target_slice_0 = template_target[:]
-        slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 100.0 
+        slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1.0 
         target_slice_0[0] += 1.0 
         #Right Arm Slice 
         slice_1 = np.copy(template_image)
         target_slice_1 = template_target[:]
-        slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 100.0
+        slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 1.0
         slice_1[:head_horz_cut, head_vert_cut[0]:left_right_side_cut] = 0
         #target_slice_1[1] = target_slice_1[1] + 1.0 
         target_slice_1[1:3] += 1.0
         #Left Arm Slice 
         slice_2 = np.copy(template_image)
         target_slice_2 = template_target[:]
-        slice_2[:upper_lower_torso_cut, left_right_side_cut + 1:] = 100.0
+        slice_2[:upper_lower_torso_cut, left_right_side_cut + 1:] = 1.0
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
         target_slice_2[4:5] += 1.0
         #Right leg Slice 
         slice_3 = np.copy(template_image)
         target_slice_3 = template_target[:]
-        slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 100.0
+        slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1.0
         target_slice_3[6:7] += 1.0
         #Left leg Slice 
         slice_4 = template_image[:] 
         target_slice_4 = np.copy(template_target)       
-        slice_4[upper_lower_torso_cut:, left_right_side_cut + 1:] = 100.0
+        slice_4[upper_lower_torso_cut:, left_right_side_cut + 1:] = 1.0
         target_slice_4[8:9] += 1.0
 
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
