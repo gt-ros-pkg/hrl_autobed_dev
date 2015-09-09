@@ -113,7 +113,7 @@ class DatabaseCreator():
         print rotated_p_map_coord
         for i in range(len(pca_y_pixels)):
             print rotated_p_map_coord[i]
-            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]/2.0
+            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]
         #self.visualize_pressure_map(rotated_p_map)
         #plt.show()
 
@@ -163,8 +163,8 @@ class DatabaseCreator():
                                     elem[0]]) for elem in rot_trans_targets_pixels])
 
         print rotated_target_coord
-        for i in range(len(rotated_target_coord)):
-            rotated_p_map[rotated_target_coord[i]] = 100
+        #for i in range(len(rotated_target_coord)):
+            #rotated_p_map[rotated_target_coord[i]] = 100
         #self.visualize_pressure_map(rotated_p_map)
         #plt.show()
         
@@ -411,7 +411,7 @@ class DatabaseCreator():
         #Creating rotated p_map
         rotated_p_map = np.zeros([NUMOFTAXELS_X, NUMOFTAXELS_Y])
         for i in range(len(pca_y_pixels)):
-            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]/2.0
+            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]
             
         # target translation and rotation ---------------------------------------------
         target_raw_2d = self.preprocess_targets(target_raw) 
@@ -446,8 +446,8 @@ class DatabaseCreator():
         rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
                                     elem[0]]) for elem in rot_trans_targets_pixels])
 
-        for i in range(len(rotated_target_coord)):
-            rotated_p_map[rotated_target_coord[i]] = 100
+        #for i in range(len(rotated_target_coord)):
+            #rotated_p_map[rotated_target_coord[i]] = 100
         
         #self.visualize_pressure_map(rotated_p_map)
         #plt.show()
