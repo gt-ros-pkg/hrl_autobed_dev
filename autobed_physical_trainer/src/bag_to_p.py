@@ -185,7 +185,7 @@ class BagfileToPickle():
                 #than a certain threshold in Eucledian distance, only then log
                 #this sample
                 dist_mean = np.mean(dist_array)
-                if dist_mean >= 0.01:
+                if dist_mean >= 0.03:
                     self.training_database[self.pressure_map] = (
                         self.head_pose + self.torso_pose +
                         self.l_elbow_pose + self.r_elbow_pose + 
@@ -194,9 +194,10 @@ class BagfileToPickle():
                         self.l_ankle_pose + self.r_ankle_pose )
                         #+ self.head_orientation)
                     self.prev_pose = self.curr_pose[:]
+                    print "Number of Non-Zero Entries in saved matrix:"
+                    print np.count_nonzero(np.asarray(self.pressure_map))
 
                 self.ok_to_read_pose = False
-
         pkl.dump(self.training_database, open(self.filename, "wb"))
                  
 
