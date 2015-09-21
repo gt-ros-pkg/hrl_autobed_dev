@@ -2,15 +2,24 @@
 import sys
 import os
 import numpy as np
+import cPickle as pkl
+import random
+
+# ROS
+import roslib; roslib.load_manifest('autobed_physical_trainer')
+
+# Graphics
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-import cPickle as pkl
-import random
+# Machine Learning
 from scipy import ndimage
 ## from skimage import data, color, exposure
-
 from sklearn.decomposition import PCA
+
+# HRL libraries
+import hrl_lib.util as ut
+
 
 MAT_WIDTH = 0.762 #metres
 MAT_HEIGHT = 1.854 #metres
@@ -27,11 +36,15 @@ HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
 class DatabaseCreator():
     '''Gets the directory of pkl database and iteratively go through each file,
     cutting up the pressure maps and creating synthetic database'''
-    def __init__(self, training_database_pkl_directory):
+    def __init__(self, training_database_pkl_directory, save_pdf=False, verbose=False):
 
-        self.training_dump_path = training_database_pkl_directory
+        # Set initial parameters
+        self.training_dump_path = training_database_pkl_directory.rstrip('/')
+        self.save_pdf           = save_pdf
+        self.verbose            = verbose
+        
         home_sup_dat = pkl.load(
-                open(training_database_pkl_directory+'home_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'home_sup.p'), "rb"))         
        #Pop the mat coordinates from the dataset
         try:
             self.p_world_mat = home_sup_dat.pop('mat_o') 
@@ -165,8 +178,8 @@ class DatabaseCreator():
         print rotated_target_coord
         for i in range(len(rotated_target_coord)):
             rotated_p_map[rotated_target_coord[i]] = 100
-        #self.visualize_pressure_map(rotated_p_map)
-        #plt.show()
+        ## self.visualize_pressure_map(rotated_p_map)
+        ## plt.show()
         
         #Now we slice the image into parts
         #Choose the lowest between the left and right hand
@@ -270,10 +283,18 @@ class DatabaseCreator():
         return [taxels_y, taxels_x]
 
 
-    def visualize_pressure_map(self, pressure_map_matrix):
+    def visualize_pressure_map(self, pressure_map_matrix, fileNumber=0):
         '''Visualizing a plot of the pressure map'''
+        fig = plt.figure()
         plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+        if self.save_pdf == True: 
+            print "Visualized pressure map ", fileNumber                                        
+            fig.savefig('test_'+str(fileNumber)+'.pdf')
+            os.system('mv test*.p* ~/Dropbox/HRL/') # only for Daehyung
+        else:
+            plt.show()
+        
         return
 
     def getOffset(self, target_mat, p_map):
@@ -461,15 +482,15 @@ class DatabaseCreator():
         initialization to create a synthetic database of images and ground 
         truth values'''
         head_sup = pkl.load(
-                open(training_database_pkl_directory+'head_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'head_sup.p'), "rb")) 
         RH_sup = pkl.load(
-                open(training_database_pkl_directory+'RH_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'RH_sup.p'), "rb")) 
         LH_sup = pkl.load(
-                open(training_database_pkl_directory+'LH_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'LH_sup.p'), "rb")) 
         RL_sup = pkl.load(
-                open(training_database_pkl_directory+'RL_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'RL_sup.p'), "rb")) 
         LL_sup = pkl.load(
-                open(training_database_pkl_directory+'LL_sup.p', "rb")) 
+                open(os.path.join(self.training_dump_path,'LL_sup.p'), "rb")) 
         del head_sup['mat_o']
         del RH_sup['mat_o']
         del LH_sup['mat_o']
@@ -482,6 +503,9 @@ class DatabaseCreator():
         RL_sliced = {}
         LL_sliced = {}
 
+        ## count = 0                
+        # map_raw: pressure map
+        # target_raw: marker 
         for p_map_raw in head_sup.keys():
                 target_raw = head_sup[p_map_raw]
 
@@ -493,17 +517,22 @@ class DatabaseCreator():
                         self.split_targets[0])
 
                 #print len(head_sup.keys())
-                #p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
-                #fig = plt.figure()
-                #ax = fig.add_subplot(1, 3, 1)
-                #ax.imshow(p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax1 = fig.add_subplot(1, 3, 2)
-                #ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax2 = fig.add_subplot(1, 3, 3)
-                #ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+                p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 3, 1)
+                ax.imshow(p_map, interpolation='nearest', cmap=
+                          plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+                ax1 = fig.add_subplot(1, 3, 2)
+                ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
+                           plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+                ax2 = fig.add_subplot(1, 3, 3)
+                ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
+                           plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+
+                ## #For daehyung's test 
+                ## fig.savefig('test_'+str(count)+'.pdf')
+                ## os.system('mv test*.p* ~/Dropbox/HRL/') # only for Daehyung
+                ## count += 1                
                 #plt.show()
 
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
@@ -608,6 +637,7 @@ class DatabaseCreator():
                 #plt.show()
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
+        ## count = 0
         final_database = {}
         for head_p_map in head_sliced.keys():
             for RH_p_map in RH_sliced.keys():
@@ -645,16 +675,37 @@ class DatabaseCreator():
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
                             final_database[tuple(final_p_map)] = final_target
-                            #self.visualize_pressure_map(np.reshape(final_p_map,
-                                #self.mat_size))
-                            #plt.show()
+                            
+                            ## self.visualize_pressure_map(np.reshape(final_p_map, self.mat_size),\
+                            ##                             fileNumber=count)
+                            
+                            ## if count > 20: sys.exit()
+                            ## else: count += 1
 
-        pkl.dump(final_database, 
-                open(self.training_dump_path+'final_database.p', 'wb'))
+
+        print "Save final_database"
+        ## pkl.dump(final_database, 
+        ##         open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
 
 
 if __name__ == "__main__":
+
+    import optparse
+    p = optparse.OptionParser()
+
+    p.add_option('--training_data_path', '--path',  action='store', type='string', dest='trainingPath',
+                 default='./../dataset/subject_6/', help='Set path to the training database.')
+    p.add_option('--save_pdf', '--sp',  action='store_true', dest='save_pdf',
+                 default=False, help='Save plot as a pdf.')
+    p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
+                 default=False, help='Printout everything.')
+    
+    opt, args = p.parse_args()
+    
+    
     #Initialize trainer with a training database file
-    training_database_pkl_directory = sys.argv[1] #path to the training database  
-    p = DatabaseCreator(training_database_pkl_directory) 
+    ## training_database_pkl_directory = sys.argv[1] #  
+    p = DatabaseCreator(training_database_pkl_directory=opt.trainingPath,\
+                        save_pdf=opt.save_pdf,\
+                        verbose=opt.verbose) 
     p.run()
