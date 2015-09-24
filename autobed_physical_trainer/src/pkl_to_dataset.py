@@ -213,7 +213,7 @@ class DatabaseCreator():
         '''
         #Choose the lowest(max) between the left and right hand
         upper_lower_torso_cut = max(coord[5][0],
-                                coord[6][0]) +10
+                                coord[6][0]) + 7
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
@@ -674,8 +674,6 @@ class DatabaseCreator():
                         self.split_targets[4])
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
                 #print len(LL_sup.keys())
-                self.visualize_pressure_map(sliced_p_map) 
-
 
         for p_map_raw in RL_sup.keys():
                 target_raw = RL_sup[p_map_raw]
@@ -703,7 +701,7 @@ class DatabaseCreator():
                 for LH_p_map in LH_sliced.keys():
                     for RL_p_map in RL_sliced.keys():
                         for LL_p_map in LL_sliced.keys():
-                            final_p_map = (np.asarray(head_p_map) + 
+                            stitched_p_map = (np.asarray(head_p_map) + 
                                            np.asarray(RH_p_map) + 
                                            np.asarray(LH_p_map) + 
                                            np.asarray(RL_p_map) + 
@@ -713,15 +711,19 @@ class DatabaseCreator():
                                             np.asarray(LH_sliced[LH_p_map]) + 
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
-                            final_database[tuple(final_p_map)] = final_target
-                           
-                            self.visualize_pressure_map(np.reshape(final_p_map,
-                                self.mat_size))#,\
+
+                            final_p_map = ndimage.zoom(
+                                    np.reshape(stitched_p_map, self.mat_size), 
+                                    2, order=1)
+
+                    self.visualize_pressure_map(final_p_map)
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
                             ## else: count += 1
                             
+                    final_database[tuple(final_p_map.flatten())] = final_target
+
         print "Save final_database"
         ## pkl.dump(final_database, 
         ##         open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
