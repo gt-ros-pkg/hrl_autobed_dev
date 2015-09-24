@@ -226,32 +226,32 @@ class DatabaseCreator():
         template_target = np.zeros(np.shape(coord))
         #Head Slice 
         slice_0 = np.copy(template_image)
-        target_slice_0 = template_target[:]
+        target_slice_0 = np.copy(template_target)
         slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1.0 
         target_slice_0[0] += 1.0 
         #Right Arm Slice 
         slice_1 = np.copy(template_image)
-        target_slice_1 = template_target[:]
+        target_slice_1 = np.copy(template_target)
         slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 1.0
         slice_1[:head_horz_cut, head_vert_cut[0]:left_right_side_cut] = 0
         #target_slice_1[1] = target_slice_1[1] + 1.0 
-        target_slice_1[1:3] += 1.0
+        target_slice_1[1:4] += 1.0
         #Left Arm Slice 
         slice_2 = np.copy(template_image)
-        target_slice_2 = template_target[:]
+        target_slice_2 = np.copy(template_target)
         slice_2[:upper_lower_torso_cut, left_right_side_cut:] = 1.0
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
-        target_slice_2[4:5] += 1.0
+        target_slice_2[4:7] += 1.0
         #Right leg Slice 
         slice_3 = np.copy(template_image)
-        target_slice_3 = template_target[:]
+        target_slice_3 = np.copy(template_target)
         slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1.0
-        target_slice_3[6:7] += 1.0
+        target_slice_3[7:9] += 1.0
         #Left leg Slice 
-        slice_4 = template_image[:] 
+        slice_4 = np.copy(template_image)
         target_slice_4 = np.copy(template_target)       
         slice_4[upper_lower_torso_cut:, left_right_side_cut:] = 1.0
-        target_slice_4[8:9] += 1.0
+        target_slice_4[9:11] += 1.0
 
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
         target_slices = ([target_slice_0, 
@@ -660,7 +660,6 @@ class DatabaseCreator():
                         self.split_matrices[0])
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[0])
-
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
 
@@ -744,7 +743,6 @@ class DatabaseCreator():
 
                     self.visualize_pressure_map(final_p_map, rotated_targets=final_target*\
                                                 zoom_factor)
-                    sys.exit()
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
