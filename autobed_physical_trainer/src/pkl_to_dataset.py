@@ -59,7 +59,7 @@ class DatabaseCreator():
         if self.verbose: print "Checking database for empty values."
         empty_count = 0
         for dict_entry in list(home_sup_dat.keys()):
-            if len(home_sup_dat[dict_entry]) < (30) or (len(dict_entry) <
+            if len(home_sup_dat[dict_entry]) < (33) or (len(dict_entry) <
                     self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
                 del home_sup_dat[dict_entry]
@@ -91,6 +91,7 @@ class DatabaseCreator():
         #Reshape to create 2D pressure map
         orig_p_map = np.asarray(np.reshape(p_map_flat, self.mat_size))
         orig_targets = target[:]
+
         #Perform PCA on the pressure map to rotate and translate it to a known
         #value
         rotated_p_map = self.rotate_taxel_space(orig_p_map)
@@ -118,8 +119,9 @@ class DatabaseCreator():
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
 
-        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map, rotated_p_map)
-        
+        #self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+                #rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        #sys.exit() 
         return p_map_slices, target_slices
 
 
@@ -211,15 +213,15 @@ class DatabaseCreator():
         to produce better output.
         '''
         #Choose the lowest(max) between the left and right hand
-        upper_lower_torso_cut = max(coord[4][0],
-                                coord[5][0]) +10
+        upper_lower_torso_cut = max(coord[5][0],
+                                coord[6][0]) +10
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         #Cut 3 pixels below the head marker
-        head_horz_cut = coord[0][0] + 10
-        head_vert_cut = ([coord[0][1] - 4 ,
-                          coord[0][1] + 4]) 
+        head_horz_cut = min(coord[1][0], coord[2][0]) - 2 
+        head_vert_cut = ([coord[1][1] + 2 ,
+                          coord[2][1] - 2]) 
         
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
@@ -342,18 +344,17 @@ class DatabaseCreator():
 
 
 
-        ## if targets_raw is not None and False:
-        ##     print np.shape(targets_raw)
-        ##     n = len(targets_raw)
-        ##     target_raw = np.array(targets_raw).reshape(n/3, 3)            
-        ##     targets_mat = np.asarray([[elem[0], elem[1]] for elem in target_raw])
-        ##     ## targets_mat = np.dot(np.asarray(targets_mat),
-        ##     ##                      np.array([[0, -1],[-1, 0]]))           
-        ##     targets_pixels = ([self.mat_to_taxels(elem) for elem in
-        ##                                  targets_mat]) 
-        ##     target_coord = np.array(([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-        ##                                      elem[0]]) for elem in targets_pixels]))
-        ##     ax.plot(target_coord[:,0], target_coord[:,1], 'k*', ms=8)
+        if targets_raw is not None:
+            print np.shape(targets_raw)
+            n = len(targets_raw)
+            targets_mat = np.asarray([[elem[0], elem[1]] for elem in targets_raw])
+            ## targets_mat = np.dot(np.asarray(targets_mat),
+            ##                      np.array([[0, -1],[-1, 0]]))           
+            targets_pixels = ([self.mat_to_taxels(elem) for elem in
+                                          targets_mat]) 
+            target_coord = np.array(([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                             elem[0]]) for elem in targets_pixels]))
+            ax.plot(target_coord[:,1], target_coord[:,0], 'k*', ms=8)
             
         if rotated_targets is not None:
 
@@ -606,25 +607,6 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[0])
 
-                #print len(head_sup.keys())
-                ## p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
-                ## fig = plt.figure()
-                ## ax = fig.add_subplot(1, 3, 1)
-                ## ax.imshow(p_map, interpolation='nearest', cmap=
-                ##           plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                ## ax1 = fig.add_subplot(1, 3, 2)
-                ## ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                ##            plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                ## ax2 = fig.add_subplot(1, 3, 3)
-                ## ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                ##            plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-
-                ## #For daehyung's test 
-                ## fig.savefig('test_'+str(count)+'.pdf')
-                ## os.system('mv test*.p* ~/Dropbox/HRL/') # only for Daehyung
-                ## count += 1                
-                #plt.show()
-
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
 
@@ -636,21 +618,6 @@ class DatabaseCreator():
                         self.split_matrices[1])
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[1])
-
-                #print len(RH_sup.keys())
-                #p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
-                #fig = plt.figure()
-                #ax = fig.add_subplot(1, 3, 1)
-                #ax.imshow(p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax1 = fig.add_subplot(1, 3, 2)
-                #ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax2 = fig.add_subplot(1, 3, 3)
-                #ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #plt.show()
-
                 RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
         for p_map_raw in LH_sup.keys():
@@ -661,21 +628,6 @@ class DatabaseCreator():
                         self.split_matrices[2])
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[2])
-
-                #print len(LH_sup.keys())
-                #p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
-                #fig = plt.figure()
-                #ax = fig.add_subplot(1, 3, 1)
-                #ax.imshow(p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax1 = fig.add_subplot(1, 3, 2)
-                #ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #ax2 = fig.add_subplot(1, 3, 3)
-                #ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                                #plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #plt.show()
-
                 LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
         for p_map_raw in RL_sup.keys():
@@ -686,21 +638,6 @@ class DatabaseCreator():
                         self.split_matrices[3])
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[3])
-
-                #print len(RL_sup.keys())
-                ## p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
-                ## fig = plt.figure()
-                ## ax = fig.add_subplot(1, 3, 1)
-                ## ax.imshow(p_map, interpolation='nearest', cmap=
-                ##                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                ## ax1 = fig.add_subplot(1, 3, 2)
-                ## ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                ##                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                ## ax2 = fig.add_subplot(1, 3, 3)
-                ## ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                ##                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-                #plt.show()
-
                 RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
                 
@@ -714,11 +651,10 @@ class DatabaseCreator():
                         self.split_targets[4])
 
                 #print len(LL_sup.keys())
-                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  targets_raw=target_raw, rotated_targets=rotated_target, \
-                                                  sliced_targets=sliced_target, fileNumber=i)
+                #self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                                                  #targets_raw=target_raw, rotated_targets=rotated_target, \
+                                                  #sliced_targets=sliced_target, fileNumber=i)
                                 
-                #plt.show()
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
         sys.exit()
@@ -731,26 +667,6 @@ class DatabaseCreator():
                 for LH_p_map in LH_sliced.keys():
                     for RL_p_map in RL_sliced.keys():
                         for LL_p_map in LL_sliced.keys():
-                            #self.visualize_pressure_map(np.reshape(head_p_map,
-                                #self.mat_size))
-                            #print head_p_map
-                            #plt.show()
-                            #self.visualize_pressure_map(np.reshape(RH_p_map,
-                                #self.mat_size))
-                            #plt.show()
-                            #print RH_p_map
-                            #self.visualize_pressure_map(np.reshape(LH_p_map,
-                                    #self.mat_size))
-                            #plt.show()
-                            #print LH_p_map
-                            ## self.visualize_pressure_map(np.reshape(LL_p_map, 
-                            ##                                        self.mat_size), fileNumber=count+100)
-                            #plt.show()
-                            #print LL_p_map
-                            ## self.visualize_pressure_map(np.reshape(RL_p_map,
-                            ##     self.mat_size), fileNumber=count+200)
-                            #plt.show()
-                            #print RL_p_map
                             final_p_map = (np.asarray(head_p_map) + 
                                            np.asarray(RH_p_map) + 
                                            np.asarray(LH_p_map) + 
@@ -763,7 +679,8 @@ class DatabaseCreator():
                                             np.asarray(LL_sliced[LL_p_map]))
                             final_database[tuple(final_p_map)] = final_target
                            
-                            ## self.visualize_pressure_map(np.reshape(final_p_map, self.mat_size),\
+                            #self.visualize_pressure_map(np.reshape(final_p_map,
+                                #self.mat_size))#,\
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
