@@ -214,6 +214,11 @@ class DatabaseCreator():
         #Choose the lowest(max) between the left and right hand
         upper_lower_torso_cut = max(coord[5][0],
                                 coord[6][0]) + 7
+
+        left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
+        torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
+                                                        upper_lower_torso_cut]) 
+        torso_offset_vert = ([coord[5][1] + 1, coord[6][1] - 1])
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
@@ -234,6 +239,8 @@ class DatabaseCreator():
         target_slice_1 = np.copy(template_target)
         slice_1[:upper_lower_torso_cut, :left_right_side_cut] = 1.0
         slice_1[:head_horz_cut, head_vert_cut[0]:left_right_side_cut] = 0
+        (slice_1[torso_offset_horz[0]:torso_offset_horz[1],
+                torso_offset_vert[0]:torso_offset_vert[1]]) = 0
         #target_slice_1[1] = target_slice_1[1] + 1.0 
         target_slice_1[1:4] += 1.0
         #Left Arm Slice 
@@ -241,18 +248,23 @@ class DatabaseCreator():
         target_slice_2 = np.copy(template_target)
         slice_2[:upper_lower_torso_cut, left_right_side_cut:] = 1.0
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
+        (slice_2[torso_offset_horz[0]:torso_offset_horz[1],
+                torso_offset_vert[0]:torso_offset_vert[1]]) = 0
         target_slice_2[4:7] += 1.0
         #Right leg Slice 
         slice_3 = np.copy(template_image)
         target_slice_3 = np.copy(template_target)
         slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1.0
+        (slice_3[torso_offset_horz[0]:torso_offset_horz[1],
+                torso_offset_vert[0]:left_right_side_cut]) = 1.0
         target_slice_3[7:9] += 1.0
         #Left leg Slice 
         slice_4 = np.copy(template_image)
         target_slice_4 = np.copy(template_target)       
         slice_4[upper_lower_torso_cut:, left_right_side_cut:] = 1.0
+        (slice_4[torso_offset_horz[0]:torso_offset_horz[1],
+                left_right_side_cut:torso_offset_vert[1]]) = 1.0
         target_slice_4[9:11] += 1.0
-
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
         target_slices = ([target_slice_0, 
                           target_slice_1, 
@@ -679,6 +691,8 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[4])
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+                self.visualize_pressure_map(np.reshape(sliced_p_map, 
+                                                                self.mat_size))
                 #print len(LL_sup.keys())
 
         for p_map_raw in RL_sup.keys():
