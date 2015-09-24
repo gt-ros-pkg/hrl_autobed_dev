@@ -312,11 +312,24 @@ class DatabaseCreator():
         return [taxels_y, taxels_x]
 
 
-    def visualize_pressure_map(self, pressure_map_matrix, fileNumber=0):
+    def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0):
         '''Visualizing a plot of the pressure map'''
         fig = plt.figure()
         plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+
+        if rotated_targets is not None:
+            rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+                                         rotated_targets]) 
+                
+            rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                            elem[0]]) for elem in rot_trans_targets_pixels])
+
+            for i in range(len(rotated_target_coord)):
+                ## rotated_p_map[rotated_target_coord[i]] = 100
+                plt.plot([float(rotated_target_coord[i][1])], [float(rotated_target_coord[i][0])],\
+                         'y*', ms=10)
+                        
         if self.save_pdf == True: 
             print "Visualized pressure map ", fileNumber                                        
             fig.savefig('test_'+str(fileNumber)+'.pdf')
@@ -692,7 +705,6 @@ class DatabaseCreator():
                         self.split_targets[3])
                 RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-
                 targets_reshaped = self.preprocess_targets(target_raw)
                 ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
                 ##                                   targets_raw=targets_reshaped, \
@@ -703,6 +715,7 @@ class DatabaseCreator():
                 
         # temp
         count = 0
+        zoom_factor=2.0
         final_database = {}
         for head_p_map in head_sliced.keys():
             for RH_p_map in RH_sliced.keys():
@@ -720,11 +733,18 @@ class DatabaseCreator():
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
 
+                            print final_target
+                            print RL_sliced[RL_p_map]
+                            print LL_sliced[LL_p_map]
+                            sys.exit()
+
                             final_p_map = ndimage.zoom(
                                     np.reshape(stitched_p_map, self.mat_size), 
-                                    2, order=1)
+                                    zoom_factor, order=1)
 
-                    self.visualize_pressure_map(final_p_map)
+                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target*\
+                                                zoom_factor)
+                    sys.exit()
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
