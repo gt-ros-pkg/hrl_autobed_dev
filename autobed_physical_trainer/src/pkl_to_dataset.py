@@ -44,7 +44,7 @@ class DatabaseCreator():
         self.verbose            = verbose
 
         home_sup_dat = pkl.load(
-                open(os.path.join(self.training_dump_path,'home_sup.p'), "rb"))         
+                open(os.path.join(self.training_dump_path,'home_sup.p'), "r"))         
        #Pop the mat coordinates from the dataset
         try:
             self.p_world_mat = home_sup_dat.pop('mat_o') 
@@ -101,7 +101,7 @@ class DatabaseCreator():
 
         #Run matching function to find the best rotation offset
         self.ang_offset, self.trans_offset = self.getOffset(
-                                        rotated_targets, rotated_p_map, True)
+                                        rotated_targets, rotated_p_map)
         rotated_targets = np.dot(np.asarray(rotated_targets),
                 np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
@@ -118,10 +118,9 @@ class DatabaseCreator():
         #in the taxel space
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
-
-        self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-                rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
-        sys.exit()
+        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        
         return p_map_slices, target_slices
 
 
@@ -579,6 +578,8 @@ class DatabaseCreator():
         '''Uses the Rotation, translation, and slices obtained in
         initialization to create a synthetic database of images and ground 
         truth values'''
+        home_sup = pkl.load(
+                open(os.path.join(self.training_dump_path,'home_sup.p'), "rb")) 
         head_sup = pkl.load(
                 open(os.path.join(self.training_dump_path,'head_sup.p'), "rb")) 
         RH_sup = pkl.load(
@@ -590,6 +591,7 @@ class DatabaseCreator():
         LL_sup = pkl.load(
                 open(os.path.join(self.training_dump_path,'LL_sup.p'), "rb")) 
         try:
+            del home_sup['mat_o']
             del head_sup['mat_o']
             del RH_sup['mat_o']
             del LH_sup['mat_o']
@@ -607,6 +609,36 @@ class DatabaseCreator():
         ## count = 0                
         # map_raw: pressure map
         # target_raw: marker 
+        p_map_raw = home_sup.keys()[0]
+        target_raw = home_sup[p_map_raw]
+        [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                    p_map_raw, target_raw)
+        sliced_p_map = np.multiply(rotated_p_map,
+                self.split_matrices[0])
+        sliced_target = np.multiply(rotated_target,
+                self.split_targets[0])
+        head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+        sliced_p_map = np.multiply(rotated_p_map,
+                self.split_matrices[1])
+        sliced_target = np.multiply(rotated_target,
+                self.split_targets[1])
+        RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+        sliced_p_map = np.multiply(rotated_p_map,
+                self.split_matrices[2])
+        sliced_target = np.multiply(rotated_target,
+                self.split_targets[2])
+        LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+        sliced_p_map = np.multiply(rotated_p_map,
+                self.split_matrices[3])
+        sliced_target = np.multiply(rotated_target,
+                self.split_targets[3])
+        RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+        sliced_p_map = np.multiply(rotated_p_map,
+                self.split_matrices[4])
+        sliced_target = np.multiply(rotated_target,
+                self.split_targets[4])
+        LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+
         for p_map_raw in head_sup.keys():
                 target_raw = head_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -647,8 +679,10 @@ class DatabaseCreator():
                         self.split_matrices[4])
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[4])
-
+                LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
                 #print len(LL_sup.keys())
+                self.visualize_pressure_map(sliced_p_map) 
+
 
         for p_map_raw in RL_sup.keys():
                 target_raw = RL_sup[p_map_raw]
@@ -662,14 +696,12 @@ class DatabaseCreator():
 
 
                 targets_reshaped = self.preprocess_targets(target_raw)
-                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  targets_raw=targets_reshaped, \
-                                                  rotated_targets=rotated_target, \
-                                                  sliced_targets=sliced_target, fileNumber=i)
+                ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                ##                                   targets_raw=targets_reshaped, \
+                ##                                   rotated_targets=rotated_target, \
+                ##                                   sliced_targets=sliced_target, fileNumber=i)
                                 
-                LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-        sys.exit()
                 
         # temp
         count = 0
@@ -691,8 +723,8 @@ class DatabaseCreator():
                                             np.asarray(LL_sliced[LL_p_map]))
                             final_database[tuple(final_p_map)] = final_target
                            
-                            #self.visualize_pressure_map(np.reshape(final_p_map,
-                                #self.mat_size))#,\
+                            self.visualize_pressure_map(np.reshape(final_p_map,
+                                self.mat_size))#,\
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
