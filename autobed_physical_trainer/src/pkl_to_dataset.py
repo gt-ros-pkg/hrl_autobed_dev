@@ -76,7 +76,72 @@ class DatabaseCreator():
         values by same amount in the frame of the mat. Finally slices the home
         position pressure map into 6 regions and returns sliced matrices'''
         #Reshape to create 2D pressure map
-        p_map = np.asarray(np.reshape(p_map_flat, self.mat_size))
+        orig_p_map = np.asarray(np.reshape(p_map_flat, self.mat_size))
+        orig_targets = target[:]
+        #Perform PCA on the pressure map to rotate and translate it to a known
+        #value
+        rotated_p_map = self.rotate_taxel_space(orig_p_map)
+        #Perform PCA on the 3D target values to rotate and translate the 
+        #targets
+        rotated_targets = self.rotate_3D_space(orig_p_map, orig_targets)
+
+        #Run matching function to find the best rotation offset
+        self.ang_offset, self.trans_offset = self.getOffset(
+                                        rotated_targets, rotated_p_map)
+        rotated_targets = np.dot(np.asarray(rotated_targets),
+                np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
+                [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
+        rotated_targets += self.trans_offset        
+        
+        ## print rot_trans_targets_mat
+        rotated_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+                rotated_targets]) 
+
+        rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+                                elem[0]]) for elem in rotated_targets_pixels])
+
+        #Slice up the pressure map values from rotated target values projected
+        #in the taxel space
+        [p_map_slices, target_slices] = (
+                                self.slice_pressure_map(rotated_target_coord))
+        return p_map_slices, target_slices
+
+
+    def rotate_3D_space(self, p_map, target):
+        ''' Rotate the 3D target values (the 3D position of the markers
+        attached to subject) using PCA'''
+        #Get the indices of the pressure map that have non-zero pressure value
+        nzero_indices = np.nonzero(p_map)
+        #Perform PCA on the non-zero elements of the pressure map
+        pca_x_tuples = zip(nzero_indices[1], 
+                                    nzero_indices[0]*(-1) + (NUMOFTAXELS_X-1))
+        pca_x_pixels = np.asarray([list(elem) for elem in pca_x_tuples])
+        #Taxels in 3D space in the mat frame
+        pca_x_mat = INTER_SENSOR_DISTANCE*pca_x_pixels
+        #We need only X,Y coordinates in the mat frame
+        targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
+
+        #Perform PCA in the 3D Space with the mat origin
+        self.pca_mat = PCA(n_components=2)
+        self.pca_mat.fit(pca_x_mat)
+        #The output of PCA needs rotation by -90 
+        rot_targets_mat = self.pca_mat.transform(targets_mat)
+        rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
+                                                np.array([[0, -1],[-1, 0]]))
+        
+        #Translate the targets to the center of the mat so that they match the 
+        #pressure map
+        rot_trans_targets_mat = np.asarray(
+            [np.asarray(elem) + 
+            INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
+            for elem in rot_targets_mat]) 
+
+        return rot_trans_targets_mat
+
+
+    def rotate_taxel_space(self, p_map):
+        '''Rotates pressure map given to it using PCA and translates it back to 
+        center of the pressure mat.'''
         #Get the nonzero indices
         nzero_indices = np.nonzero(p_map)
         #Perform PCA on the non-zero elements of the pressure map
@@ -110,78 +175,34 @@ class DatabaseCreator():
                                     elem[0]]) for elem in rot_trans_x_pixels])
         #Creating rotated p_map
         rotated_p_map = np.zeros([NUMOFTAXELS_X, NUMOFTAXELS_Y])
-        print rotated_p_map_coord
         for i in range(len(pca_y_pixels)):
-            print rotated_p_map_coord[i]
-            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]/2.0
-        #self.visualize_pressure_map(rotated_p_map)
-        #plt.show()
+            rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]
+        return rotated_p_map
 
-        #Taxels in 3D space in the mat frame
-        pca_x_mat = INTER_SENSOR_DISTANCE*pca_x_pixels
-        #We need only X,Y coordinates in the mat frame
-        targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
 
-        #Perform PCA in the 3D Space with the mat origin
-        self.pca_mat = PCA(n_components=2)
-        self.pca_mat.fit(pca_x_mat)
-        #The output of PCA needs rotation by -90 
-        rot_targets_mat = self.pca_mat.transform(targets_mat)
-        rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
-                                                np.array([[0, -1],[-1, 0]]))
-        
-        ## print rot_targets_mat 
-        rot_trans_targets_mat = np.asarray(
-            [np.asarray(elem) + 
-            INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
-            for elem in rot_targets_mat]) 
-
-        #Run matching function to find the best rotation offset
-        self.ang_offset, self.trans_offset = self.getOffset(rot_trans_targets_mat, rotated_p_map)
-        rot_trans_targets_mat = np.dot(np.asarray(rot_trans_targets_mat),
-                                       np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
-                                                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
-        rot_trans_targets_mat = rot_trans_targets_mat + self.trans_offset        
-        
-        
-        # Visualzation of head and ankle part only
-        ## part_map = np.zeros(np.shape(rotated_p_map))
-        ## for i in xrange(len(rotated_p_map)):
-        ##     for j in xrange(len(rotated_p_map[i])):
-        ##         if i>1 and i<13 and rotated_p_map[i,j] > 10.0:
-        ##             part_map[i,j] = 50.0
-        ##         if i>len(rotated_p_map)-8 and i < len(rotated_p_map)-2 and rotated_p_map[i,j] > 10.0:
-        ##             part_map[i,j] = 50.0        
-        ## rotated_p_map = part_map
-        
-        
-        ## print rot_trans_targets_mat
-        rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                rot_trans_targets_mat]) 
-
-        rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                    elem[0]]) for elem in rot_trans_targets_pixels])
-
-        print rotated_target_coord
-        for i in range(len(rotated_target_coord)):
-            rotated_p_map[rotated_target_coord[i]] = 100
-        #self.visualize_pressure_map(rotated_p_map)
-        #plt.show()
-        
-        #Now we slice the image into parts
-        #Choose the lowest between the left and right hand
-        upper_lower_torso_cut = max(rotated_target_coord[4][0],
-                                rotated_target_coord[5][0]) +10
+    def slice_pressure_map(self, coord):        
+        '''Slices Pressure map and coordinates into parts.
+        1. Head Part
+        2. Right Hand
+        3. Left Hand
+        4. Right Leg
+        5. Left Leg
+        Returns: Image Templates that are then multiplied to pressure map
+        to produce better output.
+        '''
+        #Choose the lowest(max) between the left and right hand
+        upper_lower_torso_cut = max(coord[4][0],
+                                coord[5][0]) +10
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         #Cut 3 pixels below the head marker
-        head_horz_cut = rotated_target_coord[0][0] + 10
-        head_vert_cut = ([rotated_target_coord[0][1] - 4 ,
-                          rotated_target_coord[0][1] + 4]) 
+        head_horz_cut = coord[0][0] + 10
+        head_vert_cut = ([coord[0][1] - 4 ,
+                          coord[0][1] + 4]) 
         
         template_image = np.zeros(self.mat_size)
-        template_target = np.zeros(np.shape(rot_trans_targets_mat))
+        template_target = np.zeros(np.shape(coord))
         #Head Slice 
         slice_0 = np.copy(template_image)
         target_slice_0 = template_target[:]
@@ -197,7 +218,7 @@ class DatabaseCreator():
         #Left Arm Slice 
         slice_2 = np.copy(template_image)
         target_slice_2 = template_target[:]
-        slice_2[:upper_lower_torso_cut, left_right_side_cut + 1:] = 1.0
+        slice_2[:upper_lower_torso_cut, left_right_side_cut:] = 1.0
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
         target_slice_2[4:5] += 1.0
         #Right leg Slice 
@@ -208,7 +229,7 @@ class DatabaseCreator():
         #Left leg Slice 
         slice_4 = template_image[:] 
         target_slice_4 = np.copy(template_target)       
-        slice_4[upper_lower_torso_cut:, left_right_side_cut + 1:] = 1.0
+        slice_4[upper_lower_torso_cut:, left_right_side_cut:] = 1.0
         target_slice_4[8:9] += 1.0
 
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
@@ -645,9 +666,9 @@ class DatabaseCreator():
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
                             final_database[tuple(final_p_map)] = final_target
-                            #self.visualize_pressure_map(np.reshape(final_p_map,
-                                #self.mat_size))
-                            #plt.show()
+                            self.visualize_pressure_map(np.reshape(final_p_map,
+                                self.mat_size))
+                            plt.show()
 
         pkl.dump(final_database, 
                 open(self.training_dump_path+'final_database.p', 'wb'))
