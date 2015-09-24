@@ -42,7 +42,7 @@ class DatabaseCreator():
         self.training_dump_path = training_database_pkl_directory.rstrip('/')
         self.save_pdf           = save_pdf
         self.verbose            = verbose
-        
+
         home_sup_dat = pkl.load(
                 open(os.path.join(self.training_dump_path,'home_sup.p'), "rb"))         
        #Pop the mat coordinates from the dataset
@@ -101,7 +101,7 @@ class DatabaseCreator():
 
         #Run matching function to find the best rotation offset
         self.ang_offset, self.trans_offset = self.getOffset(
-                                        rotated_targets, rotated_p_map)
+                                        rotated_targets, rotated_p_map, True)
         rotated_targets = np.dot(np.asarray(rotated_targets),
                 np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
@@ -121,6 +121,7 @@ class DatabaseCreator():
 
         self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
                 rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        sys.exit()
         return p_map_slices, target_slices
 
 
@@ -328,7 +329,8 @@ class DatabaseCreator():
         return
 
     def visualize_pressure_map_slice(self, p_map_raw, rotated_p_map, sliced_p_map, \
-                                     targets_raw=None, rotated_targets=None, sliced_targets=None, fileNumber=0):
+                                     targets_raw=None, rotated_targets=None, sliced_targets=None, \
+                                     fileNumber=0):
         p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
         fig = plt.figure()
         ax = fig.add_subplot(1, 3, 1)
@@ -366,7 +368,8 @@ class DatabaseCreator():
 
             for i in range(len(rotated_target_coord)):
                 ## rotated_p_map[rotated_target_coord[i]] = 100
-                ax1.plot([float(rotated_target_coord[i][1])], [float(rotated_target_coord[i][0])], 'y*', ms=10)
+                ax1.plot([float(rotated_target_coord[i][1])], [float(rotated_target_coord[i][0])],\
+                         'y*', ms=10)
                 
 
             ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
@@ -388,7 +391,7 @@ class DatabaseCreator():
 
         return
         
-    def getOffset(self, target_mat, p_map):
+    def getOffset(self, target_mat, p_map, plot=False):
         '''Find the best angular and translation offset''' 
 
         iteration   = 500
@@ -399,25 +402,27 @@ class DatabaseCreator():
         max_score   = 0.
         min_variance = 1000.0
         best_offset = np.array([0.,0.,0.]) #ang, x, y
-        window_size = 2
+        window_size = 3
 
         map_pressure_thres = 10.0
-        head_pixel_range  = [2,12]
-        ankle_pixel_range = [-8,-2]
+        head_pixel_range  = [0,10]
+        ankle_pixel_range = [-5,-0]
         
         # get head and food parts in map
         part_map = np.zeros(np.shape(p_map))
         for i in xrange(len(p_map)):
             for j in xrange(len(p_map[i])):
-                if i>=head_pixel_range[0] and i<=head_pixel_range[1] and p_map[i,j] > map_pressure_thres:
+                if i>=head_pixel_range[0] and i<=head_pixel_range[1] and \
+                  p_map[i,j] > map_pressure_thres:
                     part_map[i,j] = 50.0
                 if i>len(p_map)+ankle_pixel_range[0] and i < len(p_map)+ankle_pixel_range[1] \
                   and p_map[i,j] > map_pressure_thres:
                     part_map[i,j] = 50.0        
         ## part_map[0:13,:] = p_map[0:13,:]
         ## part_map[-5:-1,:] = p_map[-5:-1,:]
-        p_map = part_map        
-
+        #p_map = part_map        
+        if plot: self.visualize_pressure_map(p_map)
+        
         # Q: p_map is not normalized and scale is really different
         while iteration>0:
             iteration = iteration - 1
@@ -478,7 +483,8 @@ class DatabaseCreator():
 
                     x = n-i
                     y = m-j
-                    dist = float(2.0*window_size -x -y)/float(2.0*window_size) #np.sqrt(float(x*x+y*y))
+                    dist = float(2.0*window_size -x -y)/float(2.0*window_size) 
+                    #np.sqrt(float(x*x+y*y))
                     score_l.append(p_map[i,j] * dist)
                     count = count + 1
 
@@ -546,8 +552,10 @@ class DatabaseCreator():
             for elem in rot_targets_mat]) 
         
         transformed_target = np.dot(np.asarray(rot_trans_targets_mat),
-                                       np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
-                                                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
+                                       np.array([[np.cos(self.ang_offset), \
+                                                  -np.sin(self.ang_offset)],\
+                                                 [np.sin(self.ang_offset), \
+                                                  np.cos(self.ang_offset)]]))
         transformed_target = transformed_target + self.trans_offset        
 
 
@@ -655,7 +663,8 @@ class DatabaseCreator():
 
                 targets_reshaped = self.preprocess_targets(target_raw)
                 self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  targets_raw=targets_reshaped, rotated_targets=rotated_target, \
+                                                  targets_raw=targets_reshaped, \
+                                                  rotated_targets=rotated_target, \
                                                   sliced_targets=sliced_target, fileNumber=i)
                                 
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
@@ -699,8 +708,10 @@ if __name__ == "__main__":
     import optparse
     p = optparse.OptionParser()
 
-    p.add_option('--training_data_path', '--path',  action='store', type='string', dest='trainingPath',
-                 default='./../dataset/subject_6/', help='Set path to the training database.')
+    p.add_option('--training_data_path', '--path',  action='store', type='string', \
+                 dest='trainingPath',\
+                 default='~/hrl_file_server/autobed/pose_estimation_data/subject2_stitching_test/', \
+                 help='Set path to the training database.')
     p.add_option('--save_pdf', '--sp',  action='store_true', dest='save_pdf',
                  default=False, help='Save plot as a pdf.')
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
