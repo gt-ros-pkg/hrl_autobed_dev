@@ -66,7 +66,7 @@ class PhysicalTrainer():
         self.dataset_y = [] #Initialization for the entire dataset 
         self.train_x_flat = rand_keys[:200]#Pressure maps
         [self.train_y.append(dat[key]) for key in self.train_x_flat]#Coordinates 
-        self.test_x_flat = rand_keys[201:]#Pressure maps(test dataset)
+        self.test_x_flat = rand_keys[201:250]#Pressure maps(test dataset)
         [self.test_y.append(dat[key]) for key in self.test_x_flat]#ground truth
         self.dataset_x_flat = rand_keys[:200]#Pressure maps
         [self.dataset_y.append(dat[key]) for key in self.dataset_x_flat]
