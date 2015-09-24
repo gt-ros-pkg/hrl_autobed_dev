@@ -119,9 +119,8 @@ class DatabaseCreator():
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
 
-        #self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-                #rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
-        #sys.exit() 
+        self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+                rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
         return p_map_slices, target_slices
 
 
@@ -347,7 +346,8 @@ class DatabaseCreator():
         if targets_raw is not None:
             print np.shape(targets_raw)
             n = len(targets_raw)
-            targets_mat = np.asarray([[elem[0], elem[1]] for elem in targets_raw])
+            targets_mat = np.asarray([[elem[0], elem[1]] for elem in
+                targets_raw])
             ## targets_mat = np.dot(np.asarray(targets_mat),
             ##                      np.array([[0, -1],[-1, 0]]))           
             targets_pixels = ([self.mat_to_taxels(elem) for elem in
@@ -490,7 +490,6 @@ class DatabaseCreator():
         made to the home image'''
 
         # map translation and rotation ------------------------------------------------
-
         #Reshape to create 2D pressure map
         p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
         #Get the nonzero indices
@@ -582,11 +581,14 @@ class DatabaseCreator():
                 open(os.path.join(self.training_dump_path,'RL_sup.p'), "rb")) 
         LL_sup = pkl.load(
                 open(os.path.join(self.training_dump_path,'LL_sup.p'), "rb")) 
-        del head_sup['mat_o']
-        del RH_sup['mat_o']
-        del LH_sup['mat_o']
-        del RL_sup['mat_o']
-        del LL_sup['mat_o']
+        try:
+            del head_sup['mat_o']
+            del RH_sup['mat_o']
+            del LH_sup['mat_o']
+            del RL_sup['mat_o']
+            del LL_sup['mat_o']
+        except KeyError:
+            pass
         #Slice each image using the slices computed earlier
         head_sliced = {}
         RH_sliced = {}
@@ -599,7 +601,6 @@ class DatabaseCreator():
         # target_raw: marker 
         for p_map_raw in head_sup.keys():
                 target_raw = head_sup[p_map_raw]
-
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
                 sliced_p_map = np.multiply(rotated_p_map,
@@ -629,17 +630,6 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[2])
                 LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
-
-        for p_map_raw in RL_sup.keys():
-                target_raw = RL_sup[p_map_raw]
-                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
-                                            p_map_raw, target_raw)
-                sliced_p_map = np.multiply(rotated_p_map,
-                        self.split_matrices[3])
-                sliced_target = np.multiply(rotated_target,
-                        self.split_targets[3])
-                RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
-
                 
         for i, p_map_raw in enumerate(LL_sup.keys()):
                 target_raw = LL_sup[p_map_raw]
@@ -651,9 +641,22 @@ class DatabaseCreator():
                         self.split_targets[4])
 
                 #print len(LL_sup.keys())
-                #self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  #targets_raw=target_raw, rotated_targets=rotated_target, \
-                                                  #sliced_targets=sliced_target, fileNumber=i)
+
+        for p_map_raw in RL_sup.keys():
+                target_raw = RL_sup[p_map_raw]
+                [rotated_p_map, rotated_target] = self.pca_transformation_sup(
+                                            p_map_raw, target_raw)
+                sliced_p_map = np.multiply(rotated_p_map,
+                        self.split_matrices[3])
+                sliced_target = np.multiply(rotated_target,
+                        self.split_targets[3])
+                RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+
+
+                targets_reshaped = self.preprocess_targets(target_raw)
+                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                                                  targets_raw=targets_reshaped, rotated_targets=rotated_target, \
+                                                  sliced_targets=sliced_target, fileNumber=i)
                                 
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 

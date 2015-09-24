@@ -10,6 +10,11 @@ from hrl_msgs.msg import FloatArrayBare
 from geometry_msgs.msg import TransformStamped
 
 
+
+NUMOFTAXELS_X = 64#73 #taxels
+NUMOFTAXELS_Y = 27#30 
+TOTAL_TAXELS = NUMOFTAXELS_X*NUMOFTAXELS_Y
+
 class BagfileToPickle():
     '''Converts pressure map bagfile to a pickle file with labels'''
     def __init__(self, filename):
@@ -24,8 +29,8 @@ class BagfileToPickle():
                 self.mat_origin_callback)
         rospy.Subscriber("/head_o/pose", TransformStamped,
                 self.head_origin_callback)
-        rospy.Subscriber("/torso_o/pose", TransformStamped,
-                self.torso_origin_callback)
+#        rospy.Subscriber("/torso_o/pose", TransformStamped,
+                #self.torso_origin_callback)
         rospy.Subscriber("/l_elbow_o/pose", TransformStamped,
                 self.l_elbow_origin_callback)
         rospy.Subscriber("/r_elbow_o/pose", TransformStamped,
@@ -42,7 +47,12 @@ class BagfileToPickle():
                 self.l_ankle_origin_callback)
         rospy.Subscriber("/r_ankle_o/pose", TransformStamped,
                 self.r_ankle_origin_callback)
+        rospy.Subscriber("/l_shoulder_o/pose", TransformStamped,
+                self.l_shoulder_origin_callback)
+        rospy.Subscriber("/r_shoulder_o/pose", TransformStamped,
+                self.r_shoulder_origin_callback)
  
+
         try:
             self.training_database = pkl.load(open(self.filename, 'rb'))
         except:
@@ -53,7 +63,9 @@ class BagfileToPickle():
         self.mat_pose = []
         self.head_pose = []
         #self.head_orientation = []
-        self.torso_pose = []
+        #self.torso_pose = []
+        self.l_shoulder_pose = []
+        self.r_shoulder_pose = []
         self.l_elbow_pose = []
         self.r_elbow_pose = []
         self.l_hand_pose = []
@@ -69,8 +81,12 @@ class BagfileToPickle():
         '''This callback accepts incoming pressure map from 
         the Vista Medical Pressure Mat and sends it out. 
         Remember, this array needs to be binarized to be used'''
-        self.pressure_map  = data.data
-        self.ok_to_read_pose = True
+        if len(data.data) == TOTAL_TAXELS:
+            self.pressure_map  = data.data
+            self.ok_to_read_pose = True
+        else:
+            self.ok_to_read_pose = False
+            return
 
 
     def mat_origin_callback(self, data):
@@ -94,6 +110,20 @@ class BagfileToPickle():
     def torso_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
         self.torso_pose = [data.transform.translation.x,
+                         data.transform.translation.y,
+                         data.transform.translation.z]
+
+
+    def l_shoulder_origin_callback(self, data):
+        '''This callback will sample data until its asked to stop'''
+        self.l_shoulder_pose = [data.transform.translation.x,
+                         data.transform.translation.y,
+                         data.transform.translation.z]
+
+
+    def r_shoulder_origin_callback(self, data):
+        '''This callback will sample data until its asked to stop'''
+        self.r_shoulder_pose = [data.transform.translation.x,
                          data.transform.translation.y,
                          data.transform.translation.z]
 
@@ -159,11 +189,12 @@ class BagfileToPickle():
         will label them with the label'''
         while not rospy.is_shutdown():
             self.curr_pose = np.asarray([self.head_pose, 
-                self.torso_pose, self.l_elbow_pose,self.r_elbow_pose, 
-                self.l_hand_pose, self.r_hand_pose, self.l_knee_pose, 
-                self.r_knee_pose, self.l_ankle_pose, 
-                self.r_ankle_pose])
-            if self.ok_to_read_pose == True and np.size(self.curr_pose)==30:
+                self.l_shoulder_pose, self.r_shoulder_pose, 
+                self.l_elbow_pose,self.r_elbow_pose, 
+                self.l_hand_pose, self.r_hand_pose, 
+                self.l_knee_pose, self.r_knee_pose, 
+                self.l_ankle_pose, self.r_ankle_pose])
+            if self.ok_to_read_pose == True and np.size(self.curr_pose)==33:
                 self.count += 1
                 dist_array = []
                 #After 10 seconds, we sample mat pose
@@ -187,7 +218,8 @@ class BagfileToPickle():
                 dist_mean = np.mean(dist_array)
                 if dist_mean >= 0.03:
                     self.training_database[self.pressure_map] = (
-                        self.head_pose + self.torso_pose +
+                        self.head_pose + 
+                        self.l_shoulder_pose + self.r_shoulder_pose +
                         self.l_elbow_pose + self.r_elbow_pose + 
                         self.l_hand_pose + self.r_hand_pose + 
                         self.l_knee_pose + self.r_knee_pose +
