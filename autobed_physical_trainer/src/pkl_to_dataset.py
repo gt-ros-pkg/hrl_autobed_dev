@@ -14,6 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # Machine Learning
 from scipy import ndimage
+from scipy.ndimage.filters import gaussian_filter
 ## from skimage import data, color, exposure
 from sklearn.decomposition import PCA
 
@@ -714,7 +715,6 @@ class DatabaseCreator():
                 
         # temp
         count = 0
-        zoom_factor=2.0
         final_database = {}
         for head_p_map in head_sliced.keys():
             for RH_p_map in RH_sliced.keys():
@@ -732,17 +732,16 @@ class DatabaseCreator():
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
 
-                            print final_target
-                            print RL_sliced[RL_p_map]
-                            print LL_sliced[LL_p_map]
-                            sys.exit()
+                            ## zoom_factor=2.0
+                            ## final_p_map = ndimage.zoom(
+                            ##         np.reshape(stitched_p_map, self.mat_size), 
+                            ##         zoom_factor, order=1)
+                            final_p_map = np.zeros(self.mat_size)                                
+                            gaussian_filter(np.reshape(stitched_p_map, self.mat_size),\
+                                            0.5, order=0, output=final_p_map,\
+                                            mode='constant')
 
-                            final_p_map = ndimage.zoom(
-                                    np.reshape(stitched_p_map, self.mat_size), 
-                                    zoom_factor, order=1)
-
-                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target*\
-                                                zoom_factor)
+                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
