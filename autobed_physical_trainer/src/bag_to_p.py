@@ -189,11 +189,11 @@ class BagfileToPickle():
         will label them with the label'''
         while not rospy.is_shutdown():
             self.curr_pose = np.asarray([self.head_pose, 
-                self.l_shoulder_pose, self.r_shoulder_pose, 
-                self.l_elbow_pose,self.r_elbow_pose, 
-                self.l_hand_pose, self.r_hand_pose, 
-                self.l_knee_pose, self.r_knee_pose, 
-                self.l_ankle_pose, self.r_ankle_pose])
+                self.r_shoulder_pose, self.l_shoulder_pose, 
+                self.r_elbow_pose,self.l_elbow_pose, 
+                self.r_hand_pose, self.l_hand_pose, 
+                self.r_knee_pose, self.l_knee_pose, 
+                self.r_ankle_pose, self.l_ankle_pose])
             if self.ok_to_read_pose == True and np.size(self.curr_pose)==33:
                 self.count += 1
                 dist_array = []
@@ -219,11 +219,11 @@ class BagfileToPickle():
                 if dist_mean >= 0.03:
                     self.training_database[self.pressure_map] = (
                         self.head_pose + 
-                        self.l_shoulder_pose + self.r_shoulder_pose +
-                        self.l_elbow_pose + self.r_elbow_pose + 
-                        self.l_hand_pose + self.r_hand_pose + 
-                        self.l_knee_pose + self.r_knee_pose +
-                        self.l_ankle_pose + self.r_ankle_pose )
+                        self.r_shoulder_pose + self.l_shoulder_pose +
+                        self.r_elbow_pose + self.l_elbow_pose + 
+                        self.r_hand_pose + self.l_hand_pose + 
+                        self.r_knee_pose + self.l_knee_pose +
+                        self.r_ankle_pose + self.l_ankle_pose )
                         #+ self.head_orientation)
                     self.prev_pose = self.curr_pose[:]
                     print "Number of Non-Zero Entries in saved matrix:"

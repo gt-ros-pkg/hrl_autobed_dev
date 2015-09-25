@@ -211,28 +211,37 @@ class DatabaseCreator():
         Returns: Image Templates that are then multiplied to pressure map
         to produce better output.
         '''
+        limb_dict = {'head':0, 
+                    'r_shoulder':1, 'l_shoulder':2, 
+                    'r_elbow':3, 'l_elbow':4,
+                    'r_hand':5, 'l_hand':6,
+                    'r_knee':7, 'l_knee':8,
+                    'r_ankle':9, 'l_ankle':10}
+
         #Choose the lowest(max) between the left and right hand
-        upper_lower_torso_cut = max(coord[5][0],
-                                coord[6][0]) + 5
+        upper_lower_torso_cut = max(coord[limb_dict['l_hand']][0],
+                                coord[limb_dict['r_hand']][0]) + 5
 
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
                                                         upper_lower_torso_cut]) 
-        torso_offset_vert = ([coord[5][1] + 3, coord[6][1] - 3])
+        torso_offset_vert = ([coord[limb_dict['r_hand']][1] + 3, 
+                              coord[limb_dict['l_hand']][1] - 3])
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         #Cut 3 pixels below the head marker
-        head_horz_cut = min(coord[1][0], coord[2][0]) - 2 
-        head_vert_cut = ([coord[1][1] + 2 ,
-                          coord[2][1] - 2]) 
+        head_horz_cut = min(coord[limb_dict['r_shoulder']][0], 
+                            coord[limb_dict['l_shoulder']][0]) - 2 
+        head_vert_cut = ([coord[limb_dict['r_shoulder']][1] + 2 ,
+                          coord[limb_dict['l_shoulder']][1] - 2]) 
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
         #Head Slice 
         slice_0 = np.copy(template_image)
         target_slice_0 = np.copy(template_target)
         slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1.0 
-        target_slice_0[0] += 1.0 
+        target_slice_0[limb_dict['head']] += 1.0 
         #Right Arm Slice 
         slice_1 = np.copy(template_image)
         target_slice_1 = np.copy(template_target)
@@ -241,7 +250,9 @@ class DatabaseCreator():
         (slice_1[torso_offset_horz[0]:torso_offset_horz[1],
                 torso_offset_vert[0]:torso_offset_vert[1]]) = 0
         #target_slice_1[1] = target_slice_1[1] + 1.0 
-        target_slice_1[1:4] += 1.0
+        target_slice_1[limb_dict['r_shoulder']] += 1.0
+        target_slice_1[limb_dict['r_elbow']] += 1.0
+        target_slice_1[limb_dict['r_hand']] += 1.0
         #Left Arm Slice 
         slice_2 = np.copy(template_image)
         target_slice_2 = np.copy(template_target)
@@ -249,21 +260,25 @@ class DatabaseCreator():
         slice_2[:head_horz_cut, left_right_side_cut:head_vert_cut[1]] = 0
         (slice_2[torso_offset_horz[0]:torso_offset_horz[1],
                 torso_offset_vert[0]:torso_offset_vert[1]]) = 0
-        target_slice_2[4:7] += 1.0
+        target_slice_2[limb_dict['l_shoulder']] += 1.0
+        target_slice_2[limb_dict['l_elbow']] += 1.0
+        target_slice_2[limb_dict['l_hand']] += 1.0
         #Right leg Slice 
         slice_3 = np.copy(template_image)
         target_slice_3 = np.copy(template_target)
         slice_3[upper_lower_torso_cut:, :left_right_side_cut] = 1.0
         (slice_3[torso_offset_horz[0]:torso_offset_horz[1],
                 torso_offset_vert[0]:left_right_side_cut]) = 1.0
-        target_slice_3[7:9] += 1.0
+        target_slice_3[limb_dict['r_knee']] += 1.0
+        target_slice_3[limb_dict['r_ankle']] += 1.0
         #Left leg Slice 
         slice_4 = np.copy(template_image)
         target_slice_4 = np.copy(template_target)       
         slice_4[upper_lower_torso_cut:, left_right_side_cut:] = 1.0
         (slice_4[torso_offset_horz[0]:torso_offset_horz[1],
                 left_right_side_cut:torso_offset_vert[1]]) = 1.0
-        target_slice_4[9:11] += 1.0
+        target_slice_4[limb_dict['l_knee']] += 1.0
+        target_slice_4[limb_dict['l_ankle']] += 1.0
 
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
         target_slices = ([target_slice_0, 
@@ -690,10 +705,10 @@ class DatabaseCreator():
                 RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
                 ## self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
-                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  targets_raw=target_raw, \
-                                                  rotated_targets=rotated_target, \
-                                                  sliced_targets=sliced_target)
+#                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                                                  #targets_raw=target_raw, \
+                                                  #rotated_targets=rotated_target, \
+                                                  #sliced_targets=sliced_target)
 
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
@@ -714,9 +729,8 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[4])
                 LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
-                self.visualize_pressure_map(np.reshape(sliced_p_map, 
-                                                                self.mat_size))
-                #print len(LL_sup.keys())
+#                self.visualize_pressure_map(np.reshape(sliced_p_map, 
+                                                                #self.mat_size))
 
         for p_map_raw in RL_sup.keys():
                 target_raw = RL_sup[p_map_raw]
@@ -728,15 +742,7 @@ class DatabaseCreator():
                         self.split_targets[3])
                 RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-                ## targets_reshaped = self.preprocess_targets(target_raw)
-                ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                ##                                   targets_raw=targets_reshaped, \
-                ##                                   rotated_targets=rotated_target, \
-                ##                                   sliced_targets=sliced_target, fileNumber=i)
-                                
-
                 
-        # temp
         count = 0
         final_database = {}
         for head_p_map in head_sliced.keys():
@@ -759,20 +765,20 @@ class DatabaseCreator():
                             gaussian_filter(np.reshape(stitched_p_map, self.mat_size),\
                                             sigma=0.5, order=0, output=final_p_map,\
                                             mode='constant')
+                            final_database[tuple(final_p_map.flatten())] = (
+                                                final_target.flatten())
 
-                    ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
+                    #self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
                     
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
                             ## else: count += 1
                             
-                    final_database[tuple(final_p_map.flatten())] = final_target
-
-        print "Save final_database"
-        ## pkl.dump(final_database, 
-        ##         open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
-
+        print "Saving final_database"
+        pkl.dump(final_database, 
+                 open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
+        return
 
 if __name__ == "__main__":
 
@@ -797,3 +803,4 @@ if __name__ == "__main__":
                         save_pdf=opt.save_pdf,\
                         verbose=opt.verbose) 
     p.run()
+    sys.exit()
