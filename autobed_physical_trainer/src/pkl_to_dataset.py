@@ -119,8 +119,9 @@ class DatabaseCreator():
         #in the taxel space
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
-        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,\
+        ##                                   rotated_p_map, targets_raw=orig_targets, \
+        ##                                   rotated_targets=rotated_targets)
         
         return p_map_slices, target_slices
 
@@ -378,7 +379,8 @@ class DatabaseCreator():
 
         # Visualize targets
         if targets_raw is not None:
-
+            if type(targets_raw) == list:
+                targets_raw = np.array(targets_raw)
             if len(np.shape(targets_raw))==1:
                 targets_raw = np.reshape(targets_raw, (len(targets_raw)/3,3))
 
@@ -680,10 +682,10 @@ class DatabaseCreator():
                 RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
                 ## self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
-                ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                ##                                   targets_raw=target_raw, \
-                ##                                   rotated_targets=rotated_target, \
-                ##                                   sliced_targets=sliced_target)
+                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                                                  targets_raw=target_raw, \
+                                                  rotated_targets=rotated_target, \
+                                                  sliced_targets=sliced_target)
 
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
@@ -748,7 +750,7 @@ class DatabaseCreator():
                                             sigma=0.5, order=0, output=final_p_map,\
                                             mode='constant')
 
-                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
+                    ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
                     
                             ##                             fileNumber=count)
                             
