@@ -325,22 +325,24 @@ class DatabaseCreator():
 
 
     def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0):
-        '''Visualizing a plot of the pressure map'''
+        '''Visualizing a plot of the pressure map'''        
         fig = plt.figure()
         plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
 
         if rotated_targets is not None:
-            rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                                         rotated_targets]) 
-                
-            rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                            elem[0]]) for elem in rot_trans_targets_pixels])
+            
+            rotated_target_coord = rotated_targets[:,:2]/INTER_SENSOR_DISTANCE            
+            rotated_target_coord[:,1] -= (NUMOFTAXELS_X - 1)
+            rotated_target_coord[:,1] *= -1.0                       
+            plt.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
+                     'y*', ms=10)
 
-            for i in range(len(rotated_target_coord)):
-                ## rotated_p_map[rotated_target_coord[i]] = 100
-                plt.plot([float(rotated_target_coord[i][1])], [float(rotated_target_coord[i][0])],\
-                         'y*', ms=10)
+            xlim = [-10.0, 35.0]
+            ylim = [70.0, -10.0]                     
+            plt.xlim(xlim)
+            plt.ylim(ylim)
+                     
                         
         if self.save_pdf == True: 
             print "Visualized pressure map ", fileNumber                                        
@@ -357,54 +359,58 @@ class DatabaseCreator():
                                      fileNumber=0):
         p_map = np.asarray(np.reshape(p_map_raw, self.mat_size))
         fig = plt.figure()
-        ax = fig.add_subplot(1, 3, 1)
-        ax.imshow(p_map, interpolation='nearest', cmap=
+
+        # set options
+        ax1 = fig.add_subplot(1, 3, 1)
+        ax2 = fig.add_subplot(1, 3, 2)
+        ax3 = fig.add_subplot(1, 3, 3)
+
+        xlim = [-10.0, 35.0]
+        ylim = [70.0, -10.0]
+        ax1.set_xlim(xlim)
+        ax2.set_xlim(xlim)
+        ax3.set_xlim(xlim)
+        ax1.set_ylim(ylim)
+        ax2.set_ylim(ylim)
+        ax3.set_ylim(ylim)
+        
+        # background
+        ax1.set_axis_bgcolor('cyan')
+        ax2.set_axis_bgcolor('cyan')
+        ax3.set_axis_bgcolor('cyan')
+        
+        # Visualize pressure maps
+        ax1.imshow(p_map, interpolation='nearest', cmap=
+                   plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+        ax2.imshow(rotated_p_map, interpolation='nearest', cmap=
+                        plt.cm.bwr, origin='upper', vmin=0, vmax=100)        
+        ax3.imshow(sliced_p_map, interpolation='nearest', cmap=
                         plt.cm.bwr, origin='upper', vmin=0, vmax=100)
-        ax1 = fig.add_subplot(1, 3, 2)
-        ## ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-        ##                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)        
-        ax2 = fig.add_subplot(1, 3, 3)
-        ax2.imshow(sliced_p_map, interpolation='nearest', cmap=
-                        plt.cm.bwr, origin='upper', vmin=0, vmax=100)
 
-
-
+        # Visualize targets
         if targets_raw is not None:
-            print np.shape(targets_raw)
-            n = len(targets_raw)
-            targets_mat = np.asarray([[elem[0], elem[1]] for elem in
-                targets_raw])
-            ## targets_mat = np.dot(np.asarray(targets_mat),
-            ##                      np.array([[0, -1],[-1, 0]]))           
-            targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                                          targets_mat]) 
-            target_coord = np.array(([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                             elem[0]]) for elem in targets_pixels]))
-            ax.plot(target_coord[:,1], target_coord[:,0], 'k*', ms=8)
+            if type(targets_raw) == list:
+                targets_raw = np.array(targets_raw)
+            if len(np.shape(targets_raw))==1:
+                targets_raw = np.reshape(targets_raw, (len(targets_raw)/3,3))
+
+            target_coord = targets_raw[:,:2]/INTER_SENSOR_DISTANCE
+            target_coord[:,1] -= (NUMOFTAXELS_X - 1)
+            target_coord[:,1] *= -1.0                                   
+            ax1.plot(target_coord[:,0], target_coord[:,1], 'y*', ms=8)
             
         if rotated_targets is not None:
 
-            rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                                         rotated_targets]) 
-                
-            rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                            elem[0]]) for elem in rot_trans_targets_pixels])
+            rotated_target_coord = rotated_targets[:,:2]/INTER_SENSOR_DISTANCE            
+            rotated_target_coord[:,1] -= (NUMOFTAXELS_X - 1)
+            rotated_target_coord[:,1] *= -1.0                       
+            ax2.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
+                     'y*', ms=10)
 
-            for i in range(len(rotated_target_coord)):
-                ## rotated_p_map[rotated_target_coord[i]] = 100
-                ax1.plot([float(rotated_target_coord[i][1])], [float(rotated_target_coord[i][0])],\
-                         'y*', ms=10)
-                
-
-            ax1.imshow(rotated_p_map, interpolation='nearest', cmap=
-                       plt.cm.bwr, origin='upper', vmin=0, vmax=100)        
-            ## ax1.plot(rotated_target_coord[:,0], rotated_target_coord[:,1], 'k*', ms=8)
-            ## ax1.plot(rot_trans_targets_pixels[:,0], rot_trans_targets_pixels[:,1], 'k*', ms=8)
-
-        if sliced_targets is not None:
-            print "under construction"
+        ## if sliced_targets is not None:
+        ##     print "under construction"
+                        
             
-        
         if self.save_pdf == True: 
             print "Visualized pressure map ", fileNumber                                        
             fig.savefig('test_'+str(fileNumber)+'.png')
@@ -683,6 +689,12 @@ class DatabaseCreator():
                         self.split_targets[1])
                 RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
+                ## self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
+                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                                                  targets_raw=target_raw, \
+                                                  rotated_targets=rotated_target, \
+                                                  sliced_targets=sliced_target)
+
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -716,7 +728,7 @@ class DatabaseCreator():
                         self.split_targets[3])
                 RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-                targets_reshaped = self.preprocess_targets(target_raw)
+                ## targets_reshaped = self.preprocess_targets(target_raw)
                 ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
                 ##                                   targets_raw=targets_reshaped, \
                 ##                                   rotated_targets=rotated_target, \
@@ -742,16 +754,14 @@ class DatabaseCreator():
                                             np.asarray(LH_sliced[LH_p_map]) + 
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
-                            ## zoom_factor=2.0
-                            ## final_p_map = ndimage.zoom(
-                            ##         np.reshape(stitched_p_map, self.mat_size), 
-                            ##         zoom_factor, order=1)
+
                             final_p_map = np.zeros(self.mat_size)                                
                             gaussian_filter(np.reshape(stitched_p_map, self.mat_size),\
-                                            0.5, order=0, output=final_p_map,\
+                                            sigma=0.5, order=0, output=final_p_map,\
                                             mode='constant')
 
-                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
+                    ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
+                    
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
