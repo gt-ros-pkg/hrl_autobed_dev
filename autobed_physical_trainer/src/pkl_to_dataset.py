@@ -121,7 +121,6 @@ class DatabaseCreator():
                                 self.slice_pressure_map(rotated_target_coord))
         ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
         ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
-        
         return p_map_slices, target_slices
 
 
@@ -214,12 +213,12 @@ class DatabaseCreator():
         '''
         #Choose the lowest(max) between the left and right hand
         upper_lower_torso_cut = max(coord[5][0],
-                                coord[6][0]) + 7
+                                coord[6][0]) + 5
 
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
                                                         upper_lower_torso_cut]) 
-        torso_offset_vert = ([coord[5][1] + 1, coord[6][1] - 1])
+        torso_offset_vert = ([coord[5][1] + 3, coord[6][1] - 3])
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
@@ -227,7 +226,6 @@ class DatabaseCreator():
         head_horz_cut = min(coord[1][0], coord[2][0]) - 2 
         head_vert_cut = ([coord[1][1] + 2 ,
                           coord[2][1] - 2]) 
-        
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
         #Head Slice 
@@ -266,6 +264,7 @@ class DatabaseCreator():
         (slice_4[torso_offset_horz[0]:torso_offset_horz[1],
                 left_right_side_cut:torso_offset_vert[1]]) = 1.0
         target_slice_4[9:11] += 1.0
+
         image_slices = [slice_0, slice_1, slice_2, slice_3, slice_4]
         target_slices = ([target_slice_0, 
                           target_slice_1, 
@@ -564,7 +563,6 @@ class DatabaseCreator():
 
         #We need only X,Y coordinates in the mat frame
         targets_mat = np.asarray([[elem[0], elem[1]] for elem in target_raw])
-
         #The output of PCA needs rotation by -90 
         rot_targets_mat = self.pca_mat.transform(targets_mat)
         rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
@@ -675,7 +673,6 @@ class DatabaseCreator():
                         self.split_targets[0])
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-
         for p_map_raw in RH_sup.keys():
                 target_raw = RH_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -695,7 +692,7 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[2])
                 LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
-                
+
         for i, p_map_raw in enumerate(LL_sup.keys()):
                 target_raw = LL_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -745,7 +742,6 @@ class DatabaseCreator():
                                             np.asarray(LH_sliced[LH_p_map]) + 
                                             np.asarray(RL_sliced[RL_p_map]) +
                                             np.asarray(LL_sliced[LL_p_map]))
-
                             ## zoom_factor=2.0
                             ## final_p_map = ndimage.zoom(
                             ##         np.reshape(stitched_p_map, self.mat_size), 
