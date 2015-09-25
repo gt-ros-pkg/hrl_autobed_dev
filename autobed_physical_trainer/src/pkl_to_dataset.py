@@ -68,12 +68,16 @@ class DatabaseCreator():
                 empty_count)
 
         home_sup_pressure_map = home_sup_dat.keys()[0]
-        home_sup_joint_pos_world = self.preprocess_targets(
-                                            home_sup_dat[home_sup_pressure_map]) 
-
+        home_sup_joint_pos_world = np.array(home_sup_dat[home_sup_pressure_map]).reshape(
+                len(home_sup_dat[home_sup_pressure_map])/3,3)
+        
         #Targets in the mat frame
-        home_sup_joint_pos = (
-                [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
+        home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world)
+
+        ## home_sup_joint_pos_world = self.preprocess_targets(
+        ##                                     home_sup_dat[home_sup_pressure_map])         
+        ## home_sup_joint_pos = (
+        ##         [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
 
         self.ang_offset   = None
         self.trans_offset = None
@@ -91,7 +95,7 @@ class DatabaseCreator():
         position pressure map into 6 regions and returns sliced matrices'''
         #Reshape to create 2D pressure map
         orig_p_map = np.asarray(np.reshape(p_map_flat, self.mat_size))
-        orig_targets = target[:]
+        orig_targets = target
 
         #Perform PCA on the pressure map to rotate and translate it to a known
         #value
@@ -103,24 +107,33 @@ class DatabaseCreator():
         #Run matching function to find the best rotation offset
         self.ang_offset, self.trans_offset = self.getOffset(
                                         rotated_targets, rotated_p_map)
-        rotated_targets = np.dot(np.asarray(rotated_targets),
+        rotated_targets = np.dot(rotated_targets,
                 np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
         rotated_targets += self.trans_offset        
         
         ## print rot_trans_targets_mat
-        rotated_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                rotated_targets]) 
 
-        rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                elem[0]]) for elem in rotated_targets_pixels])
+        rotated_targets_pixels = rotated_targets / INTER_SENSOR_DISTANCE
+        rotated_targets_pixels[:,1] -= (NUMOFTAXELS_X - 1)
+        rotated_targets_pixels[:,1] *= -1.0                       
+        rotated_target_coord = np.hstack([rotated_targets_pixels[:,1], rotated_targets_pixels[:,0]])
+        
+        ## rotated_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+        ##         rotated_targets]) 
 
+        ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+        ##                         elem[0]]) for elem in rotated_targets_pixels])
+
+        print np.shape(rotated_target_coord)
+                
         #Slice up the pressure map values from rotated target values projected
         #in the taxel space
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
-        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+                rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        sys.exit()
         return p_map_slices, target_slices
 
 
@@ -136,22 +149,25 @@ class DatabaseCreator():
         #Taxels in 3D space in the mat frame
         pca_x_mat = INTER_SENSOR_DISTANCE*pca_x_pixels
         #We need only X,Y coordinates in the mat frame
-        targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
+        ## targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
+        targets_mat = target[:,:2]
 
         #Perform PCA in the 3D Space with the mat origin
         self.pca_mat = PCA(n_components=2)
         self.pca_mat.fit(pca_x_mat)
         #The output of PCA needs rotation by -90 
         rot_targets_mat = self.pca_mat.transform(targets_mat)
-        rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
-                                                np.array([[0, -1],[-1, 0]]))
+        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0, -1],[-1, 0]])) ##?
         
         #Translate the targets to the center of the mat so that they match the 
         #pressure map
-        rot_trans_targets_mat = np.asarray(
-            [np.asarray(elem) + 
-            INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
-            for elem in rot_targets_mat]) 
+
+        rot_targets_mat += INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2])
+        
+        ## rot_trans_targets_mat = np.asarray(
+        ##     [np.asarray(elem) + 
+        ##     INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
+        ##     for elem in rot_targets_mat]) 
 
         return rot_trans_targets_mat
 
@@ -312,10 +328,13 @@ class DatabaseCreator():
         B_m_w = np.concatenate((O_m_w, p_mat_world.T), axis=1)
         last_row = np.array([[0, 0, 0, 1]])
         B_m_w = np.concatenate((B_m_w, last_row), axis=0)
-        w_data = np.append(w_data, np.array([1]))
+
+        w_data = np.hstack([w_data, np.zeros([len(w_data),1])]).T
+        ## w_data = np.append(w_data, np.array([1]))
         #Convert input to the mat frame vector
-        m_data = B_m_w.dot(w_data)
-        m_data = np.squeeze(np.asarray(m_data))
+
+        m_data = B_m_w * w_data
+        ## m_data = np.squeeze(m_data)
         return m_data
 
 
@@ -478,17 +497,22 @@ class DatabaseCreator():
             y   = random.uniform(y_range[0], y_range[1])
 
             # rotate target mat
-            rot_trans_targets_mat = np.dot(np.asarray(target_mat),
+            rot_trans_targets_mat = np.dot(target_mat,
                                            np.array([[np.cos(ang), -np.sin(ang)],
                                                      [np.sin(ang), np.cos(ang)]]))        
             ## print np.shape(rot_trans_targets_mat), rot_trans_targets_mat[0]
             rot_trans_targets_mat = rot_trans_targets_mat + np.array([x,y])
 
-            rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                    rot_trans_targets_mat]) 
+            rot_trans_targets_pixels = rot_trans_targets_mat / INTER_SENSOR_DISTANCE
+            ## rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
+            ##         rot_trans_targets_mat]) 
 
-            rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                        elem[0]]) for elem in rot_trans_targets_pixels])
+            rot_trans_targets_pixels[:,1] -= (NUMOFTAXELS_X - 1)
+            rot_trans_targets_pixels[:,1] *= -1.0                       
+            rotated_target_coord = np.hstack([rot_trans_targets_pixels[:,1], rot_trans_targets_pixels[:,0]])
+            
+            ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+            ##                             elem[0]]) for elem in rot_trans_targets_pixels])
             
             # sum of scores
             score = self.pressure_score_in_window(p_map, rotated_target_coord[0], window_size) +\
@@ -577,10 +601,25 @@ class DatabaseCreator():
             rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]
             
         # target translation and rotation ---------------------------------------------
-        target_raw_2d = self.preprocess_targets(target_raw) 
+        ## target_raw_2d = self.preprocess_targets(target_raw) 
         #Targets in the mat frame
-        target_raw = (
-                [self.world_to_mat(elem) for elem in target_raw_2d])
+        ## target_raw = (
+        ##         [self.world_to_mat(elem) for elem in target_raw_2d])
+        
+        target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
+        print type(target_raw)
+        print "-----------------"
+        target_raw = self.world_to_mat(target_raw)
+
+        print np.shape(target_raw)
+            
+            
+        ##             print type(target_raw)
+        ## targets_mat = 
+        ## print np.shape(targets_mat), np.shape(target_raw)
+        sys.exit()
+        
+
 
         #We need only X,Y coordinates in the mat frame
         targets_mat = np.asarray([[elem[0], elem[1]] for elem in target_raw])
