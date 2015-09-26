@@ -108,7 +108,8 @@ class DatabaseCreator():
         # mat to non-descrete taxel space
         rotated_targets_pixels = self.mat_to_taxels(rotated_targets)
         rotated_target_coord = np.hstack([-rotated_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1.0), 
-                                          rotated_targets_pixels[:,0:1],orig_targets[:,2:3] ])
+                                          rotated_targets_pixels[:,0:1] ])
+        rotated_target_coord = np.hstack([rotated_target_coord, orig_targets[:,2:3]]) #  added z axis info
         
         #Slice up the pressure map values from rotated target values projected
         #in the taxel space
@@ -217,22 +218,22 @@ class DatabaseCreator():
                     'r_ankle':9, 'l_ankle':10}
 
         #Choose the lowest(max) between the left and right hand
-        upper_lower_torso_cut = max(coord[limb_dict['l_hand']][0],
-                                    coord[limb_dict['r_hand']][0]) + 5
+        upper_lower_torso_cut = int(max(coord[limb_dict['l_hand'],0],
+                                        coord[limb_dict['r_hand'],0]) + 5)
 
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
                                                         upper_lower_torso_cut]) 
-        torso_offset_vert = ([coord[limb_dict['r_hand']][1] + 3, 
-                              coord[limb_dict['l_hand']][1] - 3])
+        torso_offset_vert = np.array([coord[limb_dict['r_hand'],1] + 3, 
+                                      coord[limb_dict['l_hand'],1] - 3]).astype(int)
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         #Cut 3 pixels below the head marker
-        head_horz_cut = min(coord[limb_dict['r_shoulder']][0], 
-                            coord[limb_dict['l_shoulder']][0]) - 2 
-        head_vert_cut = ([coord[limb_dict['r_shoulder']][1] + 2 ,
-                          coord[limb_dict['l_shoulder']][1] - 2]) 
+        head_horz_cut = int(min(coord[limb_dict['r_shoulder'],0], 
+                                coord[limb_dict['l_shoulder'],0]) - 2 )
+        head_vert_cut = np.array([coord[limb_dict['r_shoulder'],1] + 2 ,
+                                  coord[limb_dict['l_shoulder'],1] - 2]).astype(int)
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
         
@@ -240,7 +241,7 @@ class DatabaseCreator():
         slice_0 = np.copy(template_image)
         target_slice_0 = np.copy(template_target)
         slice_0[:head_horz_cut, head_vert_cut[0]:head_vert_cut[1]] = 1.0 
-        target_slice_0[limb_dict['head']] += 1.0 
+        target_slice_0[limb_dict['head']] += 1.0         
         #Right Arm Slice 
         slice_1 = np.copy(template_image)
         target_slice_1 = np.copy(template_target)
@@ -341,19 +342,32 @@ class DatabaseCreator():
         return taxels
 
 
-    def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0):
+    def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0, plot_3d=False):
         '''Visualizing a plot of the pressure map'''        
         fig = plt.figure()
-        plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
+        if plot_3d: ax = fig.gca(projection='3d')
+            
+        if plot_3d == False:            
+            plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+        else:
+            n,m = np.shape(pressure_map_matrix)
+            X,Y = np.meshgrid(range(n), range(m))
+            ax.contourf(X,Y,pressure_map_matrix, zdir='z', offset=0.0, cmap=plt.cm.bwr)
 
         if rotated_targets is not None:
             
             rotated_target_coord = rotated_targets[:,:2]/INTER_SENSOR_DISTANCE            
             rotated_target_coord[:,1] -= (NUMOFTAXELS_X - 1)
             rotated_target_coord[:,1] *= -1.0                       
-            plt.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
-                     'y*', ms=10)
+
+            if plot_3d == False:
+                plt.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
+                         'y*', ms=10)
+            else:
+                ax.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
+                        rotated_targets[:,2], 'y*', ms=10)
+
 
             xlim = [-10.0, 35.0]
             ylim = [70.0, -10.0]                     
@@ -762,9 +776,9 @@ class DatabaseCreator():
                             final_database[tuple(final_p_map.flatten())] = (
                                                 final_target.flatten())
 
-                    ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
-                            ##                             fileNumber=count)
-                            
+                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
+                      fileNumber=count, plot_3d=True)
+                    sys.exit()
                             ## if count > 20: sys.exit()
                             ## else: count += 1
                             
