@@ -345,15 +345,18 @@ class DatabaseCreator():
     def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0, plot_3d=False):
         '''Visualizing a plot of the pressure map'''        
         fig = plt.figure()
-        if plot_3d: ax = fig.gca(projection='3d')
-            
+                 
         if plot_3d == False:            
             plt.imshow(pressure_map_matrix, interpolation='nearest', cmap=
                 plt.cm.bwr, origin='upper', vmin=0, vmax=100)
         else:
+            ax1= fig.add_subplot(121, projection='3d')
+            ax2= fig.add_subplot(122, projection='3d')
+   
             n,m = np.shape(pressure_map_matrix)
-            X,Y = np.meshgrid(range(n), range(m))
-            ax.contourf(X,Y,pressure_map_matrix, zdir='z', offset=0.0, cmap=plt.cm.bwr)
+            X,Y = np.meshgrid(range(m), range(n))
+            ax1.contourf(X,Y,pressure_map_matrix, zdir='z', offset=0.0, cmap=plt.cm.bwr)
+            ax2.contourf(X,Y,pressure_map_matrix, zdir='z', offset=0.0, cmap=plt.cm.bwr)
 
         if rotated_targets is not None:
             
@@ -361,23 +364,35 @@ class DatabaseCreator():
             rotated_target_coord[:,1] -= (NUMOFTAXELS_X - 1)
             rotated_target_coord[:,1] *= -1.0                       
 
+            xlim = [-10.0, 35.0]
+            ylim = [70.0, -10.0]                     
+            
             if plot_3d == False:
                 plt.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
                          'y*', ms=10)
+                plt.xlim(xlim)
+                plt.ylim(ylim)                         
             else:
-                ax.plot(rotated_target_coord[:,0], rotated_target_coord[:,1],\
-                        rotated_targets[:,2], 'y*', ms=10)
+                ax1.plot(np.squeeze(rotated_target_coord[:,0]), \
+                         np.squeeze(rotated_target_coord[:,1]),\
+                         np.squeeze(rotated_targets[:,2]), 'y*', ms=10)
+                ax1.set_xlim(xlim)
+                ax1.set_ylim(ylim)
+                ax1.view_init(20,-30)
 
+                ax2.plot(np.squeeze(rotated_target_coord[:,0]), \
+                         np.squeeze(rotated_target_coord[:,1]),\
+                         np.squeeze(rotated_targets[:,2]), 'y*', ms=10)
+                ax2.view_init(1,10)
+                ax2.set_xlim(xlim)
+                ax2.set_ylim(ylim)
+                ax2.set_zlim([-0.1,0.4])
 
-            xlim = [-10.0, 35.0]
-            ylim = [70.0, -10.0]                     
-            plt.xlim(xlim)
-            plt.ylim(ylim)
                      
                         
         if self.save_pdf == True: 
-            print "Visualized pressure map ", fileNumber                                        
-            fig.savefig('test_'+str(fileNumber)+'.pdf')
+            print "Visualized pressure map ", fileNumber
+            fig.savefig('test_'+str(fileNumber)+'.png')
             os.system('mv test*.p* ~/Dropbox/HRL/') # only for Daehyung
             plt.close()
         else:
@@ -700,7 +715,7 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[0])
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
-
+                
         for p_map_raw in RH_sup.keys():
                 target_raw = RH_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -717,7 +732,7 @@ class DatabaseCreator():
                 ##                                   rotated_targets=rotated_target, \
                 ##                                   sliced_targets=sliced_target)
                 ## sys.exit()
-
+                
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -740,6 +755,7 @@ class DatabaseCreator():
 #                self.visualize_pressure_map(np.reshape(sliced_p_map, 
                                                                 #self.mat_size))
 
+        ## count = 0
         for p_map_raw in RL_sup.keys():
                 target_raw = RL_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
@@ -749,6 +765,11 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[3])
                 RL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+
+                ## self.visualize_pressure_map(rotated_p_map, \
+                ##                             rotated_targets=rotated_target,\
+                ##                             fileNumber=count, plot_3d=True)
+                ## count += 1
 
                 
         count = 0
@@ -776,11 +797,10 @@ class DatabaseCreator():
                             final_database[tuple(final_p_map.flatten())] = (
                                                 final_target.flatten())
 
-                    self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
-                      fileNumber=count, plot_3d=True)
-                    sys.exit()
-                            ## if count > 20: sys.exit()
-                            ## else: count += 1
+                            self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
+                              fileNumber=count, plot_3d=True)
+                            if count > 20: sys.exit()
+                            else: count += 1
                             
         print "Saving final_database"
         pkl.dump(final_database, 
