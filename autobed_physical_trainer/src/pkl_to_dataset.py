@@ -108,7 +108,7 @@ class DatabaseCreator():
         # mat to non-descrete taxel space
         rotated_targets_pixels = self.mat_to_taxels(rotated_targets)
         rotated_target_coord = np.hstack([-rotated_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1.0), 
-                                          rotated_targets_pixels[:,0:1]])
+                                          rotated_targets_pixels[:,0:1],orig_targets[:,2:3] ])
         
         #Slice up the pressure map values from rotated target values projected
         #in the taxel space
@@ -235,6 +235,7 @@ class DatabaseCreator():
                           coord[limb_dict['l_shoulder']][1] - 2]) 
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
+        
         #Head Slice 
         slice_0 = np.copy(template_image)
         target_slice_0 = np.copy(template_target)
@@ -598,7 +599,7 @@ class DatabaseCreator():
                                                [np.sin(self.ang_offset), \
                                                 np.cos(self.ang_offset)]]))
         transformed_target = transformed_target + self.trans_offset        
-        ## transformed_target = np.hstack([transformed_target, target_raw[:,2:3]])
+        transformed_target = np.hstack([transformed_target, target_raw[:,2:3]])
 
         ## print rot_trans_targets_mat
         ## rot_trans_targets_pixels = self.mat_to_taxels(transformed_target)
