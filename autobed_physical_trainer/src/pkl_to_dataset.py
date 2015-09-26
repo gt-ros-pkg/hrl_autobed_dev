@@ -66,24 +66,18 @@ class DatabaseCreator():
                 del home_sup_dat[dict_entry]
         if self.verbose: print "Empty value check results: {} rogue entries found".format(
                 empty_count)
-
-        home_sup_pressure_map = home_sup_dat.keys()[0]
-        home_sup_joint_pos_world = np.array(home_sup_dat[home_sup_pressure_map]).reshape(
-                len(home_sup_dat[home_sup_pressure_map])/3,3)
         
-        #Targets in the mat frame
-        home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world)
-
-        ## home_sup_joint_pos_world = self.preprocess_targets(
-        ##                                     home_sup_dat[home_sup_pressure_map])         
-        ## home_sup_joint_pos = (
-        ##         [self.world_to_mat(elem) for elem in home_sup_joint_pos_world])
+        #Targets in the mat frame        
+        home_sup_pressure_map = home_sup_dat.keys()[0]        
+        home_sup_joint_pos_world = np.array(home_sup_dat[home_sup_pressure_map]).reshape(
+                len(home_sup_dat[home_sup_pressure_map])/3,3) # N x 3
+        home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world) # N x 3
 
         self.ang_offset   = None
         self.trans_offset = None
-        ([self.split_matrices, self.split_targets]) = (
-                                    self.preprocess_home_position(
-                                    home_sup_pressure_map, home_sup_joint_pos))
+        self.split_matrices, self.split_targets = \
+                                    self.preprocess_home_position(\
+                                    home_sup_pressure_map, home_sup_joint_pos)
 
         ## self.pca_transformation_sup(home_sup_pressure_map, home_sup_joint_pos)
         
@@ -105,35 +99,23 @@ class DatabaseCreator():
         rotated_targets = self.rotate_3D_space(orig_p_map, orig_targets)
 
         #Run matching function to find the best rotation offset
-        self.ang_offset, self.trans_offset = self.getOffset(
-                                        rotated_targets, rotated_p_map)
+        self.ang_offset, self.trans_offset = self.getOffset(rotated_targets, rotated_p_map)
         rotated_targets = np.dot(rotated_targets,
                 np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
                 [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
         rotated_targets += self.trans_offset        
+
+        # mat to non-descrete taxel space
+        rotated_targets_pixels = self.mat_to_taxels(rotated_targets)
+        rotated_target_coord = np.hstack([-rotated_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1.0), 
+                                          rotated_targets_pixels[:,0:1]])
         
-        ## print rot_trans_targets_mat
-
-        rotated_targets_pixels = rotated_targets / INTER_SENSOR_DISTANCE
-        rotated_targets_pixels[:,1] -= (NUMOFTAXELS_X - 1)
-        rotated_targets_pixels[:,1] *= -1.0                       
-        rotated_target_coord = np.hstack([rotated_targets_pixels[:,1], rotated_targets_pixels[:,0]])
-        
-        ## rotated_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-        ##         rotated_targets]) 
-
-        ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-        ##                         elem[0]]) for elem in rotated_targets_pixels])
-
-        print np.shape(rotated_target_coord)
-                
         #Slice up the pressure map values from rotated target values projected
         #in the taxel space
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
-        self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-                rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
-        sys.exit()
+        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
         return p_map_slices, target_slices
 
 
@@ -157,19 +139,19 @@ class DatabaseCreator():
         self.pca_mat.fit(pca_x_mat)
         #The output of PCA needs rotation by -90 
         rot_targets_mat = self.pca_mat.transform(targets_mat)
-        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0, -1],[-1, 0]])) ##?
-        
+        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0., -1.],[-1., 0.]])) 
+
         #Translate the targets to the center of the mat so that they match the 
         #pressure map
-
-        rot_targets_mat += INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2])
+        rot_targets_mat += INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y)/2.0, \
+                                                           float(NUMOFTAXELS_X)/2.0])
         
         ## rot_trans_targets_mat = np.asarray(
         ##     [np.asarray(elem) + 
         ##     INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
         ##     for elem in rot_targets_mat]) 
 
-        return rot_trans_targets_mat
+        return rot_targets_mat
 
 
     def rotate_taxel_space(self, p_map):
@@ -236,7 +218,7 @@ class DatabaseCreator():
 
         #Choose the lowest(max) between the left and right hand
         upper_lower_torso_cut = max(coord[limb_dict['l_hand']][0],
-                                coord[limb_dict['r_hand']][0]) + 5
+                                    coord[limb_dict['r_hand']][0]) + 5
 
         left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
         torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
@@ -329,33 +311,33 @@ class DatabaseCreator():
         last_row = np.array([[0, 0, 0, 1]])
         B_m_w = np.concatenate((B_m_w, last_row), axis=0)
 
-        w_data = np.hstack([w_data, np.zeros([len(w_data),1])]).T
-        ## w_data = np.append(w_data, np.array([1]))
+        w_data = np.hstack([w_data, np.ones([len(w_data),1])])
+        
         #Convert input to the mat frame vector
+        m_data = B_m_w * w_data.T
 
-        m_data = B_m_w * w_data
-        ## m_data = np.squeeze(m_data)
-        return m_data
+        return m_data[:3,:].T
 
 
     def mat_to_taxels(self, m_data):
+        ''' 
+        Input:  Nx2 array 
+        Output: Nx2 array
+        '''       
         #Convert coordinates in 3D space in the mat frame into taxels
-        taxels_x = (m_data[1]/ INTER_SENSOR_DISTANCE)
-        taxels_y = (m_data[0]/ INTER_SENSOR_DISTANCE)
+        taxels = m_data / INTER_SENSOR_DISTANCE
+        
         '''Typecast into int, so that we can highlight the right taxel 
         in the pressure matrix, and threshold the resulting values'''
-        taxels_x = (taxels_x.astype(int) )
-        taxels_y = (taxels_y.astype(int) )
+        taxels = taxels.astype(int)
+
         #Thresholding the taxels_* array
-        taxels_x = LOW_TAXEL_THRESH_X if (taxels_x <= 
-                LOW_TAXEL_THRESH_X) else taxels_x
-        taxels_y = LOW_TAXEL_THRESH_Y if (taxels_y <=
-                LOW_TAXEL_THRESH_Y) else taxels_y
-        taxels_x = HIGH_TAXEL_THRESH_X if (taxels_x >= 
-                HIGH_TAXEL_THRESH_X) else taxels_x
-        taxels_y = HIGH_TAXEL_THRESH_Y if (taxels_y >
-                HIGH_TAXEL_THRESH_Y) else taxels_y
-        return [taxels_y, taxels_x]
+        for i, taxel in enumerate(taxels):
+            if taxel[1] < LOW_TAXEL_THRESH_X: taxels[i,1] = LOW_TAXEL_THRESH_X
+            if taxel[0] < LOW_TAXEL_THRESH_Y: taxels[i,0] = LOW_TAXEL_THRESH_Y
+            if taxel[1] > HIGH_TAXEL_THRESH_X: taxels[i,1] = HIGH_TAXEL_THRESH_X
+            if taxel[0] > HIGH_TAXEL_THRESH_Y: taxels[i,0] = HIGH_TAXEL_THRESH_Y
+        return taxels
 
 
     def visualize_pressure_map(self, pressure_map_matrix, rotated_targets=None, fileNumber=0):
@@ -447,7 +429,7 @@ class DatabaseCreator():
             
         if self.save_pdf == True: 
             print "Visualized pressure map ", fileNumber                                        
-            fig.savefig('test_'+str(fileNumber)+'.png')
+            fig.savefig('test_'+str(fileNumber)+'.pdf')
             os.system('mv test*.p* ~/Dropbox/HRL/') # only for Daehyung
             plt.close()
         else:
@@ -503,17 +485,13 @@ class DatabaseCreator():
             ## print np.shape(rot_trans_targets_mat), rot_trans_targets_mat[0]
             rot_trans_targets_mat = rot_trans_targets_mat + np.array([x,y])
 
-            rot_trans_targets_pixels = rot_trans_targets_mat / INTER_SENSOR_DISTANCE
-            ## rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-            ##         rot_trans_targets_mat]) 
-
-            rot_trans_targets_pixels[:,1] -= (NUMOFTAXELS_X - 1)
-            rot_trans_targets_pixels[:,1] *= -1.0                       
-            rotated_target_coord = np.hstack([rot_trans_targets_pixels[:,1], rot_trans_targets_pixels[:,0]])
+            rot_trans_targets_pixels = self.mat_to_taxels(rot_trans_targets_mat)            
+            rotated_target_coord = np.hstack([-rot_trans_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1), 
+                                              rot_trans_targets_pixels[:,0:1]])
             
             ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
             ##                             elem[0]]) for elem in rot_trans_targets_pixels])
-            
+                           
             # sum of scores
             score = self.pressure_score_in_window(p_map, rotated_target_coord[0], window_size) +\
               self.pressure_score_in_window(p_map, rotated_target_coord[-2], window_size) +\
@@ -601,61 +579,35 @@ class DatabaseCreator():
             rotated_p_map[rotated_p_map_coord[i]] = pca_y_pixels[i]
             
         # target translation and rotation ---------------------------------------------
-        ## target_raw_2d = self.preprocess_targets(target_raw) 
-        #Targets in the mat frame
-        ## target_raw = (
-        ##         [self.world_to_mat(elem) for elem in target_raw_2d])
-        
         target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
-        print type(target_raw)
-        print "-----------------"
         target_raw = self.world_to_mat(target_raw)
 
-        print np.shape(target_raw)
-            
-            
-        ##             print type(target_raw)
-        ## targets_mat = 
-        ## print np.shape(targets_mat), np.shape(target_raw)
-        sys.exit()
-        
-
-
         #We need only X,Y coordinates in the mat frame
-        targets_mat = np.asarray([[elem[0], elem[1]] for elem in target_raw])
-        #The output of PCA needs rotation by -90 
-        rot_targets_mat = self.pca_mat.transform(targets_mat)
-        rot_targets_mat = np.dot(np.asarray(rot_targets_mat),
-                                                np.array([[0, -1],[-1, 0]]))
-
-        ## print rot_targets_mat 
-        rot_trans_targets_mat = np.asarray(
-            [np.asarray(elem) + 
-            INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
-            for elem in rot_targets_mat]) 
+        targets_mat = target_raw[:,:2]
         
-        transformed_target = np.dot(np.asarray(rot_trans_targets_mat),
-                                       np.array([[np.cos(self.ang_offset), \
-                                                  -np.sin(self.ang_offset)],\
-                                                 [np.sin(self.ang_offset), \
-                                                  np.cos(self.ang_offset)]]))
+        #The output of PCA needs rotation by -90 
+        rot_targets_mat = self.pca_mat.transform(targets_mat)        
+        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0, -1],[-1, 0]]))
+        rot_trans_targets_mat = rot_targets_mat + \
+            INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y/2.),\
+                                            float(NUMOFTAXELS_X/2.)]) 
+        
+        transformed_target = np.dot(rot_trans_targets_mat,\
+                                    np.array([[np.cos(self.ang_offset), \
+                                               -np.sin(self.ang_offset)],\
+                                               [np.sin(self.ang_offset), \
+                                                np.cos(self.ang_offset)]]))
         transformed_target = transformed_target + self.trans_offset        
-
+        ## transformed_target = np.hstack([transformed_target, target_raw[:,2:3]])
 
         ## print rot_trans_targets_mat
-        rot_trans_targets_pixels = ([self.mat_to_taxels(elem) for elem in
-                transformed_target]) 
+        ## rot_trans_targets_pixels = self.mat_to_taxels(transformed_target)
+        ## rotated_target_coord = np.hstack([-rot_trans_targets_pixels[:,1:2] +\
+        ##                                   (NUMOFTAXELS_X - 1.0), 
+        ##                                   rot_trans_targets_pixels[:,0:1]])        
 
-        rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-                                    elem[0]]) for elem in rot_trans_targets_pixels])
-
-        #for i in range(len(rotated_target_coord)):
-            #rotated_p_map[rotated_target_coord[i]] = 100
-        
-        #self.visualize_pressure_map(rotated_p_map)
+        ## self.visualize_pressure_map(rotated_p_map)
         #plt.show()
-        
-
         return rotated_p_map, transformed_target
         
     def run(self):
@@ -692,11 +644,12 @@ class DatabaseCreator():
 
         ## count = 0                
         # map_raw: pressure map
-        # target_raw: marker 
+        # target_raw: marker, Nx3 array
         p_map_raw = home_sup.keys()[0]
         target_raw = home_sup[p_map_raw]
         [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                     p_map_raw, target_raw)
+
         sliced_p_map = np.multiply(rotated_p_map,
                 self.split_matrices[0])
         sliced_target = np.multiply(rotated_target,
@@ -744,10 +697,11 @@ class DatabaseCreator():
                 RH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
                 ## self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
-#                self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
-                                                  #targets_raw=target_raw, \
-                                                  #rotated_targets=rotated_target, \
-                                                  #sliced_targets=sliced_target)
+                ## self.visualize_pressure_map_slice(p_map_raw, rotated_p_map, sliced_p_map, \
+                ##                                   targets_raw=target_raw, \
+                ##                                   rotated_targets=rotated_target, \
+                ##                                   sliced_targets=sliced_target)
+                ## sys.exit()
 
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
@@ -807,8 +761,7 @@ class DatabaseCreator():
                             final_database[tuple(final_p_map.flatten())] = (
                                                 final_target.flatten())
 
-                    #self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
-                    
+                    ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target)
                             ##                             fileNumber=count)
                             
                             ## if count > 20: sys.exit()
