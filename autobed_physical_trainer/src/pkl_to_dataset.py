@@ -797,10 +797,10 @@ class DatabaseCreator():
                             final_database[tuple(final_p_map.flatten())] = (
                                                 final_target.flatten())
 
-                            self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
-                              fileNumber=count, plot_3d=True)
-                            if count > 20: sys.exit()
-                            else: count += 1
+                            ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
+                            ##   fileNumber=count, plot_3d=True)
+                            ## if count > 20: sys.exit()
+                            ## else: count += 1
                             
         print "Saving final_database"
         pkl.dump(final_database, 
