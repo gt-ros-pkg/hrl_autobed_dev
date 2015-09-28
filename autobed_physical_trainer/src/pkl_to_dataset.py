@@ -78,8 +78,6 @@ class DatabaseCreator():
                 len(home_sup_dat[home_sup_pressure_map])/3,3) # N x 3
         home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world) # N x 3
 
-        self.ang_offset   = None
-        self.trans_offset = None
         self.split_matrices, self.split_targets = \
                                     self.preprocess_home_position(\
                                     home_sup_pressure_map, home_sup_joint_pos)
@@ -101,15 +99,11 @@ class DatabaseCreator():
         rotated_p_map = self.rotate_taxel_space(orig_p_map)
         #Perform PCA on the 3D target values to rotate and translate the 
         #targets
-        rotated_targets = self.rotate_3D_space(orig_p_map, orig_targets)
+        rotated_targets = self.rotate_3D_space(orig_targets)
 
-        #Run matching function to find the best rotation offset
-        self.ang_offset, self.trans_offset = self.getOffset(rotated_targets, rotated_p_map)
-        rotated_targets = np.dot(rotated_targets,
-                np.array([[np.cos(self.ang_offset), -np.sin(self.ang_offset)],
-                [np.sin(self.ang_offset), np.cos(self.ang_offset)]]))
-        rotated_targets += self.trans_offset        
-
+        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
+        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
+        
         # mat to non-descrete taxel space
         rotated_targets_pixels = self.mat_to_taxels(rotated_targets)
         rotated_target_coord = np.hstack([-rotated_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1.0), 
@@ -120,42 +114,24 @@ class DatabaseCreator():
         #in the taxel space
         [p_map_slices, target_slices] = (
                                 self.slice_pressure_map(rotated_target_coord))
-        ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
-        ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
         return p_map_slices, target_slices
 
 
-    def rotate_3D_space(self, p_map, target):
+    def rotate_3D_space(self, target):
         ''' Rotate the 3D target values (the 3D position of the markers
         attached to subject) using PCA'''
-        #Get the indices of the pressure map that have non-zero pressure value
-        nzero_indices = np.nonzero(p_map)
-        #Perform PCA on the non-zero elements of the pressure map
-        pca_x_tuples = zip(nzero_indices[1], 
-                                    nzero_indices[0]*(-1) + (NUMOFTAXELS_X-1))
-        pca_x_pixels = np.asarray([list(elem) for elem in pca_x_tuples])
-        #Taxels in 3D space in the mat frame
-        pca_x_mat = INTER_SENSOR_DISTANCE*pca_x_pixels
+        
         #We need only X,Y coordinates in the mat frame
-        ## targets_mat = np.asarray([[elem[0], elem[1]] for elem in target])
         targets_mat = target[:,:2]
 
-        #Perform PCA in the 3D Space with the mat origin
-        self.pca_mat = PCA(n_components=2)
-        self.pca_mat.fit(pca_x_mat)
         #The output of PCA needs rotation by -90 
-        rot_targets_mat = self.pca_mat.transform(targets_mat)
+        rot_targets_mat = self.pca_pixels.transform(targets_mat/INTER_SENSOR_DISTANCE)*INTER_SENSOR_DISTANCE
         rot_targets_mat = np.dot(rot_targets_mat, np.array([[0., -1.],[-1., 0.]])) 
 
         #Translate the targets to the center of the mat so that they match the 
         #pressure map
-        rot_targets_mat += INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y)/2.0, \
-                                                           float(NUMOFTAXELS_X)/2.0])
-        
-        ## rot_trans_targets_mat = np.asarray(
-        ##     [np.asarray(elem) + 
-        ##     INTER_SENSOR_DISTANCE*np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
-        ##     for elem in rot_targets_mat]) 
+        rot_targets_mat += INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y)/2.0 - self.y_offset, \
+                                                           float(NUMOFTAXELS_X)/2.0 - self.x_offset])
 
         return rot_targets_mat
 
@@ -177,16 +153,36 @@ class DatabaseCreator():
         self.pca_pixels.fit(pca_x_pixels)
         #The output of PCA needs rotation by -90 
         rot_x_pixels = self.pca_pixels.transform(pca_x_pixels)
-        rot_x_pixels = np.dot(np.asarray(rot_x_pixels),
-                                                np.array([[0, -1],[-1, 0]]))
-        
-        # Daehyung: NUMOFTAXELS_Y/2 uses round-off (correct?)        
+        rot_x_pixels = np.dot(rot_x_pixels, np.array([[0., -1.],[-1., 0.]]))
+
+        # Daehyung: Adjust the center using the existence of real value pixels
+        min_y     = 1000
+        max_y     = 0
+        min_x     = 1000
+        max_x     = 0
+        min_pressure = 0.3
+        for i in xrange(len(rot_x_pixels)):
+
+            if rot_x_pixels[i][0] < min_y and pca_y_pixels[i] > min_pressure:
+                min_y = rot_x_pixels[i][0]
+            if rot_x_pixels[i][0] > max_y and pca_y_pixels[i] > min_pressure:
+                max_y = rot_x_pixels[i][0]
+            if rot_x_pixels[i][1] < min_x and pca_y_pixels[i] > min_pressure:
+                min_x = rot_x_pixels[i][1]
+            if rot_x_pixels[i][1] > max_x and pca_y_pixels[i] > min_pressure:
+                max_x = rot_x_pixels[i][1]
+                
+        self.y_offset = (max_y + min_y)/2.0
+        self.x_offset = (max_x + min_x)/2.0
+            
         rot_trans_x_pixels = np.asarray(
-            [np.asarray(elem) + np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) # temp
+            [np.asarray(elem) + np.array([NUMOFTAXELS_Y/2. - self.y_offset, \
+                                          NUMOFTAXELS_X/2. - self.x_offset]) 
              for elem in rot_x_pixels]) 
         
+        # Convert the continuous pixel location into integer format
+        rot_trans_x_pixels = np.rint(rot_trans_x_pixels)
         
-        rot_trans_x_pixels = rot_trans_x_pixels.astype(int)
         #Thresholding the rotated matrices
         rot_trans_x_pixels[rot_trans_x_pixels < LOW_TAXEL_THRESH_X] = (
                                                  LOW_TAXEL_THRESH_X)            
@@ -223,22 +219,22 @@ class DatabaseCreator():
                     'r_ankle':9, 'l_ankle':10}
 
         #Choose the lowest(max) between the left and right hand
-        upper_lower_torso_cut = int(max(coord[limb_dict['l_hand'],0],
+        upper_lower_torso_cut = np.rint(max(coord[limb_dict['l_hand'],0],
                                         coord[limb_dict['r_hand'],0]) + 5)
 
-        left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
-        torso_offset_horz = ([np.floor(NUMOFTAXELS_X/2),
+        left_right_side_cut =  np.rint(NUMOFTAXELS_Y/2.)
+        torso_offset_horz = ([np.rint(NUMOFTAXELS_X/2.),
                                                         upper_lower_torso_cut]) 
-        torso_offset_vert = np.array([coord[limb_dict['r_hand'],1] + 3, 
-                                      coord[limb_dict['l_hand'],1] - 3]).astype(int)
+        torso_offset_vert = np.rint(np.array([coord[limb_dict['r_hand'],1] + 3, 
+                                      coord[limb_dict['l_hand'],1] - 3]))
         #Central line is through the torso
         #left_right_side_cut =  rotated_target_coord[1][1]
-        left_right_side_cut =  np.floor(NUMOFTAXELS_Y/2)
+        left_right_side_cut =  np.rint(NUMOFTAXELS_Y/2.)
         #Cut 3 pixels below the head marker
-        head_horz_cut = int(min(coord[limb_dict['r_shoulder'],0], 
-                                coord[limb_dict['l_shoulder'],0]) - 2 )
-        head_vert_cut = np.array([coord[limb_dict['r_shoulder'],1] + 2 ,
-                                  coord[limb_dict['l_shoulder'],1] - 2]).astype(int)
+        head_horz_cut = np.rint(min(coord[limb_dict['r_shoulder'],0], 
+                                    coord[limb_dict['l_shoulder'],0]) - 2 )
+        head_vert_cut = np.rint(np.array([coord[limb_dict['r_shoulder'],1] + 2 ,
+                                          coord[limb_dict['l_shoulder'],1] - 2]))
         template_image = np.zeros(self.mat_size)
         template_target = np.zeros(np.shape(coord))
         
@@ -337,7 +333,7 @@ class DatabaseCreator():
         
         '''Typecast into int, so that we can highlight the right taxel 
         in the pressure matrix, and threshold the resulting values'''
-        taxels = taxels.astype(int)
+        taxels = np.rint(taxels)
 
         #Thresholding the taxels_* array
         for i, taxel in enumerate(taxels):
@@ -473,78 +469,78 @@ class DatabaseCreator():
 
         return
         
-    def getOffset(self, target_mat, p_map, plot=False):
-        '''Find the best angular and translation offset''' 
+    ## def getOffset(self, target_mat, p_map, plot=False):
+    ##     '''Find the best angular and translation offset''' 
 
-        iteration   = 500
-        ang_offset  = 0.0
-        ang_range   = [0.0, 10.0/180.0*np.pi]
-        x_range     = [0.0, 0.15]
-        y_range     = [0.0, 0.15]
-        max_score   = 0.
-        min_variance = 1000.0
-        best_offset = np.array([0.,0.,0.]) #ang, x, y
-        window_size = 3
+    ##     iteration   = 500
+    ##     ang_offset  = 0.0
+    ##     ang_range   = [0.0, 10.0/180.0*np.pi]
+    ##     x_range     = [0.0, 0.15]
+    ##     y_range     = [0.0, 0.15]
+    ##     max_score   = 0.
+    ##     min_variance = 1000.0
+    ##     best_offset = np.array([0.,0.,0.]) #ang, x, y
+    ##     window_size = 3
 
-        map_pressure_thres = 10.0
-        head_pixel_range  = [0,10]
-        ankle_pixel_range = [-5,-0]
+    ##     map_pressure_thres = 10.0
+    ##     head_pixel_range  = [0,10]
+    ##     ankle_pixel_range = [-5,-0]
         
-        # get head and food parts in map
-        part_map = np.zeros(np.shape(p_map))
-        for i in xrange(len(p_map)):
-            for j in xrange(len(p_map[i])):
-                if i>=head_pixel_range[0] and i<=head_pixel_range[1] and \
-                  p_map[i,j] > map_pressure_thres:
-                    part_map[i,j] = 50.0
-                if i>len(p_map)+ankle_pixel_range[0] and i < len(p_map)+ankle_pixel_range[1] \
-                  and p_map[i,j] > map_pressure_thres:
-                    part_map[i,j] = 50.0        
-        ## part_map[0:13,:] = p_map[0:13,:]
-        ## part_map[-5:-1,:] = p_map[-5:-1,:]
-        #p_map = part_map        
-        if plot: self.visualize_pressure_map(p_map)
+    ##     # get head and food parts in map
+    ##     part_map = np.zeros(np.shape(p_map))
+    ##     for i in xrange(len(p_map)):
+    ##         for j in xrange(len(p_map[i])):
+    ##             if i>=head_pixel_range[0] and i<=head_pixel_range[1] and \
+    ##               p_map[i,j] > map_pressure_thres:
+    ##                 part_map[i,j] = 50.0
+    ##             if i>len(p_map)+ankle_pixel_range[0] and i < len(p_map)+ankle_pixel_range[1] \
+    ##               and p_map[i,j] > map_pressure_thres:
+    ##                 part_map[i,j] = 50.0        
+    ##     ## part_map[0:13,:] = p_map[0:13,:]
+    ##     ## part_map[-5:-1,:] = p_map[-5:-1,:]
+    ##     #p_map = part_map        
+    ##     if plot: self.visualize_pressure_map(p_map)
         
-        # Q: p_map is not normalized and scale is really different
-        while iteration>0:
-            iteration = iteration - 1
+    ##     # Q: p_map is not normalized and scale is really different
+    ##     while iteration>0:
+    ##         iteration = iteration - 1
 
-            # random angle
-            ang = random.uniform(ang_range[0], ang_range[1])
-            x   = random.uniform(x_range[0], x_range[1])
-            y   = random.uniform(y_range[0], y_range[1])
+    ##         # random angle
+    ##         ang = random.uniform(ang_range[0], ang_range[1])
+    ##         x   = random.uniform(x_range[0], x_range[1])
+    ##         y   = random.uniform(y_range[0], y_range[1])
 
-            # rotate target mat
-            rot_trans_targets_mat = np.dot(target_mat,
-                                           np.array([[np.cos(ang), -np.sin(ang)],
-                                                     [np.sin(ang), np.cos(ang)]]))        
-            ## print np.shape(rot_trans_targets_mat), rot_trans_targets_mat[0]
-            rot_trans_targets_mat = rot_trans_targets_mat + np.array([x,y])
+    ##         # rotate target mat
+    ##         rot_trans_targets_mat = np.dot(target_mat,
+    ##                                        np.array([[np.cos(ang), -np.sin(ang)],
+    ##                                                  [np.sin(ang), np.cos(ang)]]))        
+    ##         ## print np.shape(rot_trans_targets_mat), rot_trans_targets_mat[0]
+    ##         rot_trans_targets_mat = rot_trans_targets_mat + np.array([x,y])
 
-            rot_trans_targets_pixels = self.mat_to_taxels(rot_trans_targets_mat)            
-            rotated_target_coord = np.hstack([-rot_trans_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1), 
-                                              rot_trans_targets_pixels[:,0:1]])
+    ##         rot_trans_targets_pixels = self.mat_to_taxels(rot_trans_targets_mat)            
+    ##         rotated_target_coord = np.hstack([-rot_trans_targets_pixels[:,1:2] + (NUMOFTAXELS_X - 1), 
+    ##                                           rot_trans_targets_pixels[:,0:1]])
             
-            ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
-            ##                             elem[0]]) for elem in rot_trans_targets_pixels])
+    ##         ## rotated_target_coord = ([tuple([(-1)*(elem[1] - (NUMOFTAXELS_X - 1)), 
+    ##         ##                             elem[0]]) for elem in rot_trans_targets_pixels])
                            
-            # sum of scores
-            score = self.pressure_score_in_window(p_map, rotated_target_coord[0], window_size) +\
-              self.pressure_score_in_window(p_map, rotated_target_coord[-2], window_size) +\
-              self.pressure_score_in_window(p_map, rotated_target_coord[-1], window_size)
+    ##         # sum of scores
+    ##         score = self.pressure_score_in_window(p_map, rotated_target_coord[0], window_size) +\
+    ##           self.pressure_score_in_window(p_map, rotated_target_coord[-2], window_size) +\
+    ##           self.pressure_score_in_window(p_map, rotated_target_coord[-1], window_size)
               
-            ## print iteration, " : ", score
-            if score[0] > max_score or (score[0] == max_score and score[1] < min_variance):
-                max_score    = score[0]
-                min_variance = score[1]
-                best_offset[0] = ang
-                best_offset[1] = x
-                best_offset[2] = y
+    ##         ## print iteration, " : ", score
+    ##         if score[0] > max_score or (score[0] == max_score and score[1] < min_variance):
+    ##             max_score    = score[0]
+    ##             min_variance = score[1]
+    ##             best_offset[0] = ang
+    ##             best_offset[1] = x
+    ##             best_offset[2] = y
 
-        print "Best offset (ang, x, y) is ", best_offset, " with score ", max_score, min_variance
+    ##     print "Best offset (ang, x, y) is ", best_offset, " with score ", max_score, min_variance
     
-        # get the best angular offset
-        return best_offset[0], best_offset[1:]
+    ##     # get the best angular offset
+    ##     return best_offset[0], best_offset[1:]
 
 
     def pressure_score_in_window(self, p_map, idx, window_size):
@@ -593,11 +589,12 @@ class DatabaseCreator():
         #The output of PCA needs rotation by -90 
         rot_x_pixels = self.pca_pixels.transform(pca_x_pixels)
         rot_x_pixels = np.dot(np.asarray(rot_x_pixels),
-                                                np.array([[0, -1],[-1, 0]]))
+                              np.array([[0., -1.],[-1., 0.]]))
         rot_trans_x_pixels = np.asarray(
-                [np.asarray(elem) + np.array([NUMOFTAXELS_Y/2, NUMOFTAXELS_X/2]) 
+                [np.asarray(elem) + np.array([NUMOFTAXELS_Y/2 - self.y_offset, \
+                                              NUMOFTAXELS_X/2 - self.x_offset]) 
                 for elem in rot_x_pixels]) 
-        rot_trans_x_pixels = rot_trans_x_pixels.astype(int)
+        rot_trans_x_pixels = np.rint(rot_trans_x_pixels)
         #Thresholding the rotated matrices
         rot_trans_x_pixels[rot_trans_x_pixels < LOW_TAXEL_THRESH_X] = (
                                                  LOW_TAXEL_THRESH_X)            
@@ -616,25 +613,18 @@ class DatabaseCreator():
             
         # target translation and rotation ---------------------------------------------
         target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
-        target_raw = self.world_to_mat(target_raw)
+        target_mat = self.world_to_mat(target_raw)
 
         #We need only X,Y coordinates in the mat frame
-        targets_mat = target_raw[:,:2]
+        targets_mat = target_mat[:,:2]
         
         #The output of PCA needs rotation by -90 
-        rot_targets_mat = self.pca_mat.transform(targets_mat)        
-        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0, -1],[-1, 0]]))
+        rot_targets_mat = self.pca_pixels.transform(targets_mat/INTER_SENSOR_DISTANCE)*INTER_SENSOR_DISTANCE
+        rot_targets_mat = np.dot(rot_targets_mat, np.array([[0., -1.],[-1., 0.]]))
         rot_trans_targets_mat = rot_targets_mat + \
-            INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y/2.),\
-                                            float(NUMOFTAXELS_X/2.)]) 
-        
-        transformed_target = np.dot(rot_trans_targets_mat,\
-                                    np.array([[np.cos(self.ang_offset), \
-                                               -np.sin(self.ang_offset)],\
-                                               [np.sin(self.ang_offset), \
-                                                np.cos(self.ang_offset)]]))
-        transformed_target = transformed_target + self.trans_offset        
-        transformed_target = np.hstack([transformed_target, target_raw[:,2:3]])
+            INTER_SENSOR_DISTANCE*np.array([float(NUMOFTAXELS_Y/2. - self.y_offset),\
+                                            float(NUMOFTAXELS_X/2. - self.x_offset)])         
+        transformed_target = np.hstack([rot_trans_targets_mat, target_raw[:,2:3]])
 
         ## print rot_trans_targets_mat
         ## rot_trans_targets_pixels = self.mat_to_taxels(transformed_target)
@@ -642,6 +632,9 @@ class DatabaseCreator():
         ##                                   (NUMOFTAXELS_X - 1.0), 
         ##                                   rot_trans_targets_pixels[:,0:1]])        
 
+        self.visualize_pressure_map_slice(p_map_raw, rotated_p_map,
+                rotated_p_map, targets_raw=target_mat, rotated_targets=transformed_target)
+        
         ## self.visualize_pressure_map(rotated_p_map)
         #plt.show()
         return rotated_p_map, transformed_target
@@ -737,7 +730,6 @@ class DatabaseCreator():
                 ##                                   targets_raw=target_raw, \
                 ##                                   rotated_targets=rotated_target, \
                 ##                                   sliced_targets=sliced_target)
-                ## sys.exit()
                 
         for p_map_raw in LH_sup.keys():
                 target_raw = LH_sup[p_map_raw]
@@ -748,6 +740,7 @@ class DatabaseCreator():
                 sliced_target = np.multiply(rotated_target,
                         self.split_targets[2])
                 LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
+                self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
 
         for i, p_map_raw in enumerate(LL_sup.keys()):
                 target_raw = LL_sup[p_map_raw]
@@ -808,9 +801,9 @@ class DatabaseCreator():
                             ## if count > 20: sys.exit()
                             ## else: count += 1
                             
-        print "Saving final_database"
-        pkl.dump(final_database, 
-                 open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
+        ## print "Saving final_database"
+        ## pkl.dump(final_database, 
+        ##          open(os.path.join(self.training_dump_path,'final_database.p'), 'wb'))
         return
 
 if __name__ == "__main__":
