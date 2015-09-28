@@ -46,13 +46,18 @@ class DatabaseCreator():
 
         home_sup_dat = pkl.load(
                 open(os.path.join(self.training_dump_path,'home_sup.p'), "r"))         
+
+        [self.p_world_mat, self.R_world_mat] = pkl.load(
+                open(os.path.join(self.training_dump_path,'mat_axes.p'), "r"))         
+
+
        #Pop the mat coordinates from the dataset
-        try:
-            self.p_world_mat = home_sup_dat.pop('mat_o') 
-        except:
-            print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
-            print "[Warning] Either retrain system or get mat older mat_origin"
-            self.p_world_mat = [0.289, 1.861, 0.546]
+#        try:
+            #self.p_world_mat = home_sup_dat.pop('mat_o') 
+        #except:
+            #print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
+            #print "[Warning] Either retrain system or get mat older mat_origin"
+            #self.p_world_mat = [0.289, 1.861, 0.546]
 
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
@@ -307,7 +312,8 @@ class DatabaseCreator():
         visualizing the joint coordinates on the pressure mat.
         Input: w_data: which is a 3 x 1 vector in the world frame'''
         #The homogenous transformation matrix from world to mat
-        O_m_w = np.matrix([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
+        #O_m_w = np.matrix([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
+        O_m_w = np.matrix(np.reshape(self.R_world_mat, (3, 3)))
         p_mat_world = O_m_w.dot(-np.asarray(self.p_world_mat))
         B_m_w = np.concatenate((O_m_w, p_mat_world.T), axis=1)
         last_row = np.array([[0, 0, 0, 1]])
