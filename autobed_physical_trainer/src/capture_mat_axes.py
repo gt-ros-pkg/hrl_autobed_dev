@@ -77,6 +77,7 @@ class BagfileToPickle():
                 R_world_mat = np.concatenate((R_world_mat, z_axis),
                                                                 axis = 1)
                 pkl.dump([self.mat_o, R_world_mat], open(self.filename, "wb"))
+                print "Captured Mat Axes Successfully. Exiting Now..."
                 sys.exit()
 
 if __name__ == "__main__":

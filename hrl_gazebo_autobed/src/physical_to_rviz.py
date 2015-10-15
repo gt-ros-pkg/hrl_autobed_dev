@@ -78,6 +78,7 @@ class AutobedConverter():
     def head_marker_cb(self, msg):
         self.head_pose=msg          
         self.compose_marker_msg()
+
     def torso_marker_cb(self, msg):
         self.torso_pose=msg
     
@@ -114,23 +115,23 @@ class AutobedConverter():
         self.marker_msg.type=Marker.SPHERE_LIST #if numbers needed SPHERE_LIST=7
         self.marker_msg.action=Marker.ADD # if numbers needed ADD=0
         self.marker_msg.pose.position.x=0.0
-        self.marker_msg.pose.position.y=1.0 #TODO: check this offset. It should line up with the pressure mat      
+        self.marker_msg.pose.position.y=0.0 #TODO: check this offset. It should line up with the pressure mat      
         self.marker_msg.pose.position.z=2.0
         self.marker_msg.pose.orientation.x=0.0        
         self.marker_msg.pose.orientation.y=0.0
-        self.marker_msg.pose.orientation.z=1.0
+        self.marker_msg.pose.orientation.z=0.0
         self.marker_msg.pose.orientation.w=1.0
         list_of_markers=[self.head_pose.transform.translation, self.torso_pose.transform.translation, 
-                                self.r_elbow_pose.transform.translation, self.l_elbow_pose.transform.translation, 
-                                self.r_hand_pose.transform.translation, self.l_hand_pose.transform.translation, 
-                                self.r_knee_pose.transform.translation, self.l_knee_pose.transform.translation, 
-                                self.r_ankle_pose.transform.translation, self.l_ankle_pose.transform.translation]   
+                         self.r_elbow_pose.transform.translation, self.l_elbow_pose.transform.translation, 
+                         self.r_hand_pose.transform.translation, self.l_hand_pose.transform.translation, 
+                         self.r_knee_pose.transform.translation, self.l_knee_pose.transform.translation, 
+                         self.r_ankle_pose.transform.translation, self.l_ankle_pose.transform.translation]   
         for i in list_of_markers:
             self.marker_msg.points.append(i)
             
-        self.marker_msg.scale.x=0.1
-        self.marker_msg.scale.y=0.1
-        self.marker_msg.scale.z=0.1 
+        self.marker_msg.scale.x=0.05
+        self.marker_msg.scale.y=0.05
+        self.marker_msg.scale.z=0.05 
         self.marker_msg.color.a=1.0
         self.marker_msg.color.r=1.0 
         self.marker_msg.color.g=0.0

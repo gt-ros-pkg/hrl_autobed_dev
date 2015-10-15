@@ -7,9 +7,15 @@
 
 mkdir dataset/$1
 echo "NEW FOLDER CREATED FOR NEW SUBJECT IN DATASET"
-sleep 2
+rosbag play ./bagfiles/$1/mat_o.bag &
+sleep 5
+python src/capture_mat_axes.py ./dataset/$1/ &
+sleep 100
+echo "KILLING NODE"
+rosnode kill mat_to_pkl
+sleep 20
+echo "CAPTURED MAT AXES"
 ###############################################################################
-
 rosrun autobed_physical_trainer bag_to_p.py dataset/$1/home_sup.p &
 rosbag play bagfiles/$1/home_sup.bag &
 sleep 60
@@ -19,14 +25,14 @@ rosnode kill bag_to_pkl
 sleep 20
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
-#rosrun autobed_physical_trainer bag_to_p.py dataset/$1/head_sup.p &
-#rosbag play bagfiles/$1/head_sup.bag &
-#sleep 60
-#echo "DONE WITH CONVERTING POSES FOR HEAD POSITION"
-#echo "KILLING NODE"
-#rosnode kill bag_to_pkl
-#sleep 20
-#echo "MOVING ON TO NEXT BAG FILE"
+rosrun autobed_physical_trainer bag_to_p.py dataset/$1/head_sup.p &
+rosbag play bagfiles/$1/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+echo "KILLING NODE"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosrun autobed_physical_trainer bag_to_p.py dataset/$1/LH_sup.p &
 rosbag play bagfiles/$1/LH1.bag &
@@ -43,6 +49,11 @@ rosbag play bagfiles/$1/LH3.bag &
 sleep 60
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND 3 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
+cho "KILLING NODE"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
 ###############################################################################
 rosrun autobed_physical_trainer bag_to_p.py dataset/$1/RH_sup.p &
 rosbag play bagfiles/$1/RH1.bag &
@@ -52,47 +63,41 @@ echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosbag play bagfiles/$1/RH2.bag &
 sleep 60
-echo "DONE WITH CONVERTING POSES FOR RIGHT HAND 2 POSITION"
+echo "DONE WITH CONVERTING POSES FOR LEFT HAND 2 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ################################################################################
 rosbag play bagfiles/$1/RH3.bag &
 sleep 60
-echo "DONE WITH CONVERTING POSES FOR RIGHT HAND 3 POSITION"
+echo "DONE WITH CONVERTING POSES FOR LEFT HAND 3 POSITION"
+echo "MOVING ON TO NEXT BAG FILE"
+echo "KILLING NODE"
+rosnode kill bag_to_pkl
+sleep 20
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
-#rosrun autobed_physical_trainer bag_to_p.py dataset/$1/LL_sup.p &
-#rosbag play bagfiles/$1/LL.bag &
-#sleep 120
-#echo "DONE WITH CONVERTING POSES FOR LEFT LEG POSITION"
-#echo "KILLING NODE"
-#rosnode kill bag_to_pkl
-#sleep 20
-#echo "MOVING ON TO NEXT BAG FILE"
-###############################################################################
-#rosrun autobed_physical_trainer bag_to_p.py dataset/$1/RL_sup.p &
-#rosbag play bagfiles/$1/RL.bag &
-#sleep 120
-#echo "DONE WITH CONVERTING POSES FOR RIGHT LEG POSITION"
-#echo "KILLING NODE"
-#rosnode kill bag_to_pkl
-#sleep 20
-#echo "END OF CONVERSION FOR SLEEPING POSES"
-###############################################################################
-rosrun autobed_physical_trainer bag_to_p.py dataset/$1/test1.p &
-rosbag play bagfiles/$1/test1.bag &
-sleep 60
+rosrun autobed_physical_trainer bag_to_p.py dataset/$1/LL_sup.p &
+rosbag play bagfiles/$1/LL.bag &
+sleep 120
 echo "DONE WITH CONVERTING POSES FOR RIGHT HAND POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
-rosrun autobed_physical_trainer bag_to_p.py dataset/$1/test2.p &
-rosbag play bagfiles/$1/test2.bag &
-sleep 60
-echo "DONE WITH CONVERTING POSES FOR RIGHT HAND 2 POSITION"
+echo "KILLING NODE"
+rosnode kill bag_to_pkl
+sleep 20
 echo "MOVING ON TO NEXT BAG FILE"
-################################################################################
-rosrun autobed_physical_trainer bag_to_p.py dataset/$1/test3.p &
-rosbag play bagfiles/$1/test3.bag &
-sleep 60
-echo "DONE WITH CONVERTING POSES FOR RIGHT HAND 3 POSITION"
+##############################################################################
+rosrun autobed_physical_trainer bag_to_p.py dataset/$1/RL_sup.p &
+rosbag play bagfiles/$1/RL.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR RIGHT HAND POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
-
+##############################################################################
+echo "DONE WITH CONVERTING POSES FOR RIGHT LEG POSITION"
+echo "KILLING NODE"
+rosnode kill bag_to_pkl
+sleep 20
+echo "END OF CONVERSION FOR SLEEPING POSES"
+##############################################################################
+##############################################################################
+python src/create_raw_dataset.py --path=./dataset/$1/ &
+echo "ADDED NEW SUBJECT TO THE FINAL DATASET" 

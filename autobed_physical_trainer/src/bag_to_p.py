@@ -29,8 +29,8 @@ class BagfileToPickle():
                 self.mat_origin_callback)
         rospy.Subscriber("/head_o/pose", TransformStamped,
                 self.head_origin_callback)
-#        rospy.Subscriber("/torso_o/pose", TransformStamped,
-                #self.torso_origin_callback)
+        rospy.Subscriber("/torso_o/pose", TransformStamped,
+                self.torso_origin_callback)
         rospy.Subscriber("/l_elbow_o/pose", TransformStamped,
                 self.l_elbow_origin_callback)
         rospy.Subscriber("/r_elbow_o/pose", TransformStamped,
@@ -47,10 +47,6 @@ class BagfileToPickle():
                 self.l_ankle_origin_callback)
         rospy.Subscriber("/r_ankle_o/pose", TransformStamped,
                 self.r_ankle_origin_callback)
-        rospy.Subscriber("/l_shoulder_o/pose", TransformStamped,
-                self.l_shoulder_origin_callback)
-        rospy.Subscriber("/r_shoulder_o/pose", TransformStamped,
-                self.r_shoulder_origin_callback)
  
 
         try:
@@ -63,9 +59,7 @@ class BagfileToPickle():
         self.mat_pose = []
         self.head_pose = []
         #self.head_orientation = []
-        #self.torso_pose = []
-        self.l_shoulder_pose = []
-        self.r_shoulder_pose = []
+        self.torso_pose = []
         self.l_elbow_pose = []
         self.r_elbow_pose = []
         self.l_hand_pose = []
@@ -110,20 +104,6 @@ class BagfileToPickle():
     def torso_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
         self.torso_pose = [data.transform.translation.x,
-                         data.transform.translation.y,
-                         data.transform.translation.z]
-
-
-    def l_shoulder_origin_callback(self, data):
-        '''This callback will sample data until its asked to stop'''
-        self.l_shoulder_pose = [data.transform.translation.x,
-                         data.transform.translation.y,
-                         data.transform.translation.z]
-
-
-    def r_shoulder_origin_callback(self, data):
-        '''This callback will sample data until its asked to stop'''
-        self.r_shoulder_pose = [data.transform.translation.x,
                          data.transform.translation.y,
                          data.transform.translation.z]
 
@@ -188,13 +168,12 @@ class BagfileToPickle():
         pressure mat that will come in through the bagfile and
         will label them with the label'''
         while not rospy.is_shutdown():
-            self.curr_pose = np.asarray([self.head_pose, 
-                self.r_shoulder_pose, self.l_shoulder_pose, 
+            self.curr_pose = np.asarray([self.head_pose, self.torso_pose,
                 self.r_elbow_pose,self.l_elbow_pose, 
                 self.r_hand_pose, self.l_hand_pose, 
                 self.r_knee_pose, self.l_knee_pose, 
                 self.r_ankle_pose, self.l_ankle_pose])
-            if self.ok_to_read_pose == True and np.size(self.curr_pose)==33:
+            if self.ok_to_read_pose == True and np.size(self.curr_pose)==30:
                 self.count += 1
                 dist_array = []
                 #After 10 seconds, we sample mat pose
@@ -216,10 +195,9 @@ class BagfileToPickle():
                 #than a certain threshold in Eucledian distance, only then log
                 #this sample
                 dist_mean = np.mean(dist_array)
-                if dist_mean >= 0.03:
+                if dist_mean >= 0.01:
                     self.training_database[self.pressure_map] = (
-                        self.head_pose + 
-                        self.r_shoulder_pose + self.l_shoulder_pose +
+                        self.head_pose +  self.torso_pose +
                         self.r_elbow_pose + self.l_elbow_pose + 
                         self.r_hand_pose + self.l_hand_pose + 
                         self.r_knee_pose + self.l_knee_pose +
