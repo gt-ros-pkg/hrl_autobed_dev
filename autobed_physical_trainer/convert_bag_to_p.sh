@@ -36,17 +36,17 @@ echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosrun autobed_physical_trainer bag_to_p.py dataset/$1/LH_sup.p &
 rosbag play bagfiles/$1/LH1.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosbag play bagfiles/$1/LH2.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND 2 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ################################################################################
 rosbag play bagfiles/$1/LH3.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND 3 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 cho "KILLING NODE"
@@ -57,17 +57,17 @@ echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosrun autobed_physical_trainer bag_to_p.py dataset/$1/RH_sup.p &
 rosbag play bagfiles/$1/RH1.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR RIGHT HAND POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
 rosbag play bagfiles/$1/RH2.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND 2 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 ################################################################################
 rosbag play bagfiles/$1/RH3.bag &
-sleep 60
+sleep 100
 echo "DONE WITH CONVERTING POSES FOR LEFT HAND 3 POSITION"
 echo "MOVING ON TO NEXT BAG FILE"
 echo "KILLING NODE"

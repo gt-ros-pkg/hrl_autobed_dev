@@ -53,7 +53,7 @@ class DatabaseCreator():
                 open(os.path.join(self.training_dump_path,'mat_axes.p'), "r"))         
 
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
-        
+        self.individual_dataset = {} 
 
     def world_to_mat(self, w_data):
         '''Converts a vector in the world frame to a vector in the map frame.
@@ -194,41 +194,49 @@ class DatabaseCreator():
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
         for p_map_raw in head_sup.keys():
             target_raw = head_sup[p_map_raw]
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
         for p_map_raw in LH_sup.keys():
             target_raw = LH_sup[p_map_raw]
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
         for p_map_raw in RH_sup.keys():
             target_raw = RH_sup[p_map_raw]
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
         for p_map_raw in LL_sup.keys():
             target_raw = LL_sup[p_map_raw]
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
         for p_map_raw in RH_sup.keys():
             target_raw = RH_sup[p_map_raw]
             target_raw = np.array(target_raw).reshape(len(target_raw)/3,3)
             target_mat = self.world_to_mat(target_raw)
             self.final_dataset[p_map_raw] = target_mat.flatten()
+            self.individual_dataset[p_map_raw] = target_mat.flatten()
             count += 1
 
         print "Saving final_dataset"
         pkl.dump(self.final_dataset, 
                   open(os.path.join(self.final_database_path,'final_database.p'), 'wb'))
+        pkl.dump(self.final_dataset,
+                open(os.path.join(self.training_dump_path, 'individual_database.p'), 'wb'))
         return
 
 

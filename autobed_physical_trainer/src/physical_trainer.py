@@ -242,7 +242,7 @@ class PhysicalTrainer():
         '''Runs training on the dataset using the Upsample+ HoG+
         + K Nearest Neighbor Regression technique'''
         #Number of neighbors
-        n_neighbors = 2
+        n_neighbors = 3 
         #Resize incoming pressure map
         pressure_map_dataset_lowres_train = (
                 self.preprocessing_pressure_array_resize(self.dataset_x_flat))
