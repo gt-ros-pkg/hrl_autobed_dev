@@ -49,7 +49,7 @@ class BagfileToPickle():
 
     def mat_origin_callback(self, data):
         '''This callback will sample data until its asked to stop'''
-        if not self.mat_y_captured:
+        if not self.mat_o_captured:
             self.mat_o = np.array([data.transform.translation.x,
                              data.transform.translation.y,
                              data.transform.translation.z])

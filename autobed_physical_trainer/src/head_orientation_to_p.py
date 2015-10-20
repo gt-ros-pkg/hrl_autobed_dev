@@ -26,13 +26,12 @@ class BagfileToPickle():
                 self.current_physical_pressure_map_callback)
         rospy.Subscriber("/head_o/pose", TransformStamped,
                 self.head_origin_callback)
-        self.head_dataset = {}
 
         try:
-            self.training_database = pkl.load(open(self.filename, 'rb'))
+            self.head_dataset = pkl.load(open(self.filename, 'rb'))
         except:
             print "Pickle file didn't exist. Creating new pickle dataset."
-            self.training_database = {}
+            self.head_dataset = {}
         self.count = 0 #When to sample the mat_origin
         self.head_orientation = []
 
@@ -71,16 +70,16 @@ class BagfileToPickle():
             if self.ok_to_read_pose == True and np.size(self.head_orientation)==3:
                 if (self.head_orientation[1] < -20): 
                     #This is to make sure the first pose is sampled
-                    self.head_dataset[self.pressure_map] = 'left'
-                    print 'left'
-                elif (self.head_orientation[1] > 20):
                     self.head_dataset[self.pressure_map] = 'right'
                     print 'right'
+                elif (self.head_orientation[1] > 20):
+                    self.head_dataset[self.pressure_map] = 'left'
+                    print 'left'
                 else:
                     self.head_dataset[self.pressure_map] = 'center'
                     print 'center'
                 self.ok_to_read_pose = False
-        #pkl.dump(self.head_dataset, open(self.filename, "wb"))
+        pkl.dump(self.head_dataset, open(self.filename, "wb"))
                  
 
 if __name__ == "__main__":

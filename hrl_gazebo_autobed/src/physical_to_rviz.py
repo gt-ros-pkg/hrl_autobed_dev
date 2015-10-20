@@ -77,7 +77,6 @@ class AutobedConverter():
         #callback for markers
     def head_marker_cb(self, msg):
         self.head_pose=msg          
-        self.compose_marker_msg()
 
     def torso_marker_cb(self, msg):
         self.torso_pose=msg
@@ -105,6 +104,7 @@ class AutobedConverter():
 
     def l_ankle_marker_cb(self, msg):
         self.l_ankle_pose=msg
+        self.compose_marker_msg()
 
     def compose_marker_msg(self):
         self.marker_msg=Marker()
@@ -121,11 +121,16 @@ class AutobedConverter():
         self.marker_msg.pose.orientation.y=0.0
         self.marker_msg.pose.orientation.z=0.0
         self.marker_msg.pose.orientation.w=1.0
-        list_of_markers=[self.head_pose.transform.translation, self.torso_pose.transform.translation, 
-                         self.r_elbow_pose.transform.translation, self.l_elbow_pose.transform.translation, 
-                         self.r_hand_pose.transform.translation, self.l_hand_pose.transform.translation, 
-                         self.r_knee_pose.transform.translation, self.l_knee_pose.transform.translation, 
-                         self.r_ankle_pose.transform.translation, self.l_ankle_pose.transform.translation]   
+        list_of_markers=[self.head_pose.transform.translation, 
+                         self.torso_pose.transform.translation, 
+                         self.r_elbow_pose.transform.translation, 
+                         self.l_elbow_pose.transform.translation, 
+                         self.r_hand_pose.transform.translation, 
+                         self.l_hand_pose.transform.translation, 
+                         self.r_knee_pose.transform.translation, 
+                         self.l_knee_pose.transform.translation, 
+                         self.l_ankle_pose.transform.translation, 
+                         self.r_ankle_pose.transform.translation] 
         for i in list_of_markers:
             self.marker_msg.points.append(i)
             
