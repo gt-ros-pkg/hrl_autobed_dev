@@ -53,7 +53,7 @@ class BagfileToPickle():
             self.training_database = pkl.load(open(self.filename, 'rb'))
         except:
             print "Pickle file didn't exist. Creating new pickle dataset."
-            self.training_database = {}
+            self.training_database = []
         self.count = 0 #When to sample the mat_origin
 
         self.mat_pose = []
@@ -176,11 +176,6 @@ class BagfileToPickle():
             if self.ok_to_read_pose == True and np.size(self.curr_pose)==30:
                 self.count += 1
                 dist_array = []
-                #After 10 seconds, we sample mat pose
-                if self.count == 50 and not self.mat_pose_sampled:
-                    self.training_database['mat_o'] = self.mat_pose
-                    self.mat_pose_sampled = True
-                    print "Mat pose sampled."
                 #This is to make sure the first pose is sampled
                 if self.count == 1:
                     self.prev_pose = np.add(np.asarray(self.curr_pose),
@@ -194,23 +189,19 @@ class BagfileToPickle():
                 #If the ground truth between consecutive samples is greater
                 #than a certain threshold in Eucledian distance, only then log
                 #this sample
-                dist_mean = np.mean(dist_array)
-                if dist_mean >= 0.01:
-                    self.training_database[self.pressure_map] = (
-                        self.head_pose +  self.torso_pose +
-                        self.r_elbow_pose + self.l_elbow_pose + 
-                        self.r_hand_pose + self.l_hand_pose + 
-                        self.r_knee_pose + self.l_knee_pose +
-                        self.r_ankle_pose + self.l_ankle_pose )
-                        #+ self.head_orientation)
+                dist_max = max(dist_array)
+                if dist_max >= 0.05:
+                    current_key_value = [list(self.pressure_map), self.curr_pose]
+                    self.training_database.append(current_key_value) 
                     self.prev_pose = self.curr_pose[:]
                     print "Number of Non-Zero Entries in saved matrix:"
                     print np.count_nonzero(np.asarray(self.pressure_map))
-
                 self.ok_to_read_pose = False
         pkl.dump(self.training_database, open(self.filename, "wb"))
                  
 
 if __name__ == "__main__":
+    #Argument 1: Filename of the pkl file to be stored.
     convertor = BagfileToPickle(sys.argv[1])
     convertor.run()
+

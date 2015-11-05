@@ -6,39 +6,100 @@
 #./convert_bag_to_p.sh subject_1
 
 ###############################################################################
-python src/head_orientation_to_p.py dataset/head_orientation_dataset.p &
+python src/head_orientation_to_p.py dataset/subject_9/head_orientation_dataset.p &
 rosbag play bagfiles/subject_9/head_sup.bag &
 sleep 120
 echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_10/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_11/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_12/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_13/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_14/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-rosbag play bagfiles/subject_15/head_sup.bag &
-sleep 120
-echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
-###############################################################################
-
 echo "KILLING NODE"
 rosnode kill bag_to_pkl
 sleep 20
 echo "MOVING ON TO NEXT BAG FILE"
 ###############################################################################
+python src/head_orientation_to_p.py dataset/subject_10/head_orientation_dataset.p &
+rosbag play bagfiles/subject_10/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_11/head_orientation_dataset.p &
+rosbag play bagfiles/subject_11/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_12/head_orientation_dataset.p &
+rosbag play bagfiles/subject_12/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_13/head_orientation_dataset.p &
+rosbag play bagfiles/subject_13/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_14/head_orientation_dataset.p &
+rosbag play bagfiles/subject_14/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_15/head_orientation_dataset.p &
+rosbag play bagfiles/subject_15/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+###############################################################################
+###############################################################################
+
+python src/head_orientation_to_p.py dataset/subject_16/head_orientation_dataset.p &
+rosbag play bagfiles/subject_15/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+
+python src/head_orientation_to_p.py dataset/subject_4/head_orientation_dataset.p &
+rosbag play bagfiles/subject_15/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
+
+python src/head_orientation_to_p.py dataset/subject_18/head_orientation_dataset.p &
+rosbag play bagfiles/subject_15/head_sup.bag &
+sleep 120
+echo "DONE WITH CONVERTING POSES FOR HOME POSITION"
+rosnode kill bag_to_pkl
+sleep 20
+echo "MOVING ON TO NEXT BAG FILE"
+
 

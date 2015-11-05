@@ -68,11 +68,11 @@ class BagfileToPickle():
         will label them with the label'''
         while not rospy.is_shutdown():
             if self.ok_to_read_pose == True and np.size(self.head_orientation)==3:
-                if (self.head_orientation[1] < -20): 
+                if (self.head_orientation[1] < -30): 
                     #This is to make sure the first pose is sampled
                     self.head_dataset[self.pressure_map] = 'right'
                     print 'right'
-                elif (self.head_orientation[1] > 20):
+                elif (self.head_orientation[1] > 30):
                     self.head_dataset[self.pressure_map] = 'left'
                     print 'left'
                 else:
