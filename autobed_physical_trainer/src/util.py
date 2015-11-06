@@ -32,8 +32,36 @@ def generateWeightedData(data_set, gaussian_params)
     weighted_data_set: A list of the pairs of pressure mat and correspoding marker array.
     '''
 
+    weighted_data_set = []
+    for idx, data in enumerate(data_set):
 
+        # Get size of pressure mat
+        pressure_mat = data[0]
+        marker_array = data[1]
+        n,m = np.shape(pressure_mat)
 
+        # Get weight parameter set
+        params = gaussian_params[idx]
 
+        # Define container for each data
+        weighted_data = []
+        
+        # Multiply pressure mat with gaussian-weighted region
+        for i in xrange(len(params[0])):
+
+            # Get gaussian parameter
+            mu  = params[0][i]
+            var = params[1][i]
+
+            # Get gaussian muliplier
+            mat = np.zeros((n,m))
+
+            # Multiplication
+            weighted_pressure_mat = 
+            weighted_marker_array = 
+
+            weighted_data.append([weighted_pressure_mat, weighted_marker_array])
+            
+        weighted_data_set.append(weighted_data)
 
     return weighted_data_set
