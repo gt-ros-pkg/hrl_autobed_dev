@@ -38,7 +38,6 @@ class DatabaseCreator():
     '''Gets the directory of pkl database and iteratively go through each file,
     cutting up the pressure maps and creating synthetic database'''
     def __init__(self, training_database_pkl_directory, save_pdf=False, verbose=False):
-
         # Set initial parameters
         self.training_dump_path = training_database_pkl_directory.rstrip('/')
         self.save_pdf           = save_pdf
@@ -50,38 +49,28 @@ class DatabaseCreator():
         [self.p_world_mat, self.R_world_mat] = pkl.load(
                 open(os.path.join(self.training_dump_path,'mat_axes.p'), "r"))         
 
-
-       #Pop the mat coordinates from the dataset
-#        try:
-            #self.p_world_mat = home_sup_dat.pop('mat_o') 
-        #except:
-            #print "[Warning] MAT ORIGIN HAS NOT BEEN CAPTURED."
-            #print "[Warning] Either retrain system or get mat older mat_origin"
-            #self.p_world_mat = [0.289, 1.861, 0.546]
-
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         #Remove empty elements from the dataset, that may be due to Motion
         #Capture issues.
         if self.verbose: print "Checking database for empty values."
         empty_count = 0
-        for dict_entry in list(home_sup_dat.keys()):
-            if len(home_sup_dat[dict_entry]) < (33) or (len(dict_entry) <
+        for entry in range(len(home_sup_dat)):
+            if len(home_sup_dat[entry][1]) < (30) or (home_sup_dat[entry][0]) <
                     self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
-                del home_sup_dat[dict_entry]
+                del home_sup_dat[entry]
         if self.verbose: print "Empty value check results: {} rogue entries found".format(
                 empty_count)
         
         #Targets in the mat frame        
-        home_sup_pressure_map = home_sup_dat.keys()[0]        
-        home_sup_joint_pos_world = np.array(home_sup_dat[home_sup_pressure_map]).reshape(
-                len(home_sup_dat[home_sup_pressure_map])/3,3) # N x 3
+        home_sup_pressure_map = home_sup_dat[0][0]        
+        home_sup_joint_pos_world = np.array(home_sup_dat[0][1]).reshape(
+                len(home_sup_dat[0][1])/3,3) # N x 3
         home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world) # N x 3
 
         self.split_matrices, self.split_targets = \
                                     self.preprocess_home_position(\
                                     home_sup_pressure_map, home_sup_joint_pos)
-
         ## self.pca_transformation_sup(home_sup_pressure_map, home_sup_joint_pos)
         
 
@@ -655,15 +644,6 @@ class DatabaseCreator():
                 open(os.path.join(self.training_dump_path,'RL_sup.p'), "rb")) 
         LL_sup = pkl.load(
                 open(os.path.join(self.training_dump_path,'LL_sup.p'), "rb")) 
-        try:
-            del home_sup['mat_o']
-            del head_sup['mat_o']
-            del RH_sup['mat_o']
-            del LH_sup['mat_o']
-            del RL_sup['mat_o']
-            del LL_sup['mat_o']
-        except KeyError:
-            pass
         #Slice each image using the slices computed earlier
         head_sliced = {}
         RH_sliced = {}
@@ -674,10 +654,10 @@ class DatabaseCreator():
         ## count = 0                
         # map_raw: pressure map
         # target_raw: marker, Nx3 array
-        p_map_raw = home_sup.keys()[0]
-        target_raw = home_sup[p_map_raw]
+        p_map_raw = home_sup[0][0]
+        target_raw = home_sup[0][1]
         [rotated_p_map, rotated_target] = self.pca_transformation_sup(
-                                    p_map_raw, target_raw)
+                                                        p_map_raw, target_raw)
 
         sliced_p_map = np.multiply(rotated_p_map,
                 self.split_matrices[0])
@@ -705,8 +685,7 @@ class DatabaseCreator():
                 self.split_targets[4])
         LL_sliced[tuple(sliced_p_map.flatten())] = sliced_target
 
-        for p_map_raw in head_sup.keys():
-                target_raw = head_sup[p_map_raw]
+        for [p_map_raw,target_raw] in head_sup:
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
                 sliced_p_map = np.multiply(rotated_p_map,
@@ -715,8 +694,7 @@ class DatabaseCreator():
                         self.split_targets[0])
                 head_sliced[tuple(sliced_p_map.flatten())] = sliced_target
                 
-        for p_map_raw in RH_sup.keys():
-                target_raw = RH_sup[p_map_raw]
+        for [p_map_raw, target_raw] in RH_sup:
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
                 sliced_p_map = np.multiply(rotated_p_map,
@@ -731,8 +709,7 @@ class DatabaseCreator():
                 ##                                   rotated_targets=rotated_target, \
                 ##                                   sliced_targets=sliced_target)
                 
-        for p_map_raw in LH_sup.keys():
-                target_raw = LH_sup[p_map_raw]
+        for [p_map_raw, target_raw] in LH_sup:
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
                 sliced_p_map = np.multiply(rotated_p_map,
@@ -742,7 +719,7 @@ class DatabaseCreator():
                 LH_sliced[tuple(sliced_p_map.flatten())] = sliced_target
                 self.visualize_pressure_map(rotated_p_map, rotated_targets=rotated_target)
 
-        for i, p_map_raw in enumerate(LL_sup.keys()):
+        for [p_map_raw, target_raw] in LL_sup:
                 target_raw = LL_sup[p_map_raw]
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
@@ -755,8 +732,7 @@ class DatabaseCreator():
                                                                 #self.mat_size))
 
         ## count = 0
-        for p_map_raw in RL_sup.keys():
-                target_raw = RL_sup[p_map_raw]
+        for [p_map_raw, target_raw] in RL_sup:
                 [rotated_p_map, rotated_target] = self.pca_transformation_sup(
                                             p_map_raw, target_raw)
                 sliced_p_map = np.multiply(rotated_p_map,
@@ -772,7 +748,7 @@ class DatabaseCreator():
 
                 
         count = 0
-        final_database = {}
+        final_database = []
         for head_p_map in head_sliced.keys():
             for RH_p_map in RH_sliced.keys():
                 for LH_p_map in LH_sliced.keys():
@@ -793,8 +769,8 @@ class DatabaseCreator():
                             gaussian_filter(np.reshape(stitched_p_map, self.mat_size),\
                                             sigma=0.5, order=0, output=final_p_map,\
                                             mode='constant')
-                            final_database[tuple(final_p_map.flatten())] = (
-                                                final_target.flatten())
+                            final_database.append([list(final_p_map.flatten()),
+                                                        final_target.flatten()])
 
                             ## self.visualize_pressure_map(final_p_map, rotated_targets=final_target,\
                             ##   fileNumber=count, plot_3d=True)
