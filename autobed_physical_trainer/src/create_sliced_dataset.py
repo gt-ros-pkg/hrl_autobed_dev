@@ -55,8 +55,8 @@ class DatabaseCreator():
         if self.verbose: print "Checking database for empty values."
         empty_count = 0
         for entry in range(len(home_sup_dat)):
-            if len(home_sup_dat[entry][1]) < (30) or (home_sup_dat[entry][0]) <
-                    self.mat_size[0]*self.mat_size[1]):
+            if len(home_sup_dat[entry][1]) < (30) or (home_sup_dat[entry][0]) <\
+                self.mat_size[0]*self.mat_size[1]:
                 empty_count += 1
                 del home_sup_dat[entry]
         if self.verbose: print "Empty value check results: {} rogue entries found".format(
@@ -90,6 +90,13 @@ class DatabaseCreator():
         #targets
         rotated_targets = self.rotate_3D_space(orig_targets)
 
+        # Test for gaussian weighting from Daehyung
+        # I don't know where is the best location for this test
+        import util
+        util.generateWeightedData([[rotated_p_map, rotated_target]], verbose=True)
+        sys.exit()
+
+        
         ## self.visualize_pressure_map_slice(p_map_flat, rotated_p_map,
         ##         rotated_p_map, targets_raw=orig_targets, rotated_targets=rotated_targets)
         
@@ -789,7 +796,7 @@ if __name__ == "__main__":
 
     p.add_option('--training_data_path', '--path',  action='store', type='string', \
                  dest='trainingPath',\
-                 default='~/hrl_file_server/autobed/pose_estimation_data/subject2_stitching_test/', \
+                 default='/home/dpark/hrl_file_server/autobed/pose_estimation_data/subject_12', \
                  help='Set path to the training database.')
     p.add_option('--save_pdf', '--sp',  action='store_true', dest='save_pdf',
                  default=False, help='Save plot as a pdf.')
