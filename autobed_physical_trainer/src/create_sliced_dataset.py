@@ -55,8 +55,9 @@ class DatabaseCreator():
         if self.verbose: print "Checking database for empty values."
         empty_count = 0
         for entry in range(len(home_sup_dat)):
-            if len(home_sup_dat[entry][1]) < (30) or (home_sup_dat[entry][0]) <\
-                self.mat_size[0]*self.mat_size[1]:
+            home_joint_val = home_sup_dat[entry][1]
+            if len(home_joint_val.flatten()) < (30) or (home_sup_dat[entry][0] < 
+                                            self.mat_size[0]*self.mat_size[1]):
                 empty_count += 1
                 del home_sup_dat[entry]
         if self.verbose: print "Empty value check results: {} rogue entries found".format(
@@ -64,10 +65,8 @@ class DatabaseCreator():
         
         #Targets in the mat frame        
         home_sup_pressure_map = home_sup_dat[0][0]        
-        home_sup_joint_pos_world = np.array(home_sup_dat[0][1]).reshape(
-                len(home_sup_dat[0][1])/3,3) # N x 3
+        home_sup_joint_pos_world = home_sup_dat[0][1]
         home_sup_joint_pos = self.world_to_mat(home_sup_joint_pos_world) # N x 3
-
         self.split_matrices, self.split_targets = \
                                     self.preprocess_home_position(\
                                     home_sup_pressure_map, home_sup_joint_pos)
@@ -93,7 +92,7 @@ class DatabaseCreator():
         # Test for gaussian weighting from Daehyung
         # I don't know where is the best location for this test
         import util
-        util.generateWeightedData([[rotated_p_map, rotated_target]], verbose=True)
+        util.generateWeightedData([[rotated_p_map, rotated_targets]], verbose=True)
         sys.exit()
 
         

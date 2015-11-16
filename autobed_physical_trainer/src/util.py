@@ -36,8 +36,8 @@ def generateWeightedData(data_set, gaussian_params=None, verbose=False):
 
     if gaussian_params is None:
         gaussian_params = []
-        mean_list = [50,100]
-        var_list = np.array([[300,0],[0,30]])
+        mean_list = [20,22]
+        var_list = np.array([[30,7],[7,3]])
         gaussian_params.append([mean_list, var_list])
     
         
@@ -69,18 +69,18 @@ def generateWeightedData(data_set, gaussian_params=None, verbose=False):
             pos = np.empty(x.shape + (2,))
             pos[:,:,0] = x; pos[:,:,1] = y
             rv  = multivariate_normal(mu_list, var_list)
-            weight_mat = rv.pdf(pos)
+            weight_mat = rv.pdf(pos).T
             
             ## plt.contourf(x,y,rv.pdf(pos))
             ## plt.axis('equal')
             ## plt.show()
             ## print np.shape(pressure_mat), np.shape(weight_mat)
+            print np.shape(pressure_mat), np.shape(weight_mat)
             
             # Multiplication
-            weighted_pressure_mat = pressure_mat * weight_mat.T
+            weighted_pressure_mat = pressure_mat * weight_mat
             weighted_marker_array = marker_array
-
-            mat_viz(weight_mat)
+            mat_viz(pressure_mat, weight_mat, weighted_pressure_mat)
             
             weighted_data.append([weighted_pressure_mat, weighted_marker_array])
             
@@ -89,12 +89,18 @@ def generateWeightedData(data_set, gaussian_params=None, verbose=False):
     return weighted_data_set
 
 
-def mat_viz(image):
+def mat_viz(image, weight_image, weighted_image):
     fig = plt.figure()
-    plt.imshow(image, interpolation='none', origin='lower')
-    plt.xlabel('x [pixels]')    
-    plt.ylabel('y [pixels]')    
-    plt.colorbar()    
+    ax = fig.add_subplot(1,3,1)
+    ax.imshow(image, interpolation='none', cmap=plt.cm.bwr, origin='upper', vmin=0, vmax=100)
+    ax = fig.add_subplot(1,3,2)
+    ax.imshow(weight_image, interpolation='none', cmap=plt.cm.bwr, origin='upper')
+    ax = fig.add_subplot(1,3,3)
+    ax.imshow(weighted_image, interpolation='none', cmap=plt.cm.bwr, origin='upper')
+    
+    ## ax.set_xlabel('x [pixels]')    
+    ## ax.set_ylabel('y [pixels]')    
+    ## plt.colorbar()    
     ## fig.savefig('test.pdf')    
     ## fig.savefig('test.png')    
     ## os.system('cp test.p* ~/Dropbox/HRL/')
