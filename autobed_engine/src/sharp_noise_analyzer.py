@@ -12,9 +12,6 @@ import sharp_prox_driver
 from std_msgs.msg import Float32 
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
-from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
-from m3skin_ros.srv import None_String, None_StringResponse
-
 from numpy import sin, linspace, pi
 from pylab import plot, show, title, xlabel, ylabel, subplot
 from scipy import fft, arange

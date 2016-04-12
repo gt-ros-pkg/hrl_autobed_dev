@@ -4,6 +4,7 @@ import serial
 import time
 import numpy as np
 import math
+import threading 
 
 import roslib; roslib.load_manifest('autobed_engine')
 import rospy
@@ -16,6 +17,8 @@ import websocket
 import atexit
 
 from std_msgs.msg import Bool, Float32, String, Int16
+from scipy.signal import remez
+from scipy.signal import lfilter
 from hrl_msgs.msg import FloatArrayBare, StringArray
 from geometry_msgs.msg import TransformStamped 
 from geometry_msgs.msg import Transform, Vector3, Quaternion
@@ -52,7 +55,7 @@ class AutobedClient():
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
-        self.u_thresh = np.array([75.0, 30.0, 45.0])
+        self.u_thresh = np.array([85.0, 41.0, 45.0])
         self.l_thresh = np.array([1.0, 9.0, 1.0])
         self.dev = dev
         self.autobed_config_file = autobed_config_file
@@ -61,6 +64,11 @@ class AutobedClient():
         self.num_of_sensors = num_of_sensors
         self.reached_destination = True * np.ones(NUM_ACTUATORS)
         self.actuator_number = 0
+	self.frame_lock = threading.RLock()
+	self.head_filt_data = 0
+	self.bin_numbers = 11
+	self.collated_head_angle = np.ones((self.bin_numbers, 1))
+	self.lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
         #Create a proximity sensor object
         self.prox_driver = (
                 sharp_prox_driver.ProximitySensorDriver(
@@ -105,6 +113,13 @@ class AutobedClient():
 	self.ws = websocket.create_connection("ws://localhost:828")
         print '*** Autobed 2.0 Ready ***'
 
+    def filter_head_data(self):
+        '''Creates a low pass filter to filter out high frequency noise'''
+        if np.shape(self.lpf) == np.shape(self.collated_head_angle):
+            self.head_filt_data = np.dot(self.lpf, self.collated_head_angle)
+        else:
+            pass
+        return
 
     def websocket_cleanup(self):
 	self.ws.close()
@@ -180,41 +195,43 @@ class AutobedClient():
         to the Autobed. This mode is used when Henry wants to control the 
         autobed manually even if no sensors are present'''
         autobed_config_data = load_pickle(self.autobed_config_file) 
-        if data.data in CMDS: 
-            self.diff_motion(data.data)
-        else:
-            self.autobed_u = np.asarray(autobed_config_data[data.data])
-            self.u_thresh = np.array([80.0, 30.0, 50.0])
-            self.l_thresh = np.array([1.0, 9.0, 1.0])
-            self.autobed_u[self.autobed_u > self.u_thresh] = (
-                    self.u_thresh[self.autobed_u > self.u_thresh])
-            self.autobed_u[self.autobed_u < self.l_thresh] = (
-                    self.l_thresh[self.autobed_u < self.l_thresh])
-            #Make reached_destination boolean false for all the actuators 
-            self.reached_destination = False * np.ones(NUM_ACTUATORS)
-            self.actuator_number = 0
+	with self.frame_lock:
+		if data.data in CMDS: 
+		    self.diff_motion(data.data)
+		else:
+		    self.autobed_u = np.asarray(autobed_config_data[data.data])
+		    self.u_thresh = np.array([85.0, 41.0, 50.0])
+		    self.l_thresh = np.array([1.0, 9.0, 1.0])
+		    self.autobed_u[self.autobed_u > self.u_thresh] = (
+			    self.u_thresh[self.autobed_u > self.u_thresh])
+		    self.autobed_u[self.autobed_u < self.l_thresh] = (
+			    self.l_thresh[self.autobed_u < self.l_thresh])
+		    #Make reached_destination boolean false for all the actuators 
+		    self.reached_destination = False * np.ones(NUM_ACTUATORS)
+		    self.actuator_number = 0
 
 
     def autobed_engine_callback(self, data):
         ''' Accepts incoming position values from the base selection algorithm 
         and assigns it to a global variable. This variable is then used to guide 
         the autobed to the desired position using the engine'''
-        current_autobed_pose = self.get_sensor_data()
-        self.autobed_u = np.asarray(data.data)
-        #We threshold the incoming data
-        self.autobed_u[self.autobed_u > self.u_thresh] = (
-                self.u_thresh[self.autobed_u > self.u_thresh])
-        self.autobed_u[self.autobed_u < self.l_thresh] = (
-                self.l_thresh[self.autobed_u < self.l_thresh])
-	for i in range(len(self.autobed_u)):
-	    if math.isnan(self.autobed_u[i]):
-                self.autobed_u[i] = current_autobed_pose[i] 
-        if math.isnan(self.autobed_u.all()):
-            self.autobed_kill()
-            return
-        #Make reached_destination boolean flase for all the actuators on the bed
-        self.reached_destination = False * np.ones(NUM_ACTUATORS)
-        self.actuator_number = 0
+	with self.frame_lock:
+		current_autobed_pose = self.get_sensor_data()
+		self.autobed_u = np.asarray(data.data)
+		#We threshold the incoming data
+		self.autobed_u[self.autobed_u > self.u_thresh] = (
+			self.u_thresh[self.autobed_u > self.u_thresh])
+		self.autobed_u[self.autobed_u < self.l_thresh] = (
+			self.l_thresh[self.autobed_u < self.l_thresh])
+		for i in range(len(self.autobed_u)):
+		    if math.isnan(self.autobed_u[i]):
+			self.autobed_u[i] = current_autobed_pose[i] 
+		if math.isnan(self.autobed_u.all()):
+		    self.autobed_kill()
+		    return
+		#Make reached_destination boolean flase for all the actuators on the bed
+		self.reached_destination = False * np.ones(NUM_ACTUATORS)
+		self.actuator_number = 0
 
 
     def delete_autobed_configuration(self, req):
@@ -265,7 +282,16 @@ class AutobedClient():
             return update_bed_configResponse(False)
         else:
             #Append present Autobed positions and angles to the dictionary
-            current_autobed_config_data[req.config] = (self.get_sensor_data())
+	    current_raw = self.get_sensor_data()
+            with self.frame_lock:
+            	self.collated_head_angle = np.delete(self.collated_head_angle, 0)
+           	self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
+	    #Filter Head Angle
+	    self.filter_head_data()
+	    current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+            current_autobed_config_data[req.config] = (current_filtered)
+	    print "Saved:"
+	    print current_filtered
             try:
                 #Update param file
                 save_pickle(current_autobed_config_data, 
@@ -302,22 +328,32 @@ class AutobedClient():
         '''Initialize the autobed input to the current sensor values, 
         so that the autobed doesn't move unless commanded'''
         self.autobed_u =  self.get_sensor_data() 
+	self.collated_head_angle = self.collated_head_angle*self.autobed_u[0]
         while not rospy.is_shutdown():
-            #Compute error vector
-            autobed_error = np.asarray(self.autobed_u - self.get_sensor_data())
-	        #Publish present Autobed sensor readings
-            self.abdout0.publish(self.get_sensor_data())
+	    #Publish present Autobed sensor readings
+	    current_raw = self.get_sensor_data()
+            self.abdout0.publish(current_raw)
+	    with self.frame_lock:
+            	self.collated_head_angle = np.delete(self.collated_head_angle, 0)
+           	self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
             if self.reached_destination.all() == False:
                 '''If the error is greater than some allowed offset, 
                 then we actuate the motors to get closer to desired position'''
+		#Filter Head Angle
+		self.filter_head_data()
+		current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+            	autobed_error = np.asarray(self.autobed_u - current_filtered) 
+		print current_filtered
+		#TODO: Remove the line below when using legs.
+		autobed_error[2] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
+                        self.reached_destination[self.actuator_number] = False
                         self.diff_motion(
                                 AUTOBED_COMMANDS[self.actuator_number][int(
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
-                        self.reached_destination[self.actuator_number] = False
                     else:
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
@@ -326,6 +362,7 @@ class AutobedClient():
             #If we have reached the destination position at all the actuators,
             #then publish the error and a boolean that says we have reached
             if self.reached_destination.all() == True:
+                self.actuator_number = 0
                 self.abdstatus0.publish(True)
             else:
                 self.abdstatus0.publish(False)
@@ -349,7 +386,7 @@ if __name__ == "__main__":
             type=str, help="Configuration file fo the AutoBed")
     parser.add_argument("sensor_type", 
             type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP"
-	    , default="MOCAP")
+	    , default="SHARP")
 
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node

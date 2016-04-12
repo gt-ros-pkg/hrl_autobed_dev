@@ -10,10 +10,6 @@ import roslib; roslib.load_manifest('autobed_engine')
 import rospy, rosparam
 from std_msgs.msg import Empty
 from geometry_msgs.msg import Transform, Vector3, Quaternion
-
-from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
-from m3skin_ros.srv import None_String, None_StringResponse
-
 import serial_driver
 
 class ProximitySensorDriver(object):
@@ -24,13 +20,6 @@ class ProximitySensorDriver(object):
         self.num_sensors = num_sensors
         self.serial_driver = serial_driver.SerialDriver(self.num_sensors, dev, baudrate)
         self.zero_sensor_sub = rospy.Subscriber('/darpa_arm/zero_prox_sensor', Empty, self.zero_sensor_cb)
-
-        self.frames_service = rospy.Service('/darpa_arm_link0/taxels/srv/local_coord_frames',
-                                            None_TransformArray,
-                                            self.local_coord_frames_cb)
-        self.links_service = rospy.Service('/darpa_arm_link0/taxels/srv/link_name',
-                                            None_String,
-                                            self.link_name_cb)
 
         #Initialize arrays for holding sensor data
         #self.cal_coefficients = 1.1214 * np.ones(self.num_sensors) #Default from sensor datasheet
@@ -122,27 +111,6 @@ class ProximitySensorDriver(object):
             filt_data[i] = np.dot(lpf, self.collated_cal_data[:,i])
 
         return filt_data
-
-    def local_coord_frames_cb(self, req):
-        tar = None_TransformArrayResponse()
-        tar.data = [Transform()]*self.num_sensors
-        for i in range(self.num_sensors):
-            t = Transform()
-            t.translation.x = self.sensor_positions[0,i]
-            t.translation.y = self.sensor_positions[1,i]
-            t.translation.z = self.sensor_positions[2,i]
-            #print "translation for ", i, " is :\n", self.sensor_positions[:,i]
-
-            t.rotation.x = self.sensor_quats[0,i]
-            t.rotation.y = self.sensor_quats[1,i]
-            t.rotation.z = self.sensor_quats[2,i]
-            t.rotation.w = self.sensor_quats[3,i]
-            tar.data[i] = t
-        #print "service call gives :\n", tar
-        return tar
-
-    def link_name_cb(self, req):
-        return None_StringResponse(data='/torso_lift_link')
 
     def zero_sensor_cb(self, msg):
         raw_data = self._read_raw_data()
