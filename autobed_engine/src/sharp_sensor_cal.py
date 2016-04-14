@@ -9,9 +9,6 @@ import rospy, rosparam
 from std_msgs.msg import Empty
 from geometry_msgs.msg import Transform, Vector3, Quaternion
 
-from m3skin_ros.srv import None_TransformArray, None_TransformArrayResponse
-from m3skin_ros.srv import None_String, None_StringResponse
-
 import serial_driver
 import sharp_prox_driver
 

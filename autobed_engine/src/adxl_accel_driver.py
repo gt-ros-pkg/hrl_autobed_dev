@@ -18,48 +18,17 @@ class AccelerometerDriver(object):
     ''' A class for collecting raw data from a ADXL 335 accelerometer sensor
     attached to an arduino analog input device.
     '''
-    def __init__(self, num_sensors, param_file=None, 
-                                            dev='/dev/ttyUSB0', baudrate=9600):
+    def __init__(self, num_sensors, dev='/dev/ttyUSB0', baudrate=9600):
         #Accelerometer Bias Values 
         #TODO: Add API at a later stage to vary biases online.
-        self.BIAS_X = 370;
-        self.BIAS_Y = 330;
-        self.BIAS_Z = 272;
-        self.BIAS = [self.BIAS_X, self.BIAS_Y, self.BIAS_Z]
-        self.num_sensors = num_sensors
+        self.BIAS_Y = 338;
+        self.BIAS_Z = 338;
+        self.BIAS = np.array([self.BIAS_Y, self.BIAS_Z])
+        self.num_sensors = num_sensors	
+	self.num_sharp_sensors = 1
+	self.num_analog = 4#self.num_sensors*len(self.BIAS) + self.num_sharp_sensors
         self.serial_driver = serial_driver.SerialDriver(
-                self.num_sensors*len(self.BIAS), dev, baudrate)
-        self.zero_sensor_sub = rospy.Subscriber('/autobed_engine/accelerometer', 
-                Empty, self.zero_sensor_cb)
-        #Initialize arrays for holding sensor data
-        self.cal_coefficients = 1.0 * np.ones(self.num_sensors) 
-        self.cal_offsets = 0.0 * np.ones(self.num_sensors) #
-        self.cal_exponents = 0.0 * np.ones(self.num_sensors) #
-        self.frames = np.zeros(self.num_sensors)
-        self.sensor_positions = np.zeros( [3, self.num_sensors] )
-        self.sensor_quats =  np.zeros( [4, self.num_sensors] )
-        #Optional filtering initializations
-        self.current_bin_number = 0
-        self.bin_numbers = 21 
-        self.collated_cal_data = np.zeros((self.bin_numbers,
-            self.num_sensors))
-        self.filtered_data = np.zeros(self.num_sensors)
-
-        if param_file is None:
-            rospy.logwarn(
-                    '[accel_sensor_driver] No parameters loaded for Sensors')
-        else:
-            sensor_config_data = rosparam.load_file(param_file)[0][0]
-            for channel, sensor in sensor_config_data.iteritems():
-                self.frames[channel] = sensor['normal_pose']['frame']
-                self.cal_coefficients[channel] = (
-                                        sensor['calibration']['coefficient'])
-                self.cal_offsets[channel] = sensor['calibration']['offset']
-                self.cal_exponents[channel] = sensor['calibration']['exponent']
-                self.sensor_positions[:,channel] =  (
-                                            sensor['normal_pose']['position'])
-                self.sensor_quats[:,channel] =  (
-                                        sensor['normal_pose']['orientation'])
+                self.num_analog, dev, baudrate)
         good_data = False
         test_rate = rospy.Rate(1)
         while not good_data and not rospy.is_shutdown():
@@ -84,38 +53,23 @@ class AccelerometerDriver(object):
         except:
           print "Reading data in accelerometer driver failed"
           raise
-        assert len(raw_data) == self.num_sensors*len(self.BIAS), "Size of incoming data from sensor doesnt match # of sensors."
+        assert len(raw_data) == self.num_analog, "Size of incoming data from sensor doesnt match # of sensors."
         return raw_data
 
 
     def get_sensor_data(self):
         try:
-            raw_data = self.acceleration_to_inclination(
-                    self._read_raw_data()[:self.num_sensors*len(self.BIAS)])
+	    raw_acc_data = self._read_raw_data()
+	    raw_acc_data = raw_acc_data[:4]
+	    raw_sharp_data = raw_acc_data[4:]
+            raw_angle_data = self.acceleration_to_inclination(raw_acc_data)
         except ValueError as e:
-            raw_data = np.zeros(self.num_sensors)
-        cal_data = self.calibrate_data(raw_data)
-        cal_data[np.where(cal_data<0)[0]] = 0.
-        #Optional filtering.
-        if self.current_bin_number >= (self.bin_numbers-1):
-            self.collated_cal_data = np.delete(self.collated_cal_data, 0, 0)
-            self.collated_cal_data = np.append(self.collated_cal_data, 
-                                                        [cal_data], axis = 0)
-            filtered_data = self.filter_data()
-        else:
-            self.collated_cal_data[self.current_bin_number, :] += cal_data
-            filtered_data = cal_data
-            self.current_bin_number += 1
-        return (self.frames, self.sensor_positions, 
-                        self.sensor_quats, raw_data, cal_data, filtered_data)
-
-
-    def calibrate_data(self, raw_data):
-        data = raw_data[raw_data<=0.]=1.0E-8
-       #return self.cal_coefficients * raw_data ** self.cal_exponents
-        return (self.cal_coefficients * (raw_data 
-                                    + self.cal_offsets) ** self.cal_exponents)
-
+	    print "Error in converting analog values to angles"
+	    print e
+	    sys.exit()
+            raw_angle_data = np.zeros(self.num_sensors)
+        raw_angle_data[np.where(raw_angle_data<0)[0]] = 0.
+	return raw_angle_data
 
     def filter_data(self):
         '''Creates a low pass filter to filter out high frequency noise'''
@@ -126,24 +80,14 @@ class AccelerometerDriver(object):
         return filt_data
 
 
-    def link_name_cb(self, req):
-        return None_StringResponse(data='/torso_lift_link')
-
-
     def acceleration_to_inclination(self, raw_data):
         '''Converts accelerometer output to inclination values'''
-        unbiased_raw = (raw_data - np.asarray(self.BIAS*self.num_sensors))
         angle_value = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
+	    unbiased_raw = (raw_data[i*len(self.BIAS):(i+1)*len(self.BIAS)] - self.BIAS)
             angle_value[i] = (
-                math.atan2( math.sqrt(unbiased_raw[i*len(self.BIAS) + 1]**2), 
-                unbiased_raw[i*len(self.BIAS) + 2] ) * (180.0/math.pi)) 
+                math.atan2(math.sqrt(unbiased_raw[0]**2), unbiased_raw[1] ) * (180.0/math.pi)) 
         return angle_value
-
-    def zero_sensor_cb(self, msg):
-        raw_data = self._read_raw_data()
-        assert len(raw_data) == len(self.intercepts), "Cannot re-zero angle sensor, size of current raw data does not match list of intercepts"
-        self.intercepts = np.array(raw_data)
 
 
     def modify_accelerometer_bias(self, new_bias):
@@ -161,26 +105,45 @@ class AccelerometerDriver(object):
 if __name__=='__main__':
     rospy.init_node('accelerometer_sensor_driver')
     from std_msgs.msg import Float32
-    pub0 = rospy.Publisher('/acc_cal_1', Float32)
-    pub1= rospy.Publisher('/acc_cal_2', Float32)
+    import pickle as pkl
+    import time 
+    #pub0 = rospy.Publisher('/acc_cal_1', Float32)
+    #pub1= rospy.Publisher('/acc_cal_2', Float32)
     pub2= rospy.Publisher('/acc_raw_1', Float32)
     pub3= rospy.Publisher('/acc_raw_2', Float32)
+    try:
+    	mean_array = pkl.load(open('~/mean_array.pkl', 'rb'))
+    except:
+	mean_array = []
+     try:
+    	std_array =  pkl.load(open('~/std_array.pkl', 'rb'))
+    except:
+	std_array = []
+   
     if len(sys.argv) < 3:
-        sys.stderr.write('Usage: rosrun packagename adxl_accel_driver.py /dev/USBx number_of_sensors param_file_path')
+        sys.stderr.write('Usage: rosrun packagename adxl_accel_driver.py /dev/USBx')
         sys.exit(1)
 
-    accel_driver = AccelerometerDriver(int(sys.argv[2]), sys.argv[3], 
-                                            dev=sys.argv[1], baudrate = 9600)
+    accel_driver = AccelerometerDriver(int(sys.argv[2]), dev=sys.argv[1], baudrate = 9600)
 
+    dat_array = np.array([0])
     rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
+    t_end = time.time() + 10
+    while time.time() < t_end:
         data = accel_driver.get_sensor_data()
-        raw_data = data[-3]
-        cal_data = data[-1]
+        raw_data = data[0]
+	dat_array.append(raw_data)
+        #pub0.publish(Float32(cal_data[0]))
+        #pub1.publish(Float32(cal_data[1]))
+        #pub2.publish(Float32(raw_data[0]))
+        #pub3.publish(Float32(raw_data[1]))
+    dat_array = dat_array[1:]
+    dat_mean = np.mean(dat_array)
+    dat_sd = np.std(dat_array)
+    print "Mean {}".format(dat_mean)
+    print "Std {}".format(dat_sd)
+    mean_array.append(dat_mean)
+    std_array.append(dat_sd)
 
-        pub0.publish(Float32(cal_data[0]))
-        pub1.publish(Float32(cal_data[1]))
- 
-        pub2.publish(Float32(raw_data[0]))
-        pub3.publish(Float32(raw_data[1]))
-        rate.sleep()
+    pkl.dump(mean_array, open('~/mean_array.pkl', 'rb'))
+    pkl.dump(std_array, open('~/std_array.pkl', 'rb'))

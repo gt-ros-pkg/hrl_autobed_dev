@@ -14,7 +14,7 @@ from numpy import nan
 
 class SerialDriver():
 
-  def __init__(self, num_values, port='/dev/ttyACM0', baudrate=115200, rate=1000.0):
+  def __init__(self, num_values, port='/dev/ttyACM0', baudrate=9600, rate=1000.0):
     print "Serial driver: Starting reading encoder positions via serial."
     # signal.signal(signal.SIGINT, self.signal_handler) # Catch Ctrl-Cs - No longer needed.
 
@@ -111,8 +111,8 @@ class SerialDriver():
 
 # If executed.
 if __name__ == "__main__":
-  dev = '/dev/ttyUSB1'
-  n = 4
+  dev = '/dev/ttyACM0'
+  n = 1
   if len(sys.argv) > 1:
     dev = sys.argv[1]
   if len(sys.argv) > 2:
@@ -121,34 +121,13 @@ if __name__ == "__main__":
   #enc_driver = SerialDriver(n, dev)
 
 #  enc_driver = SerialDriver(2, port='/dev/ttyUSB0', baudrate=4800, rate=1000.0)
-  #enc_driver = SerialDriver(4, port='/dev/ttyACM0', baudrate=115200, rate=1000.0)
+  enc_driver = SerialDriver(4, port='/dev/ttyACM0', baudrate=9600, rate=1000.0)
   #enc_driver = SerialDriver(1, port='/dev/ttyUSB0', baudrate=9600, rate=1000.0)
   drivers = []
   
-  for i in xrange(4):
-    drivers.append(SerialDriver(1, port='/dev/ttyUSB'+str(i), baudrate=57600, rate=1000.0))
-  # while True:
-  #   time.sleep(0.01)
-  #   print enc_driver.getValues()
+  while True:
+    time.sleep(0.01)
+    print enc_driver.getValues()
 
 
-  import numpy as np
-  from matplotlib import pyplot as pl
-  angles = []
-  times = []
-  try:
-    print "getting data now ..."
-    while True:
-      values = [driver.getValues()[0] for driver in drivers]
-      t = time.time()
-      q = np.array(values)
-      print values
-      angles.append(q)
-      times.append(t)
-      time.sleep(0.008)
-  except KeyboardInterrupt:
-    from matplotlib import pyplot as pl
-    pl.figure()
-    pl.plot(times, angles)
-    pl.show()
 
