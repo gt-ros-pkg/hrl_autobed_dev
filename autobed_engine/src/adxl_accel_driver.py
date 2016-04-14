@@ -21,11 +21,12 @@ class AccelerometerDriver(object):
     def __init__(self, num_sensors, dev='/dev/ttyUSB0', baudrate=9600):
         #Accelerometer Bias Values 
         #TODO: Add API at a later stage to vary biases online.
-        self.BIAS_Y = 331;
-        self.BIAS_Z = 331;
+        self.BIAS_Y = 338;
+        self.BIAS_Z = 338;
         self.BIAS = np.array([self.BIAS_Y, self.BIAS_Z])
         self.num_sensors = num_sensors	
-	self.num_analog = self.num_sensors*len(self.BIAS)
+	self.num_sharp_sensors = 1
+	self.num_analog = 4#self.num_sensors*len(self.BIAS) + self.num_sharp_sensors
         self.serial_driver = serial_driver.SerialDriver(
                 self.num_analog, dev, baudrate)
         good_data = False
@@ -60,6 +61,7 @@ class AccelerometerDriver(object):
         try:
 	    raw_acc_data = self._read_raw_data()
 	    raw_acc_data = raw_acc_data[:4]
+	    raw_sharp_data = raw_acc_data[4:]
             raw_angle_data = self.acceleration_to_inclination(raw_acc_data)
         except ValueError as e:
 	    print "Error in converting analog values to angles"
@@ -103,20 +105,45 @@ class AccelerometerDriver(object):
 if __name__=='__main__':
     rospy.init_node('accelerometer_sensor_driver')
     from std_msgs.msg import Float32
+    import pickle as pkl
+    import time 
     #pub0 = rospy.Publisher('/acc_cal_1', Float32)
     #pub1= rospy.Publisher('/acc_cal_2', Float32)
     pub2= rospy.Publisher('/acc_raw_1', Float32)
-    #pub3= rospy.Publisher('/acc_raw_2', Float32)
+    pub3= rospy.Publisher('/acc_raw_2', Float32)
+    try:
+    	mean_array = pkl.load(open('~/mean_array.pkl', 'rb'))
+    except:
+	mean_array = []
+     try:
+    	std_array =  pkl.load(open('~/std_array.pkl', 'rb'))
+    except:
+	std_array = []
+   
     if len(sys.argv) < 3:
         sys.stderr.write('Usage: rosrun packagename adxl_accel_driver.py /dev/USBx')
         sys.exit(1)
 
     accel_driver = AccelerometerDriver(int(sys.argv[2]), dev=sys.argv[1], baudrate = 9600)
 
+    dat_array = np.array([0])
     rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
+    t_end = time.time() + 10
+    while time.time() < t_end:
         data = accel_driver.get_sensor_data()
-        raw_data = data
+        raw_data = data[0]
+	dat_array.append(raw_data)
         #pub0.publish(Float32(cal_data[0]))
         #pub1.publish(Float32(cal_data[1]))
-        pub2.publish(Float32(raw_data[0]))
+        #pub2.publish(Float32(raw_data[0]))
+        #pub3.publish(Float32(raw_data[1]))
+    dat_array = dat_array[1:]
+    dat_mean = np.mean(dat_array)
+    dat_sd = np.std(dat_array)
+    print "Mean {}".format(dat_mean)
+    print "Std {}".format(dat_sd)
+    mean_array.append(dat_mean)
+    std_array.append(dat_sd)
+
+    pkl.dump(mean_array, open('~/mean_array.pkl', 'rb'))
+    pkl.dump(std_array, open('~/std_array.pkl', 'rb'))

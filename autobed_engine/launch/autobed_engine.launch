@@ -1,9 +1,9 @@
 <launch>
-    <arg name="dev" default="/dev/ttyACM0" />
+    <arg name="dev" default="/dev/ttyACM1" />
     <arg name="param_file" default="$(find autobed_engine)/params/darpa_arm_prox_sensors_link_1.yaml" />
-    <arg name="num_sensors" default="4" />
+    <arg name="num_sensors" default="5" />
     <arg name="baudrate" default="9600" />
-    <arg name="sensor_type" default="SHARP" />
+    <arg name="sensor_type" default="COMBO" />
     <arg name="config_file" default="$(find autobed_engine)/params/autobed_config_data.yaml" />
     <node name="autobed_engine" pkg="autobed_engine" type="autobed_engine.py" args="$(arg dev) $(arg baudrate) $(arg param_file) $(arg num_sensors) $(arg config_file) $(arg sensor_type)" output="screen"/>
 </launch>

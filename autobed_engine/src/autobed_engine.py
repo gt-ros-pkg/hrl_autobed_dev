@@ -10,6 +10,7 @@ import roslib; roslib.load_manifest('autobed_engine')
 import rospy
 import serial_driver
 import sharp_prox_driver
+import adxl_accel_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
@@ -25,7 +26,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [5, 2, 5] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [2, 60, 2] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -55,8 +56,8 @@ class AutobedClient():
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
-        self.u_thresh = np.array([85.0, 41.0, 45.0])
-        self.l_thresh = np.array([1.0, 9.0, 1.0])
+        self.u_thresh = np.array([70.0, 41.0, 45.0])
+        self.l_thresh = np.array([0.0, 9.0, 1.0])
         self.dev = dev
         self.autobed_config_file = autobed_config_file
         self.param_file = param_file
@@ -84,6 +85,14 @@ class AutobedClient():
                                                 self.autobed_head_angle_cb)
             rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
                                                 self.autobed_leg_angle_cb)
+	elif self.SENSOR_TYPE == 'COMBO':
+	    self.acc_driver = (
+            adxl_accel_driver.AccelerometerDriver(
+            	    2,
+                    dev = self.dev,
+                    baudrate = self.baudrate))
+
+    
         #Let the sensors warm up
         rospy.sleep(3.)
         # Input to the control system.
@@ -311,9 +320,13 @@ class AutobedClient():
         if self.SENSOR_TYPE == 'MOCAP':
             bed_ht = (self.prox_driver.get_sensor_data()[-1])[1]
             return np.asarray([self.head_angle, bed_ht, self.leg_angle])
-        else:
+        elif self.SENSOR_TYPE == 'SHARP':
             return np.asarray(self.positions_in_autobed_units((
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
+	elif self.SENSOR_TYPE == 'COMBO':
+	    bed_ht = (self.prox_driver.get_sensor_data()[-1])[-1]
+	    bed_angles = self.acc_driver.get_sensor_data()
+	    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
 
     def autobed_kill(self):
@@ -385,8 +398,8 @@ if __name__ == "__main__":
     parser.add_argument("autobed_config_file", 
             type=str, help="Configuration file fo the AutoBed")
     parser.add_argument("sensor_type", 
-            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP"
-	    , default="SHARP")
+            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. COMBO"
+	    , default="COMBO")
 
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
