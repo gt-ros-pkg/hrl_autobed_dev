@@ -9,7 +9,7 @@ import threading
 import roslib; roslib.load_manifest('autobed_engine')
 import rospy
 import serial_driver
-import sharp_prox_driver
+#import sharp_prox_driver
 import adxl_accel_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
@@ -71,12 +71,12 @@ class AutobedClient():
 	self.collated_head_angle = np.ones((self.bin_numbers, 1))
 	self.lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
         #Create a proximity sensor object
-        self.prox_driver = (
-                sharp_prox_driver.ProximitySensorDriver(
-                    int(num_of_sensors), 
-                    param_file = self.param_file,
-                    dev = self.dev,
-                    baudrate = self.baudrate))
+        #self.prox_driver = (
+        #        sharp_prox_driver.ProximitySensorDriver(
+        #            int(num_of_sensors), 
+        #            param_file = self.param_file,
+        #            dev = self.dev,
+        #            baudrate = self.baudrate))
 
         if self.SENSOR_TYPE == 'MOCAP':
             self.leg_angle = 0
@@ -296,8 +296,9 @@ class AutobedClient():
             	self.collated_head_angle = np.delete(self.collated_head_angle, 0)
            	self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
 	    #Filter Head Angle
-	    self.filter_head_data()
-	    current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+	    #self.filter_head_data()
+	    #current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+	    current_filtered = np.array([current_raw[0], current_raw[1], current_raw[2]])
             current_autobed_config_data[req.config] = (current_filtered)
 	    print "Saved:"
 	    print current_filtered
@@ -324,7 +325,7 @@ class AutobedClient():
             return np.asarray(self.positions_in_autobed_units((
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
 	elif self.SENSOR_TYPE == 'COMBO':
-	    bed_ht = (self.prox_driver.get_sensor_data()[-1])[-1]
+	    bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
 	    bed_angles = self.acc_driver.get_sensor_data()
 	    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
@@ -358,7 +359,7 @@ class AutobedClient():
             	autobed_error = np.asarray(self.autobed_u - current_filtered) 
 		print current_filtered
 		#TODO: Remove the line below when using legs.
-		autobed_error[2] = 0.0
+		#autobed_error[2] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
