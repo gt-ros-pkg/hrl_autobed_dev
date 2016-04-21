@@ -10,7 +10,8 @@ import roslib; roslib.load_manifest('autobed_engine')
 import rospy
 import serial_driver
 #import sharp_prox_driver
-import adxl_accel_driver
+#import adxl_accel_driver
+import autobed_adxl_sharp_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
@@ -26,7 +27,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [2, 60, 2] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [4, 4, 4] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -87,7 +88,7 @@ class AutobedClient():
                                                 self.autobed_leg_angle_cb)
 	elif self.SENSOR_TYPE == 'COMBO':
 	    self.acc_driver = (
-            adxl_accel_driver.AccelerometerDriver(
+            autobed_adxl_sharp_driver.AutobedSensorDriver(
             	    2,
                     dev = self.dev,
                     baudrate = self.baudrate))
@@ -325,10 +326,11 @@ class AutobedClient():
             return np.asarray(self.positions_in_autobed_units((
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
 	elif self.SENSOR_TYPE == 'COMBO':
-	    bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
-	    bed_angles = self.acc_driver.get_sensor_data()
-	    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
-
+	    total_dat = self.acc_driver.get_sensor_data()
+	    #bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
+	    #bed_angles = self.acc_driver.get_sensor_data()
+	    #return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
+	    return np.asarray(total_dat)
 
     def autobed_kill(self):
         '''Kills the autobed, while its going to a predefined location'''
@@ -359,7 +361,7 @@ class AutobedClient():
             	autobed_error = np.asarray(self.autobed_u - current_filtered) 
 		print current_filtered
 		#TODO: Remove the line below when using legs.
-		#autobed_error[2] = 0.0
+		autobed_error[2] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
