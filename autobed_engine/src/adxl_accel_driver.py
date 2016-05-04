@@ -26,7 +26,7 @@ class AccelerometerDriver(object):
         self.BIAS = np.array([self.BIAS_Y, self.BIAS_Z])
         self.num_sensors = num_sensors	
         self.num_sharp_sensors = 1
-        self.num_analog = 4#self.num_sensors*len(self.BIAS) + self.num_sharp_sensors
+        self.num_analog = 5#self.num_sensors*len(self.BIAS) + self.num_sharp_sensors
 
         #Optional filtering initializations
         self.current_bin_number = 0

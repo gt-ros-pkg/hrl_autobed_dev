@@ -10,7 +10,7 @@ import roslib; roslib.load_manifest('autobed_engine')
 import rospy
 import serial_driver
 #import sharp_prox_driver
-#import adxl_accel_driver
+import adxl_accel_driver
 import autobed_adxl_sharp_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
@@ -27,7 +27,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [4, 4, 4] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [7, 5, 4] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -92,6 +92,12 @@ class AutobedClient():
             	    2,
                     dev = self.dev,
                     baudrate = self.baudrate))
+	#elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	#    self.bed_ht = 0
+	#    self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2,
+        #            					dev = self.dev,
+        #            					baudrate = self.baudrate))
+        #    rospy.Subscriber("/bed_ht", Float32, self.kinect_bed_ht_cb)
 
     
         #Let the sensors warm up
@@ -199,11 +205,17 @@ class AutobedClient():
         self.leg_angle = 180 - math.atan2(2*(q0*q3 + q1*q2), (1 - 
                                     2*(q2**2 + q3**2)))*(180.0/ math.pi) 
 
+    def kinect_bed_ht_cb(self, data):
+        '''Gets bed height from kinect publisher on Mac Mini'''
+        self.bed_ht = data.data + 9.0
 
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them 
         to the Autobed. This mode is used when Henry wants to control the 
         autobed manually even if no sensors are present'''
+
+	print "Received Differential Control Data"
+	print data.data
         autobed_config_data = load_pickle(self.autobed_config_file) 
 	with self.frame_lock:
 		if data.data in CMDS: 
@@ -331,6 +343,10 @@ class AutobedClient():
 	    #bed_angles = self.acc_driver.get_sensor_data()
 	    #return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 	    return np.asarray(total_dat)
+        #elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	#    bed_ht = self.bed_ht
+	#    bed_angles = self.acc_driver.get_sensor_data()
+	#    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
     def autobed_kill(self):
         '''Kills the autobed, while its going to a predefined location'''
@@ -401,7 +417,7 @@ if __name__ == "__main__":
     parser.add_argument("autobed_config_file", 
             type=str, help="Configuration file fo the AutoBed")
     parser.add_argument("sensor_type", 
-            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. COMBO"
+            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. COMBO vs ADXL_KINECT"
 	    , default="COMBO")
 
     args = parser.parse_args(rospy.myargv()[1:])
