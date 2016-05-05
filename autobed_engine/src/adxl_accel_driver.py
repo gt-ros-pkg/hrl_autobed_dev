@@ -4,6 +4,7 @@ import sys
 import serial
 import numpy as np
 import math
+import threading
 from scipy.signal import remez
 from scipy.signal import lfilter
 
@@ -38,6 +39,7 @@ class AccelerometerDriver(object):
                 self.num_analog, dev, baudrate)
         good_data = False
         test_rate = rospy.Rate(1)
+	self.frame_lock = threading.RLock()
         while not good_data and not rospy.is_shutdown():
             try:
                 self._read_raw_data()
@@ -79,8 +81,9 @@ class AccelerometerDriver(object):
         raw_angle_data[np.where(raw_angle_data<0)[0]] = 0.
         #Optional filtering.
         if self.current_bin_number >= (self.bin_numbers):
-            self.raw_dat_array = np.delete(self.raw_dat_array, 0, 0)
-            self.raw_dat_array = np.append(self.raw_dat_array, [raw_angle_data], axis = 0)
+	    with self.frame_lock:
+                self.raw_dat_array = np.delete(self.raw_dat_array, 0, 0)
+                self.raw_dat_array = np.append(self.raw_dat_array, [raw_angle_data], axis = 0)
             filtered_data = self.filter_data()
         else:
             self.raw_dat_array[self.current_bin_number,:] += raw_angle_data
@@ -93,7 +96,10 @@ class AccelerometerDriver(object):
         lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
         filt_data = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
-            filt_data[i] = np.dot(lpf, self.raw_dat_array[:,i])
+	    if np.shape(lpf) == np.shape(self.raw_dat_array[:,i]):
+                filt_data[i] = np.dot(lpf, self.raw_dat_array[:,i])
+            else:
+                pass
         return filt_data
 
 

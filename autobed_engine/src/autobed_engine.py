@@ -27,7 +27,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [7, 5, 4] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [4, 2, 4] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -57,8 +57,10 @@ class AutobedClient():
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
-        self.u_thresh = np.array([70.0, 41.0, 45.0])
-        self.l_thresh = np.array([0.0, 9.0, 1.0])
+        #self.u_thresh = np.array([70.0, 41.0, 45.0])
+        self.u_thresh = np.array([70.0, 22.0, 45.0])
+        #self.l_thresh = np.array([0.0, 9.0, 1.0])
+        self.l_thresh = np.array([0.0, 0.0, 1.0])
         self.dev = dev
         self.autobed_config_file = autobed_config_file
         self.param_file = param_file
@@ -86,18 +88,18 @@ class AutobedClient():
                                                 self.autobed_head_angle_cb)
             rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
                                                 self.autobed_leg_angle_cb)
-	elif self.SENSOR_TYPE == 'COMBO':
+	elif self.SENSOR_TYPE == 'ADXL_SHARP':
 	    self.acc_driver = (
             autobed_adxl_sharp_driver.AutobedSensorDriver(
             	    2,
                     dev = self.dev,
                     baudrate = self.baudrate))
-	#elif self.SENSOR_TYPE == 'ADXL_KINECT':
-	#    self.bed_ht = 0
-	#    self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2,
-        #            					dev = self.dev,
-        #            					baudrate = self.baudrate))
-        #    rospy.Subscriber("/bed_ht", Float32, self.kinect_bed_ht_cb)
+	elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	    self.bed_ht = 0
+	    self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2,
+                    					dev = self.dev,
+                    					baudrate = self.baudrate))
+            rospy.Subscriber("/bed_ht", Float32, self.kinect_bed_ht_cb)
 
     
         #Let the sensors warm up
@@ -207,7 +209,7 @@ class AutobedClient():
 
     def kinect_bed_ht_cb(self, data):
         '''Gets bed height from kinect publisher on Mac Mini'''
-        self.bed_ht = data.data + 9.0
+        self.bed_ht = data.data
 
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them 
@@ -222,8 +224,6 @@ class AutobedClient():
 		    self.diff_motion(data.data)
 		else:
 		    self.autobed_u = np.asarray(autobed_config_data[data.data])
-		    self.u_thresh = np.array([85.0, 41.0, 50.0])
-		    self.l_thresh = np.array([1.0, 9.0, 1.0])
 		    self.autobed_u[self.autobed_u > self.u_thresh] = (
 			    self.u_thresh[self.autobed_u > self.u_thresh])
 		    self.autobed_u[self.autobed_u < self.l_thresh] = (
@@ -337,16 +337,16 @@ class AutobedClient():
         elif self.SENSOR_TYPE == 'SHARP':
             return np.asarray(self.positions_in_autobed_units((
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-	elif self.SENSOR_TYPE == 'COMBO':
+	elif self.SENSOR_TYPE == 'ADXL_SHARP':
 	    total_dat = self.acc_driver.get_sensor_data()
 	    #bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
 	    #bed_angles = self.acc_driver.get_sensor_data()
 	    #return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 	    return np.asarray(total_dat)
-        #elif self.SENSOR_TYPE == 'ADXL_KINECT':
-	#    bed_ht = self.bed_ht
-	#    bed_angles = self.acc_driver.get_sensor_data()
-	#    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
+        elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	    bed_ht = self.bed_ht
+	    bed_angles = self.acc_driver.get_sensor_data()
+	    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
     def autobed_kill(self):
         '''Kills the autobed, while its going to a predefined location'''
@@ -417,8 +417,8 @@ if __name__ == "__main__":
     parser.add_argument("autobed_config_file", 
             type=str, help="Configuration file fo the AutoBed")
     parser.add_argument("sensor_type", 
-            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. COMBO vs ADXL_KINECT"
-	    , default="COMBO")
+            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. ADXL_SHARP vs ADXL_KINECT"
+	    , default="ADXL_KINECT")
 
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
