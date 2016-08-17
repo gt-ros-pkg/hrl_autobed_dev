@@ -31,10 +31,10 @@ class AccelerometerDriver(object):
 
         #Optional filtering initializations
         self.current_bin_number = 0
-        self.bin_numbers = 7 
+        self.bin_numbers = 21 
         self.raw_dat_array = np.zeros((self.bin_numbers, self.num_sensors))
         self.filtered_data = np.zeros(self.num_sensors)
-
+	self.fitting_func= np.poly1d([2.73065235e-05,  -3.70505804e-03,   1.19625729e+00, -6.19415928e+00])
         self.serial_driver = serial_driver.SerialDriver(
                 self.num_analog, dev, baudrate)
         good_data = False
@@ -89,17 +89,19 @@ class AccelerometerDriver(object):
             self.raw_dat_array[self.current_bin_number,:] += raw_angle_data
             filtered_data = raw_angle_data
             self.current_bin_number += 1
-        return filtered_data
+	fitted_data = self.fitting_func(filtered_data)#1D polynomial fit 3rd order	
+        return fitted_data
 
     def filter_data(self):
         '''Creates a low pass filter to filter out high frequency noise'''
-        lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
+        lpf = remez(self.bin_numbers, [0, 0.05, 0.1, 0.5], [1.0, 0.0])
         filt_data = np.zeros(self.num_sensors)
         for i in range(self.num_sensors):
-	    if np.shape(lpf) == np.shape(self.raw_dat_array[:,i]):
-                filt_data[i] = np.dot(lpf, self.raw_dat_array[:,i])
-            else:
-                pass
+	    with self.frame_lock:
+	        if np.shape(lpf) == np.shape(self.raw_dat_array[:,i]):
+                    filt_data[i] = np.dot(lpf, self.raw_dat_array[:,i])
+                else:
+                    pass
         return filt_data
 
 

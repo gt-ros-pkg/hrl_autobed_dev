@@ -27,7 +27,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [4, 2, 4] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [2, 1, 4] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -58,7 +58,7 @@ class AutobedClient():
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
         #self.u_thresh = np.array([70.0, 41.0, 45.0])
-        self.u_thresh = np.array([70.0, 22.0, 45.0])
+        self.u_thresh = np.array([70.0, 20.0, 45.0])
         #self.l_thresh = np.array([0.0, 9.0, 1.0])
         self.l_thresh = np.array([0.0, 0.0, 1.0])
         self.dev = dev
@@ -72,7 +72,7 @@ class AutobedClient():
 	self.head_filt_data = 0
 	self.bin_numbers = 11
 	self.collated_head_angle = np.ones((self.bin_numbers, 1))
-	self.lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
+	self.lpf = remez(self.bin_numbers, [0, 0.05, 0.1, 0.5], [1.0, 0.0])
         #Create a proximity sensor object
         #self.prox_driver = (
         #        sharp_prox_driver.ProximitySensorDriver(
@@ -135,6 +135,7 @@ class AutobedClient():
         '''Creates a low pass filter to filter out high frequency noise'''
         if np.shape(self.lpf) == np.shape(self.collated_head_angle):
             self.head_filt_data = np.dot(self.lpf, self.collated_head_angle)
+	    #self.head_filt_data = self.collated_head_angle[-1]
         else:
             pass
         return
@@ -354,7 +355,7 @@ class AutobedClient():
         self.reached_destination = True*np.ones(len(self.reached_destination))
 
     def run(self):
-        rate = rospy.Rate(20) #5 Hz
+        rate = rospy.Rate(10) #5 Hz
         #Variable that denotes what actuator is presently being controlled
         self.actuator_number = 0 
         '''Initialize the autobed input to the current sensor values, 
@@ -372,10 +373,10 @@ class AutobedClient():
                 '''If the error is greater than some allowed offset, 
                 then we actuate the motors to get closer to desired position'''
 		#Filter Head Angle
-		self.filter_head_data()
-		current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+		#self.filter_head_data()
+		#current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+		current_filtered = np.array([current_raw[0], current_raw[1], current_raw[2]])
             	autobed_error = np.asarray(self.autobed_u - current_filtered) 
-		print current_filtered
 		#TODO: Remove the line below when using legs.
 		autobed_error[2] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
@@ -386,6 +387,7 @@ class AutobedClient():
                                 AUTOBED_COMMANDS[self.actuator_number][int(
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
+		        print current_filtered
                     else:
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
