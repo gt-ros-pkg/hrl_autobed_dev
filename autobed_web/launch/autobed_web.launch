@@ -1,11 +1,11 @@
 <launch>
-  <node name="rosbridge" pkg="rosbridge_server" type="rosbridge.py" output="screen">
+  <node name="rosbridge_abd" pkg="rosbridge_server" type="rosbridge.py" output="screen">
       <param name="port" type="int" value="8889" />
   </node>
 
-  <node name="rosapi" pkg="rosapi" type="rosapi.py" output="screen"/>
+  <node name="rosapi_abd" pkg="rosapi" type="rosapi.py" output="screen"/>
 
   <rosparam> 'http/default': 8888 </rosparam>
-  <node name="roswww" pkg="roswww" type="webserver.py" output="screen"/>
+  <node name="roswww_abd" pkg="roswww" type="webserver.py" output="screen"/>
 
 </launch>

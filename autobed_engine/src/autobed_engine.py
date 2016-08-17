@@ -11,6 +11,7 @@ import rospy
 import serial_driver
 #import sharp_prox_driver
 import adxl_accel_driver
+import autobed_adxl_sharp_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
@@ -26,7 +27,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 from autobed_engine.srv import *
 
 #This is the maximum error allowed in our control system.
-ERROR_OFFSET = [2, 60, 2] #[degrees, centimeters , degrees]
+ERROR_OFFSET = [2, 1, 4] #[degrees, centimeters , degrees]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -56,8 +57,10 @@ class AutobedClient():
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
-        self.u_thresh = np.array([70.0, 41.0, 45.0])
-        self.l_thresh = np.array([0.0, 9.0, 1.0])
+        #self.u_thresh = np.array([70.0, 41.0, 45.0])
+        self.u_thresh = np.array([70.0, 20.0, 45.0])
+        #self.l_thresh = np.array([0.0, 9.0, 1.0])
+        self.l_thresh = np.array([0.0, 0.0, 1.0])
         self.dev = dev
         self.autobed_config_file = autobed_config_file
         self.param_file = param_file
@@ -69,7 +72,7 @@ class AutobedClient():
 	self.head_filt_data = 0
 	self.bin_numbers = 11
 	self.collated_head_angle = np.ones((self.bin_numbers, 1))
-	self.lpf = remez(self.bin_numbers, [0, 0.1, 0.25, 0.5], [1.0, 0.0])
+	self.lpf = remez(self.bin_numbers, [0, 0.05, 0.1, 0.5], [1.0, 0.0])
         #Create a proximity sensor object
         #self.prox_driver = (
         #        sharp_prox_driver.ProximitySensorDriver(
@@ -85,12 +88,18 @@ class AutobedClient():
                                                 self.autobed_head_angle_cb)
             rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
                                                 self.autobed_leg_angle_cb)
-	elif self.SENSOR_TYPE == 'COMBO':
+	elif self.SENSOR_TYPE == 'ADXL_SHARP':
 	    self.acc_driver = (
-            adxl_accel_driver.AccelerometerDriver(
+            autobed_adxl_sharp_driver.AutobedSensorDriver(
             	    2,
                     dev = self.dev,
                     baudrate = self.baudrate))
+	elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	    self.bed_ht = 0
+	    self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2,
+                    					dev = self.dev,
+                    					baudrate = self.baudrate))
+            rospy.Subscriber("/bed_ht", Float32, self.kinect_bed_ht_cb)
 
     
         #Let the sensors warm up
@@ -126,6 +135,7 @@ class AutobedClient():
         '''Creates a low pass filter to filter out high frequency noise'''
         if np.shape(self.lpf) == np.shape(self.collated_head_angle):
             self.head_filt_data = np.dot(self.lpf, self.collated_head_angle)
+	    #self.head_filt_data = self.collated_head_angle[-1]
         else:
             pass
         return
@@ -198,19 +208,23 @@ class AutobedClient():
         self.leg_angle = 180 - math.atan2(2*(q0*q3 + q1*q2), (1 - 
                                     2*(q2**2 + q3**2)))*(180.0/ math.pi) 
 
+    def kinect_bed_ht_cb(self, data):
+        '''Gets bed height from kinect publisher on Mac Mini'''
+        self.bed_ht = data.data
 
     def differential_control_callback(self, data):
         ''' Accepts incoming differential control values and simply relays them 
         to the Autobed. This mode is used when Henry wants to control the 
         autobed manually even if no sensors are present'''
+
+	print "Received Differential Control Data"
+	print data.data
         autobed_config_data = load_pickle(self.autobed_config_file) 
 	with self.frame_lock:
 		if data.data in CMDS: 
 		    self.diff_motion(data.data)
 		else:
 		    self.autobed_u = np.asarray(autobed_config_data[data.data])
-		    self.u_thresh = np.array([85.0, 41.0, 50.0])
-		    self.l_thresh = np.array([1.0, 9.0, 1.0])
 		    self.autobed_u[self.autobed_u > self.u_thresh] = (
 			    self.u_thresh[self.autobed_u > self.u_thresh])
 		    self.autobed_u[self.autobed_u < self.l_thresh] = (
@@ -324,11 +338,16 @@ class AutobedClient():
         elif self.SENSOR_TYPE == 'SHARP':
             return np.asarray(self.positions_in_autobed_units((
                         self.prox_driver.get_sensor_data()[-1])[:NUM_ACTUATORS]))
-	elif self.SENSOR_TYPE == 'COMBO':
-	    bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
+	elif self.SENSOR_TYPE == 'ADXL_SHARP':
+	    total_dat = self.acc_driver.get_sensor_data()
+	    #bed_ht = 0#(self.prox_driver.get_sensor_data()[-1])[-1]
+	    #bed_angles = self.acc_driver.get_sensor_data()
+	    #return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
+	    return np.asarray(total_dat)
+        elif self.SENSOR_TYPE == 'ADXL_KINECT':
+	    bed_ht = self.bed_ht
 	    bed_angles = self.acc_driver.get_sensor_data()
 	    return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
-
 
     def autobed_kill(self):
         '''Kills the autobed, while its going to a predefined location'''
@@ -336,7 +355,7 @@ class AutobedClient():
         self.reached_destination = True*np.ones(len(self.reached_destination))
 
     def run(self):
-        rate = rospy.Rate(20) #5 Hz
+        rate = rospy.Rate(10) #5 Hz
         #Variable that denotes what actuator is presently being controlled
         self.actuator_number = 0 
         '''Initialize the autobed input to the current sensor values, 
@@ -354,12 +373,12 @@ class AutobedClient():
                 '''If the error is greater than some allowed offset, 
                 then we actuate the motors to get closer to desired position'''
 		#Filter Head Angle
-		self.filter_head_data()
-		current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+		#self.filter_head_data()
+		#current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
+		current_filtered = np.array([current_raw[0], current_raw[1], current_raw[2]])
             	autobed_error = np.asarray(self.autobed_u - current_filtered) 
-		print current_filtered
 		#TODO: Remove the line below when using legs.
-		#autobed_error[2] = 0.0
+		autobed_error[2] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
@@ -368,6 +387,7 @@ class AutobedClient():
                                 AUTOBED_COMMANDS[self.actuator_number][int(
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
+		        print current_filtered
                     else:
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
@@ -399,8 +419,8 @@ if __name__ == "__main__":
     parser.add_argument("autobed_config_file", 
             type=str, help="Configuration file fo the AutoBed")
     parser.add_argument("sensor_type", 
-            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. COMBO"
-	    , default="COMBO")
+            type=str, help="What sensor are you using for the Autobed: MOCAP vs. SHARP vs. ADXL_SHARP vs ADXL_KINECT"
+	    , default="ADXL_KINECT")
 
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
