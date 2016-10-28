@@ -8,6 +8,7 @@ from sensor_msgs.msg import JointState
 from math import pi
 from scipy.signal import remez
 from scipy.signal import lfilter
+from geometry_msgs.msg import TransformStamped 
 
 
 class AutobedConverter():
@@ -17,7 +18,16 @@ class AutobedConverter():
         self.joint_pub = rospy.Publisher('joint_states', JointState)
         self.sendToRviz=tf.TransformBroadcaster()
         self.listener = tf.TransformListener() 
-        rospy.Subscriber("/abdout0", FloatArrayBare, self.pose_callback)
+        rospy.Subscriber("/abdout0", FloatArrayBare, self.bed_pose_cb)
+        try:
+            rospy.Subscriber("/camera_o/pose", TransformStamped,
+                                            self.camera_pose_cb)
+        except:
+            print "KINECT Marker not installed. Or hasn't been assigned the trackable /camera_o"
+        #Initialize camera pose to standard position of Kinect in the test
+        #chamber
+        self.camera_p = (1.49, 1.33, 1.34)
+        self.camera_q = (0.27, -0.011, -0.958, 0.0975)
         #Low pass filter design
         self.bed_height = 0
         self.bin_numbers = 5
@@ -30,9 +40,19 @@ class AutobedConverter():
                 [0, 0.0005, 0.1, 0.5], [1.0, 0.0])
 
 
-
+    #callback for the pose messages from the kinect in the testing chamber
+    def camera_pose_cb(self, data): 
+        z_offset = 0.13
+        self.camera_p = (data.transform.translation.x,
+                        data.transform.translation.y,
+                        data.transform.translation.z + z_offset)
+        self.camera_q = (data.transform.rotation.x,
+                        data.transform.rotation.y,
+                        data.transform.rotation.z,
+                        data.transform.rotation.w)
+ 
     #callback for the pose messages from the autobed
-    def pose_callback(self, data): 
+    def bed_pose_cb(self, data): 
         poses=np.asarray(data.data);
         
         self.bed_height = ((poses[1]/100) - 0.09) if (((poses[1]/100) - 0.09) 
@@ -68,19 +88,17 @@ class AutobedConverter():
             joint_state.header.stamp = rospy.Time.now()
             #Filter data
             self.filter_data()
-
-            joint_state.name = [None]*(10)
-            joint_state.position = [None]*(10)
+            joint_state.name = [None]*(9)
+            joint_state.position = [None]*(9)
             joint_state.name[0] = "autobed_height_joint"
             joint_state.name[1] = "head_rest_hinge"
             joint_state.name[2] = "leg_rest_upper_joint"
             joint_state.name[3] = "leg_rest_upper_lower_joint"
             joint_state.name[4] = "X"
-            joint_state.name[5] = "torso_camera_joint"
-            joint_state.name[6] = "mid_body_support"
-            joint_state.name[7] = "head_support"
-            joint_state.name[8] = "leg_rest_lower_support"
-            joint_state.name[9] = "leg_rest_upper_support"
+            joint_state.name[5] = "mid_body_support"
+            joint_state.name[6] = "head_support"
+            joint_state.name[7] = "leg_rest_lower_support"
+            joint_state.name[8] = "leg_rest_upper_support"
             joint_state.position[0] = self.bed_height
             joint_state.position[1] = self.head_filt_data
             joint_state.position[2] = self.leg_filt_data
@@ -90,14 +108,20 @@ class AutobedConverter():
             joint_state.position[6] = 0
             joint_state.position[7] = 0
             joint_state.position[8] = 0
-            joint_state.position[9] = 0
 
             self.joint_pub.publish(joint_state)
-         
+            '''Send Kinect pose to TF, so that we can get the exact pose of the
+            camera'''
+            self.sendToRviz.sendTransform(self.camera_p,
+                                          self.camera_q,
+                                          rospy.Time.now(),
+                                          "camera_link",
+                                          "world")
             rate.sleep()
         return  
 
 
 if __name__ == "__main__":
+
     a=AutobedConverter()
     a.run()
