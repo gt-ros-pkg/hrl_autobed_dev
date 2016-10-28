@@ -58,7 +58,7 @@ class AutobedClient():
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
         #self.u_thresh = np.array([70.0, 41.0, 45.0])
-        self.u_thresh = np.array([70.0, 20.0, 45.0])
+        self.u_thresh = np.array([65.0, 8.0, 45.0])
         #self.l_thresh = np.array([0.0, 9.0, 1.0])
         self.l_thresh = np.array([0.0, 0.0, 1.0])
         self.dev = dev
@@ -222,6 +222,7 @@ class AutobedClient():
         autobed_config_data = load_pickle(self.autobed_config_file) 
 	with self.frame_lock:
 		if data.data in CMDS: 
+		    self.reached_destination = True * np.ones(NUM_ACTUATORS)
 		    self.diff_motion(data.data)
 		else:
 		    self.autobed_u = np.asarray(autobed_config_data[data.data])
@@ -379,6 +380,7 @@ class AutobedClient():
             	autobed_error = np.asarray(self.autobed_u - current_filtered) 
 		#TODO: Remove the line below when using legs.
 		autobed_error[2] = 0.0
+		autobed_error[1] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
@@ -388,6 +390,7 @@ class AutobedClient():
                                     autobed_error[self.actuator_number]/abs(
                                         autobed_error[self.actuator_number]))])
 		        print current_filtered
+			print self.reached_destination
                     else:
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
@@ -424,7 +427,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args(rospy.myargv()[1:])
     #Initialize autobed node
-    rospy.init_node('autobed_engine', anonymous = True)
+    rospy.init_node('autobed_engine')
     autobed = AutobedClient(args.serial_device,
                             args.autobed_config_file,
                             args.sensor_param_file,
