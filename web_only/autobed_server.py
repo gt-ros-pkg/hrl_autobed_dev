@@ -19,21 +19,21 @@ cmdMap = {'headUP': 23,
           'legsDN': 17}
 timers = {}
 
+
 class AutobedWebSocketHandler(WebSocketHandler):
     def check_origin(self, origin):
         return True
-    
+
     def open(self):
-        print "New WebSocket client connected from %s." %(self.request.remote_ip)
+        print "New WebSocket client connected from %s." % (self.request.remote_ip)
         self.set_nodelay(True)
 
     def on_message(self, message):
-#        self.write_message("Received: %s" % message)
-	if message == '----heartbeat----':
-	    self.write_message('----heartbeat----')
+        if message == '----heartbeat----':
+            self.write_message('----heartbeat----')
         elif message not in cmdMap:
-            print "Received unknown command: %s" %message
-            self.write_message("Received unknown command: %s" %message)
+            print "Received unknown command: %s" % message
+            self.write_message("Received unknown command: %s" % message)
         else:
             pin = cmdMap[message]
             if timers[pin] is None:
@@ -41,17 +41,18 @@ class AutobedWebSocketHandler(WebSocketHandler):
                 GPIO.output(LED_PIN, GPIO.LOW)
             else:
                 IOLoop.current().remove_timeout(timers[pin])
-            #client sends msgs at 75ms intervals, this will stay up if one is missed entirely
-            timers[pin] = IOLoop.current().call_later(0.155, self.reset_pin, pin) 
+            # client sends msgs at 75ms intervals, this will stay up if one is missed entirely
+            timers[pin] = IOLoop.current().call_later(0.155, self.reset_pin, pin)
 
     def on_close(self):
-        print "Connection from %s closed." %(self.request.remote_ip)
+        print "Connection from %s closed." % (self.request.remote_ip)
 
     def reset_pin(self, pin):
         GPIO.output(pin, GPIO.LOW)
         GPIO.output(LED_PIN, GPIO.HIGH)
         timers[pin] = None
-        print "Reset %d" %pin
+        print "Reset %d" % pin
+
 
 def GPIO_setup():
     GPIO.setmode(GPIO.BCM)
@@ -61,6 +62,7 @@ def GPIO_setup():
     GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.LOW)
     print "AutoBed GPIO configuration complete."
 
+
 def GPIO_cleanup(signalnum, frame):
     for pin in cmdMap.values():
         GPIO.output(pin, GPIO.LOW)
@@ -69,7 +71,8 @@ def GPIO_cleanup(signalnum, frame):
     print "Autobed GPIO cleanup complete. Exiting."
     exit(0)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     signal.signal(signal.SIGINT, GPIO_cleanup)
     signal.signal(signal.SIGTERM, GPIO_cleanup)
     GPIO_setup()

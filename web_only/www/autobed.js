@@ -3,29 +3,29 @@ var AutoBed = (function () {
 
     var logTimer = null;
     var log = function (txt, permanent) {
-	permanent = (permanent === undefined) ? false : permanent;
-        var logDiv =  document.getElementById('log');
-        logDiv.innerHTML = txt;
-        console.log(txt);
-        if (logTimer !== null) {
-            clearTimeout(logTimer);
+        permanent = (permanent === undefined) ? false : permanent;
+            var logDiv =  document.getElementById('log');
+            logDiv.innerHTML = txt;
+            console.log(txt);
+            if (logTimer !== null) {
+                clearTimeout(logTimer);
+            }
+        if (!permanent) {
+            logTimer = setTimeout( function () {logDiv.innerHTML = 'Ready';}, 3000);
         }
-	if (!permanent) {
-		logTimer = setTimeout( function () {logDiv.innerHTML = 'Ready';}, 3000);
-	}
-    }
+    };
 
     var sendOKFlag = false;
     var sendTimer = null;
 
     var sendCmd = function (cmd) {
         if (sendOKFlag) {
-            ws.send(cmd.toString())
-            sendTimer = setTimeout(function(){ sendCmd(cmd) }, 75)
+            ws.send(cmd.toString());
+            sendTimer = setTimeout(function(){ sendCmd(cmd); }, 75);
         } else {
             clearTimeout(sendTimer);
         }
-    }
+    };
 
     var setupButtonCBs = function (buttonElement) {
         buttonElement.addEventListener("mouseup", function(event){
@@ -40,6 +40,10 @@ var AutoBed = (function () {
 	        sendOKFlag = false;
 	        clearTimeout(sendTimer);
 	    });
+        buttonElement.addEventListener("blur", function(event){
+	        sendOKFlag = false;
+	        clearTimeout(sendTimer);
+	    });
         buttonElement.addEventListener("mousedown", function(event) {
             if (event.which === 1) { // Only respond to left mouse button (right will stick button down)
 	            sendOKFlag = true;
@@ -49,43 +53,51 @@ var AutoBed = (function () {
     };
     var heartBeatTimer, lastBeatTime;
     var checkHeartBeat = function () {
-        if (new Date() - lastBeatTime > 11000) {
-            ws.close()
-            ws.onclose()
+        if (new Date() - lastBeatTime > 22000) {
+	    ws.send("Heartbeat signal missed by browser. Closing from browser.");
+            ws.close();
+            ws.onclose();
 	} else {
-	    ws.send('----heartbeat----')
+	    ws.send('----heartbeat----');
 	}
-    }
+    };
+
+    var websocketUnload = function (event) {
+		ws.send("Client Unloading Page. Closing from browser.");
+		ws.close();
+		ws.onclose();
+    };
 
     var onOpen = function () {
-	var disconElems = document.querySelectorAll('.disconnected')
+	var disconElems = document.querySelectorAll('.disconnected');
 	for (var i=0; i<disconElems.length; i+=1) {
-            disconElems[i].className = disconElems[i].className.replace("disconnected", "connected")
+            disconElems[i].className = disconElems[i].className.replace("disconnected", "connected");
  	}
-	heartBeatTimer = setInterval(checkHeartBeat, 5000);
+	heartBeatTimer = setInterval(checkHeartBeat, 10000);
+	window.addEventListener("unload", websocketUnload);
         setupButtonCBs(document.getElementById("head-up"));
         setupButtonCBs(document.getElementById("bed-up"));
         setupButtonCBs(document.getElementById("legs-up"));
         setupButtonCBs(document.getElementById("head-down"));
         setupButtonCBs(document.getElementById("bed-down"));
         setupButtonCBs(document.getElementById("legs-down"));
-        log("Connected to AutoBed.")
-    }
+        log("Connected to AutoBed.");
+    };
 
     var onMessage = function (msg) {
 	if (msg.data === '----heartbeat----') {
             lastBeatTime = new Date();
         }
-    }
+    };
 
     var onClose = function () {
-	log("Connection to Autobed Controller Closed", true)
+	log("Connection to Autobed Controller Closed", true);
         clearTimeout(heartBeatTimer);
-	var conElems = document.querySelectorAll('.connected')
+	var conElems = document.querySelectorAll('.connected');
 	for (var i=0; i<conElems.length; i+=1) {
-            conElems[i].className = conElems[i].className.replace("connected", "disconnected")
+            conElems[i].className = conElems[i].className.replace("connected", "disconnected");
  	}
-    }
+    };
 
     var ws;
 
@@ -96,7 +108,7 @@ var AutoBed = (function () {
 	    ws.onmessage = onMessage;
 	    ws.onclose = onClose;
         } else {
-            alert("This browser does not support websockts, which are required for AutoBed operation.")
+            alert("This browser does not support websockts, which are required for AutoBed operation.");
         }
     };
 
