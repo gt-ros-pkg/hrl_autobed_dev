@@ -9,7 +9,7 @@ screen -S autobed-pi -p 0 -X stuff "roslaunch autobed_web autobed_web.launch
 "
 sleep 5
 screen -S autobed-pi -X screen -t engine
-screen -S autobed-pi -p 0 -X stuff "roslaunch autobed_engine autobed_engine.launch
+screen -S autobed-pi -p engine -X stuff "roslaunch autobed_engine autobed_engine.launch
 "
 #roslaunch autobed_web autobed_web.launch &
 #sleep 10
