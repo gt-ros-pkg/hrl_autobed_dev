@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import math, numpy as np
 import sys, time, random
 
