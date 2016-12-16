@@ -57,20 +57,19 @@ class AccelerometerDriver(object):
 
 
     def _read_raw_data(self):
-        with self.frame_lock:
-            try:
-                raw_data = np.array(self.serial_driver.getValues())
-                if any(np.isnan(raw_data)):
-                    print raw_data
-                    raise ValueError("Raw data from accelerometer contains NaN")
-            except ValueError as e:
-                print "[accel_sensor_driver]: Warning: %s" %e
-                raise e
-            except:
-                print "Reading data in accelerometer driver failed"
-                raise
-            assert len(raw_data) == self.num_analog, "Size of incoming data from sensor doesnt match # of sensors."
-            return raw_data
+        try:
+            raw_data = np.array(self.serial_driver.getValues())
+            if any(np.isnan(raw_data)):
+                print raw_data
+                raise ValueError("Raw data from accelerometer contains NaN")
+        except ValueError as e:
+            print "[accel_sensor_driver]: Warning: %s" %e
+            raise e
+        except:
+            print "Reading data in accelerometer driver failed"
+            raise
+        assert len(raw_data) == self.num_analog, "Size of incoming data from sensor doesnt match # of sensors."
+        return raw_data
 
     def get_sensor_data(self):
         try:
@@ -81,21 +80,22 @@ class AccelerometerDriver(object):
         except ValueError as e:
             print "Error in converting analog values to angles"
             print e
-            # sys.exit()
+            sys.exit()
             raw_angle_data = np.zeros(self.num_sensors)
-        with self.frame_lock:
-            raw_angle_data[np.where(raw_angle_data<0)[0]] = 0.
-            #Optional filtering.
-            if self.current_bin_number >= self.bin_numbers:
+
+        raw_angle_data[np.where(raw_angle_data<0)[0]] = 0.
+        #Optional filtering.
+        if self.current_bin_number >= self.bin_numbers:
+            with self.frame_lock:
                 self.raw_dat_array = np.delete(self.raw_dat_array, 0, 0)
                 self.raw_dat_array = np.append(self.raw_dat_array, [raw_angle_data], axis=0)
-                filtered_data = self.filter_data()
-            else:
-                self.raw_dat_array[self.current_bin_number, :] += raw_angle_data
-                filtered_data = raw_angle_data
-                self.current_bin_number += 1
-            fitted_data = self.fitting_func(filtered_data)#1D polynomial fit 3rd order
-            return fitted_data
+            filtered_data = self.filter_data()
+        else:
+            self.raw_dat_array[self.current_bin_number, :] += raw_angle_data
+            filtered_data = raw_angle_data
+            self.current_bin_number += 1
+        fitted_data = self.fitting_func(filtered_data)#1D polynomial fit 3rd order
+        return fitted_data
 
     def filter_data(self):
         '''Creates a low pass filter to filter out high frequency noise'''
