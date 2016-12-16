@@ -7,7 +7,11 @@ source ~/.bashrc
 sleep 3
 
 screen -dmS autobed-pi
-screen -S autobed-pi -p 0 -X stuff "roslaunch autobed_web autobed_web_pi.launch
+screen -S autobed-marvin -p 0 -X stuff "roscore
+"
+sleep 5
+screen -S autobed-pi -X screen -t web
+screen -S autobed-pi -p web -X stuff "roslaunch autobed_web autobed_web_pi.launch
 "
 sleep 10
 screen -S autobed-pi -X screen -t engine
