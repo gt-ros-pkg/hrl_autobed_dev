@@ -7,7 +7,7 @@ source ~/.bashrc
 sleep 3
 
 screen -dmS autobed-pi
-screen -S autobed-marvin -p 0 -X stuff "roscore
+screen -S autobed-pi -p 0 -X stuff "roscore
 "
 sleep 5
 screen -S autobed-pi -X screen -t web
