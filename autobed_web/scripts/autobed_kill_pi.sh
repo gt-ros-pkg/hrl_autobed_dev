@@ -16,5 +16,6 @@ killall -9 autobed_web
 killall -9 rosbridge_abd
 killall -9 rosapi_abd
 killall -9 roswww_abd
+screen -S autobed-pi -X quit
 echo "Finished killing all ros and autobed things."
 
