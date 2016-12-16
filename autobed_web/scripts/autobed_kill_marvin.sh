@@ -8,8 +8,7 @@ sleep 1
 killall -9 hokuyo
 killall -9 python
 killall -9 fsascan
-killall -9 rosbridge_abd
-killall -9 rosapi_abd
-killall -9 roswww_abd
+killall -9 hokuyo_node
+killall -9 hokuyo_interpreter
 echo "Finished killing all ros and autobed things."
 

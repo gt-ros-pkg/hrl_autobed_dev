@@ -1,7 +1,9 @@
 <launch>
-  <node name="autobed_height_hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen">
+  <node name="autobed/height_hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen">
     <param name="port" type="string" value="/dev/sensors/hokuyo_autobed_height" />
     <remap from="/scan" to="/autobed/height_hokuyo/scan" />
   </node>
 
+  <node name="autobed/hokuyo_interpreter_node" pkg="autobed_engine" type="hokuyo_interpreter.py" output="screen">
+  </node>
 </launch>

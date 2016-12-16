@@ -12,7 +12,7 @@ import copy
 
 import numpy as np
 
-class HokuyoScan():
+class HokuyoInterpreter():
     ''' This class has the data of a laser scan.
     '''
     def __init__(self, start_angle, end_angle):
@@ -50,7 +50,7 @@ class HokuyoScan():
         self.connected_to_ros = False
         self.ranges = None
 
-        rospy.Subscriber("/scan", LaserScan,
+        rospy.Subscriber("/autobed/height_hokuyo/scan", LaserScan,
                          self.laserscan_callback, queue_size=1)
         self.pose_pub = rospy.Publisher("/bed_ht", Float32, latch=True)
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     rospy.init_node('bed_ht_estimation')
     start_angle = math.radians(-30)
     end_angle = math.radians(30)
-    h = HokuyoScan(start_angle, end_angle)
+    h = HokuyoInterpreter(start_angle, end_angle)
     print 'getting first scan'
     rate = rospy.Rate(10) # 25Hz, nominally.    
     while not rospy.is_shutdown():
