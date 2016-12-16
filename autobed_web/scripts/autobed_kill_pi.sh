@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Now killing all ros and autobed things so we can start fresh."
+echo "Now killing all ros and autobed things on the pi so we can start fresh."
 rosnode kill /rosbridge_abd
 rosnode kill /rosapi_abd
 rosnode kill /roswww_abd

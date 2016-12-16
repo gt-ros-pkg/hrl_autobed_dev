@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Now killing all ros and autobed things so we can start fresh."
+echo "Now killing all ros and autobed things on marvin so we can start fresh."
 
 rosnode kill /autobed/height_hokuyo_node
 rosnode kill /autobed/hokuyo_interpreter_node

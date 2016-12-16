@@ -224,7 +224,7 @@ class AutobedClient():
             if data.data in CMDS:
                 self.reached_destination = True * np.ones(NUM_ACTUATORS)
                 self.diff_motion(data.data)
-                else:
+            else:
                 self.autobed_u = np.asarray(self.autobed_config_data[data.data])
                 self.autobed_u[self.autobed_u > self.u_thresh] = (
                     self.u_thresh[self.autobed_u > self.u_thresh])
@@ -250,12 +250,12 @@ class AutobedClient():
             for i in xrange(len(self.autobed_u)):
                 if math.isnan(self.autobed_u[i]):
                     self.autobed_u[i] = current_autobed_pose[i]
-                if math.isnan(self.autobed_u.all()):
-                    self.autobed_kill()
-                    return
-                #Make reached_destination boolean flase for all the actuators on the bed
-                self.reached_destination = False * np.ones(NUM_ACTUATORS)
-                self.actuator_number = 0
+            if math.isnan(self.autobed_u.all()):
+                self.autobed_kill()
+                return
+            #Make reached_destination boolean flase for all the actuators on the bed
+            self.reached_destination = False * np.ones(NUM_ACTUATORS)
+            self.actuator_number = 0
 
     def delete_autobed_configuration(self, req):
         """ Is the callback from the GUI Interaction Service. This service is 

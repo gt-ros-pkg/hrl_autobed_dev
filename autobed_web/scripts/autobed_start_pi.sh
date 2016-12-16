@@ -5,7 +5,7 @@
 source ~/.bashrc
 
 screen -dmS autobed-pi
-screen -S autobed-pi -p 0 -X stuff "roslaunch autobed_web autobed_web.launch
+screen -S autobed-pi -p 0 -X stuff "roslaunch autobed_web autobed_web_pi.launch
 "
 sleep 5
 screen -S autobed-pi -X screen -t engine
