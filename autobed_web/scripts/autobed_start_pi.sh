@@ -1,6 +1,6 @@
 #!/bin/bash
 
-~/git/hrl_autobed_dev/autobed_web/scripts/autobed_kill.sh
+~/git/hrl_autobed_dev/autobed_web/scripts/autobed_kill_pi.sh
 
 source ~/.bashrc
 
