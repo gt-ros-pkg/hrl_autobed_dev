@@ -1,6 +1,11 @@
 #!/bin/bash
 
 echo "Now killing all ros and autobed things so we can start fresh."
+rosnode kill /rosbridge_abd
+rosnode kill /rosapi_abd
+rosnode kill /roswww_abd
+rosnode kill /autobed_engine
+sleep 1
 pkill -9 ros
 killall -9 roscore
 killall -9 rosmaster
