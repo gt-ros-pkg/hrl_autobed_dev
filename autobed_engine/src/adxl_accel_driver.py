@@ -35,6 +35,12 @@ class AccelerometerDriver(object):
         self.raw_dat_array = np.zeros((self.bin_numbers, self.num_sensors))
         self.filtered_data = np.zeros(self.num_sensors)
         self.fitting_func = np.poly1d([2.73065235e-05,  -3.70505804e-03,   1.19625729e+00, -6.19415928e+00])
+        print 'self.num_analog'
+        print self.num_analog
+        print 'dev'
+        print dev
+        print 'baudrate'
+        print baudrate
         self.serial_driver = serial_driver.SerialDriver(self.num_analog, dev, baudrate)
         good_data = False
         test_rate = rospy.Rate(1)
