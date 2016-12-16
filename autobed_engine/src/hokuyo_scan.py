@@ -5,7 +5,7 @@ NAME = 'utm_python_listener'
 import roslib; roslib.load_manifest('autobed_engine')
 import rospy
 from sensor_msgs.msg import LaserScan
-from threading import RLock
+import threading
 from std_msgs.msg import Float32
 
 import copy
@@ -41,20 +41,17 @@ class HokuyoScan():
         self.start_angle = start_angle_subscan
         self.end_angle   = end_angle_subscan
         self.n_points    = int((end_angle-start_angle)/self.angular_res)+1
-        self.ranges      = None
-        self.intensities = None
         self.BED_HT_COEFF = 100
         self.angles = []
         for i in xrange(self.n_points):
             self.angles.append(self.index_to_angle(i))
         self.angles = np.array(self.angles)
-        self.lock = RLock()
-        self.lock_init = RLock()
+        self.frame_lock = threading.RLock()
         self.connected_to_ros = False
-        self.ranges,self.intensities = None,None
-        rospy.init_node('bed_ht_estimation')
+        self.ranges = None
+
         rospy.Subscriber("/scan", LaserScan,
-                         self.callback, queue_size = 1)
+                         self.laserscan_callback, queue_size=1)
         self.pose_pub = rospy.Publisher("/bed_ht", Float32, latch=True)
 
     def bed_ht_from_scan(self):
@@ -90,15 +87,12 @@ class HokuyoScan():
         if math.isnan(p):
             print max_num_inliers
         self.pubPose(p)
-        return
 
-
-    def callback(self, scan):
-        self.lock.acquire()
-        self.connected_to_ros = True
-        self.ranges = np.array(scan.ranges[self.start_index_fullscan:self.end_index_fullscan+1])
-        self.bed_ht_from_scan()
-        self.lock.release()
+    def laserscan_callback(self, scan):
+        with self.frame_lock:
+            self.connected_to_ros = True
+            self.ranges = np.array(scan.ranges[self.start_index_fullscan:self.end_index_fullscan+1])
+            self.bed_ht_from_scan()
 
     def pubPose(self, dist):
         self.pose_pub.publish(dist*self.BED_HT_COEFF)
@@ -109,6 +103,7 @@ class HokuyoScan():
         return self.start_angle+index*self.angular_res
 
 if __name__ == '__main__':
+    rospy.init_node('bed_ht_estimation')
     start_angle = math.radians(-30)
     end_angle = math.radians(30)
     h = HokuyoScan(start_angle, end_angle)
