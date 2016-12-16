@@ -66,7 +66,7 @@ class HokuyoScan():
         NUM_INLIERS_THRESH = 100
         max_num_inliers = 0
         max_inliers_array = []
-        ht_offset = 0.262953430414
+        ht_offset = 0.262953430414-0.0354
         i = random.randint(0, self.n_points - 1)
         while sample_count < COUNT_THRESH:
             num_inliers = 0
