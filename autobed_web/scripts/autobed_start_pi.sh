@@ -6,6 +6,8 @@ source ~/.bashrc
 
 sleep 3
 
+echo "Now starting up the ros things on the raspberry pi"
+
 screen -dmS autobed-pi
 screen -S autobed-pi -p 0 -X stuff "roscore
 "

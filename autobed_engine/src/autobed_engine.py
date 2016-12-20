@@ -126,7 +126,7 @@ class AutobedClient():
         rospy.Service('delete_autobed_config', update_bed_config, 
                       self.delete_autobed_configuration)
         self.abdout1.publish(self.autobed_config_data.keys())
-        self.ws = websocket.create_connection("ws://localhost:828")
+        self.ws = websocket.create_connection("ws://localhost:2206")
         print '*** Autobed 2.0 Ready ***'
 
     def filter_head_data(self):
