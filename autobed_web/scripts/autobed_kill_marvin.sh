@@ -5,6 +5,7 @@ echo "Now killing all ros and autobed things on marvin so we can start fresh."
 rosnode kill /autobed/height_hokuyo_node
 rosnode kill /autobed/hokuyo_interpreter_node
 rosnode kill /fsamat
+rosnode kill /fsascan_restarter
 sleep 1
 pkill -9 ros
 killall -9 roscore
