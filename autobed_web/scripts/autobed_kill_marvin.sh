@@ -14,6 +14,7 @@ killall -9 hokuyo
 killall -9 python
 killall -9 fsascan
 killall -9 hokuyo_node
+killall -9 fsascan_restarter
 killall -9 hokuyo_interpreter
 screen -S autobed-marvin -X quit
 echo "Finished killing all ros and autobed things on marvin."

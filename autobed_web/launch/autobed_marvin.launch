@@ -6,4 +6,7 @@
 
   <node name="hokuyo_interpreter_node" pkg="autobed_engine" type="hokuyo_interpreter.py" ns="autobed" output="screen">
   </node>
+
+  <node name="fsascan_restarter" pkg="autobed_engine" type="fsascan_restarter.py" output="screen">
+  </node>
 </launch>

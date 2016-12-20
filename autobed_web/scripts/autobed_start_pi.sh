@@ -9,8 +9,8 @@ sleep 3
 echo "Now starting up the ros things on the raspberry pi"
 
 screen -dmS autobed-pi
-screen -S autobed-pi -p 0 -X stuff "roscore
-"
+#screen -S autobed-pi -p 0 -X stuff "roscore
+#"
 sleep 5
 screen -S autobed-pi -X screen -t web
 screen -S autobed-pi -p web -X stuff "roslaunch autobed_web autobed_web_pi.launch
