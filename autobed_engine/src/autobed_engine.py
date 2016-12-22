@@ -445,7 +445,8 @@ class AutobedClient():
             #If we have reached the destination position at all the actuators,
             #then publish the error and a boolean that says we have reached
             else:
-                self.actuator_number = 0
+                #self.actuator_number = 0
+                self.autobed_kill()
                 self.abdstatus0.publish(True)
 
             rate.sleep()
