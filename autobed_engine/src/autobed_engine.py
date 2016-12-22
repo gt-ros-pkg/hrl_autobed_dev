@@ -377,7 +377,7 @@ class AutobedClient():
                 autobed_error = np.asarray(self.autobed_u - current_filtered)
                 #TODO: Remove the line below when using legs.
                 autobed_error[2] = 0.0
-                autobed_error[1] = 0.0
+                #autobed_error[1] = 0.0
                 if self.actuator_number < (NUM_ACTUATORS):
                     if abs(autobed_error[self.actuator_number]) > (
                             ERROR_OFFSET[self.actuator_number]):
