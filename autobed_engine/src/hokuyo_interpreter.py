@@ -65,7 +65,7 @@ class HokuyoInterpreter():
         NUM_INLIERS_THRESH = 100
         max_num_inliers = 0
         max_inliers_array = []
-        ht_offset = 0.262953430414-0.0354
+        ht_offset = 0.262953430414-0.0254
         i = random.randint(0, self.n_points - 1)
         while sample_count < COUNT_THRESH:
             num_inliers = 0
@@ -88,6 +88,8 @@ class HokuyoInterpreter():
         p = (np.mean(max_inliers_array) - ht_offset)
         if math.isnan(p):
             print max_num_inliers
+        if p<0.:
+            p = 0.
         self.pubPose(p)
 
     def laserscan_callback(self, scan):
