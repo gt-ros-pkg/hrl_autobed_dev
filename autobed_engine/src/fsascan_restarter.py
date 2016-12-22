@@ -42,7 +42,8 @@ class FSAScanRestarter():
 if __name__ == '__main__':
     rospy.init_node('fsascan_restarter')
     res = FSAScanRestarter()
-    rospy.sleep()
+    rospy.spin()
+
 
 
 
