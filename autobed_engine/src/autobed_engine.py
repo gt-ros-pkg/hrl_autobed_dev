@@ -28,6 +28,7 @@ from autobed_engine.srv import update_bed_config, update_bed_configResponse
 
 #This is the maximum error allowed in our control system.
 ERROR_OFFSET = [2, 1, 4] #[degrees, centimeters , degrees]
+MINIMUM_PROGRESS = [2, 1, 4]
 """Number of Actuators"""
 NUM_ACTUATORS = 3
 """ Basic Differential commands to the Autobed via GUI"""
@@ -56,6 +57,9 @@ class AutobedClient():
         array and feeds the same as an input to the autobed control system. 
         Further, it listens to the sensor position'''
         self.SENSOR_TYPE = sensor_type
+        self.this_actuator_movement_timer = rospy.Time.now()
+        self.progress_stalled = False
+        self.progress_counter = 0
         #self.u_thresh = np.array([70.0, 41.0, 45.0])
         self.u_thresh = np.array([65.0, 8.0, 45.0])
         #self.l_thresh = np.array([0.0, 9.0, 1.0])
@@ -222,18 +226,19 @@ class AutobedClient():
         # autobed_config_data = load_pickle(self.autobed_config_file)
         with self.frame_lock:
             if data.data in CMDS:
-                self.reached_destination = True * np.ones(NUM_ACTUATORS)
+                self.autobed_kill()
+                # self.reached_destination = True * np.ones(NUM_ACTUATORS)
                 self.diff_motion(data.data)
             else:
-                self.autobed_u = np.asarray(self.autobed_config_data[data.data])
-                self.autobed_u[self.autobed_u > self.u_thresh] = (
-                    self.u_thresh[self.autobed_u > self.u_thresh])
-                self.autobed_u[self.autobed_u < self.l_thresh] = (
-                    self.l_thresh[self.autobed_u < self.l_thresh])
-                #Make reached_destination boolean false for all the actuators
-                self.reached_destination = False * np.ones(NUM_ACTUATORS)
-                self.actuator_number = 0
-
+                print 'The received differential control input string does not match any known movement'
+                # self.autobed_u = np.asarray(self.autobed_config_data[data.data])
+                # self.autobed_u[self.autobed_u > self.u_thresh] = (
+                #     self.u_thresh[self.autobed_u > self.u_thresh])
+                # self.autobed_u[self.autobed_u < self.l_thresh] = (
+                #     self.l_thresh[self.autobed_u < self.l_thresh])
+                # #Make reached_destination boolean false for all the actuators
+                # self.reached_destination = False * np.ones(NUM_ACTUATORS)
+                # self.actuator_number = 0
 
     def autobed_engine_callback(self, data):
         ''' Accepts incoming position values from the base selection algorithm 
@@ -241,21 +246,26 @@ class AutobedClient():
         the autobed to the desired position using the engine'''
         with self.frame_lock:
             current_autobed_pose = self.get_sensor_data()
-            self.autobed_u = np.asarray(data.data)
-            #We threshold the incoming data
-            self.autobed_u[self.autobed_u > self.u_thresh] = (
-                self.u_thresh[self.autobed_u > self.u_thresh])
-            self.autobed_u[self.autobed_u < self.l_thresh] = (
-                self.l_thresh[self.autobed_u < self.l_thresh])
-            for i in xrange(len(self.autobed_u)):
-                if math.isnan(self.autobed_u[i]):
-                    self.autobed_u[i] = current_autobed_pose[i]
-            if math.isnan(self.autobed_u.all()):
+            if len(data.data) < NUM_ACTUATORS:
+                print 'Insufficient commanded Autobed joints. Requires ', str(NUM_ACTUATORS), ' received ', len(data.data)
                 self.autobed_kill()
-                return
-            #Make reached_destination boolean flase for all the actuators on the bed
-            self.reached_destination = False * np.ones(NUM_ACTUATORS)
-            self.actuator_number = 0
+            else:
+                self.autobed_u = np.asarray(data.data)
+                #We threshold the incoming data
+                self.autobed_u[self.autobed_u > self.u_thresh] = self.u_thresh[self.autobed_u > self.u_thresh]
+                self.autobed_u[self.autobed_u < self.l_thresh] = self.l_thresh[self.autobed_u < self.l_thresh]
+                for i in xrange(len(self.autobed_u)):
+                    if math.isnan(self.autobed_u[i]):
+                        self.autobed_u[i] = current_autobed_pose[i]
+                # if math.isnan(self.autobed_u.all()):
+                #     self.autobed_kill()
+                #     return
+                #Make reached_destination boolean false for all the actuators on the bed
+                self.actuator_number = 0
+                self.this_actuator_movement_timer = rospy.Time.now()
+                self.progress_counter = 0
+                self.progress_stalled = False
+                self.reached_destination = False * np.ones(NUM_ACTUATORS)
 
     def delete_autobed_configuration(self, req):
         """ Is the callback from the GUI Interaction Service. This service is 
@@ -305,9 +315,9 @@ class AutobedClient():
         else:
             #Append present Autobed positions and angles to the dictionary
             current_raw = self.get_sensor_data()
-            with self.frame_lock:
-                self.collated_head_angle = np.delete(self.collated_head_angle, 0)
-                self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
+            # with self.frame_lock:
+            #     self.collated_head_angle = np.delete(self.collated_head_angle, 0)
+            #     self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
             #Filter Head Angle
             #self.filter_head_data()
             #current_filtered = np.array([self.head_filt_data, current_raw[1], current_raw[2]])
@@ -349,8 +359,9 @@ class AutobedClient():
 
     def autobed_kill(self):
         '''Kills the autobed, while its going to a predefined location'''
-        self.autobed_u = self.get_sensor_data() 
         self.reached_destination = True*np.ones(len(self.reached_destination))
+        self.autobed_u = self.get_sensor_data()
+        self.actuator_number = 0
 
     def run(self):
         rate = rospy.Rate(10) #5 Hz
@@ -358,16 +369,19 @@ class AutobedClient():
         self.actuator_number = 0 
         '''Initialize the autobed input to the current sensor values, 
         so that the autobed doesn't move unless commanded'''
-        self.autobed_u =  self.get_sensor_data() 
+        self.autobed_u = self.get_sensor_data()
         self.collated_head_angle = self.collated_head_angle*self.autobed_u[0]
+        self.progress_counter = 0
+        self.progress_stalled = False
         while not rospy.is_shutdown():
             #Publish present Autobed sensor readings
             current_raw = self.get_sensor_data()
             self.abdout0.publish(current_raw)
-            with self.frame_lock:
-                self.collated_head_angle = np.delete(self.collated_head_angle, 0)
-                self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
-            if self.reached_destination.all() == False:
+            # with self.frame_lock:
+            #     self.collated_head_angle = np.delete(self.collated_head_angle, 0)
+            #     self.collated_head_angle = np.append(self.collated_head_angle, [current_raw[0]])
+            if not self.reached_destination.all():
+                self.abdstatus0.publish(False)
                 '''If the error is greater than some allowed offset, 
                 then we actuate the motors to get closer to desired position'''
                 #Filter Head Angle
@@ -378,28 +392,48 @@ class AutobedClient():
                 #TODO: Remove the line below when using legs.
                 autobed_error[2] = 0.0
                 #autobed_error[1] = 0.0
-                if self.actuator_number < (NUM_ACTUATORS):
-                    if abs(autobed_error[self.actuator_number]) > (
-                            ERROR_OFFSET[self.actuator_number]):
-                        self.reached_destination[self.actuator_number] = False
-                        self.diff_motion(
-                            AUTOBED_COMMANDS[self.actuator_number][int(
-                                autobed_error[self.actuator_number]/abs(
-                                    autobed_error[self.actuator_number]))])
-                        print current_filtered
-                        print self.reached_destination
+                if self.actuator_number < NUM_ACTUATORS:
+                    this_actuator_movement_elapsed_time = rospy.Time.now() - self.this_actuator_movement_timer
+                    if not self.reached_destination[self.actuator_number] \
+                            and np.abs(autobed_error[self.actuator_number]) > ERROR_OFFSET[self.actuator_number] \
+                            and this_actuator_movement_elapsed_time.to_sec() < 10.:
+                        if self.progress_counter == 0:
+                            progress_status = autobed_error[self.actuator_number]
+                        elif self.progress_counter >= 30:
+                            if np.abs(autobed_error[self.actuator_number] - progress_status) < MINIMUM_PROGRESS[self.actuator_number]:
+                                self.progress_stalled = True
+                            self.progress_counter = 0
+                            progress_status = autobed_error[self.actuator_number]
+                        self.progress_counter += 1
+
+                        # self.reached_destination[self.actuator_number] = False
+
+                        if not self.progress_stalled:
+                            self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))])
+                            print current_filtered
+                            print self.reached_destination
+                        else:
+                            self.this_actuator_movement_timer = rospy.Time.now()
+                            self.reached_destination[self.actuator_number] = True
+                            #We have reached destination for current actuator
+                            #Upgrade the actuation count
+                            self.actuator_number += 1
+                            self.progress_counter = 0
+                            self.progress_stalled = False
                     else:
+                        self.this_actuator_movement_timer = rospy.Time.now()
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
                         #Upgrade the actuation count
                         self.actuator_number += 1
+                        self.progress_counter = 0
+                        self.progress_stalled = False
             #If we have reached the destination position at all the actuators,
             #then publish the error and a boolean that says we have reached
-            if self.reached_destination.all() == True:
+            else:
                 self.actuator_number = 0
                 self.abdstatus0.publish(True)
-            else:
-                self.abdstatus0.publish(False)
+
             rate.sleep()
 
 
