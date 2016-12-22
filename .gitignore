@@ -1,0 +1,35 @@
+# Copied meta-data from svn #
+#############################
+.svn
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*~
+# files created by text editors #
+#################################
+*.swp
+
+# files created by data recording #
+###################################
+*.wav
+*.pkl
+
+# ROS specific files and folders #
+##################################
+bin
+build
+msg_gen
+srv_gen
+.ropeproject
+.idea
+
+# Files specific to this repo #
+###############################
+*.dat
