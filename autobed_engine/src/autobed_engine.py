@@ -231,6 +231,7 @@ class AutobedClient():
                 # self.reached_destination = True * np.ones(NUM_ACTUATORS)
                 self.diff_motion(data.data)
             else:
+                self.autobed_kill()
                 print 'The received differential control input string does not match any known movement'
                 # self.autobed_u = np.asarray(self.autobed_config_data[data.data])
                 # self.autobed_u[self.autobed_u > self.u_thresh] = (
