@@ -406,6 +406,14 @@ class AutobedClient():
                     #print 'reached_destination[actuator_number]', self.reached_destination[self.actuator_number]
                     #print 'error', np.abs(autobed_error[self.actuator_number])
                     #print 'Error offset', ERROR_OFFSET[self.actuator_number]
+                    print 'Reached desitionation for this actuator'
+                    print self.reached_destination[self.actuator_number]
+                    print 'Error for this actuator'
+                    print np.abs(autobed_error[self.actuator_number])
+                    print 'Error allowable for this actuator'
+                    print ERROR_OFFSET[self.actuator_number]
+                    print 'Elapsed time for this actuator'
+                    print this_actuator_movement_elapsed_time.to_sec()
                     if not self.reached_destination[self.actuator_number] \
                             and np.abs(autobed_error[self.actuator_number]) > ERROR_OFFSET[self.actuator_number] \
                             and this_actuator_movement_elapsed_time.to_sec() < 30.:
