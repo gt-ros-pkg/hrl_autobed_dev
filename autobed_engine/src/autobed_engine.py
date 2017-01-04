@@ -431,7 +431,17 @@ class AutobedClient():
                         # self.reached_destination[self.actuator_number] = False
 
                         if not self.progress_stalled:
-                            self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))])
+                            if np.sign(autobed_error[self.actuator_number]) > 0.:
+                                reference_command = 1
+                            elif np.sign(autobed_error[self.actuator_number]) < 0.:
+                                reference_command = 2
+                            else:
+                                print 'Somehow the error is 0 but Im trying to move the actuator. That should not happen'
+                                reference_command = 0
+                            #elif autobed_error[self.actuator_number] < 0.:
+                            #self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))])
+                            self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][reference_command])
+
                             #print current_filtered
                             #print self.reached_destination
                         else:
