@@ -401,7 +401,7 @@ class AutobedClient():
                 #print 'Num actuators: ', NUM_ACTUATORS
                 if self.actuator_number < NUM_ACTUATORS:
                     this_actuator_movement_elapsed_time = rospy.Time.now() - self.this_actuator_movement_timer
-                    if not this_actuator_movement_elapsed_time.to_sec()<30.:
+                    if not this_actuator_movement_elapsed_time.to_sec() < 30.:
                         print 'Time for this actuator has elapsed'
                     #print 'reached_destination[actuator_number]', self.reached_destination[self.actuator_number]
                     #print 'error', np.abs(autobed_error[self.actuator_number])
@@ -436,6 +436,7 @@ class AutobedClient():
                             self.progress_counter = 0
                             self.progress_stalled = False
                     else:
+                        print 'Autobed has reached current goal with actuator number ', self.actuator_number
                         self.this_actuator_movement_timer = rospy.Time.now()
                         self.reached_destination[self.actuator_number] = True
                         #We have reached destination for current actuator 
@@ -447,6 +448,7 @@ class AutobedClient():
             #then publish the error and a boolean that says we have reached
             else:
                 #self.actuator_number = 0
+                print 'Autobed has reached all goals!'
                 self.autobed_kill()
                 self.abdstatus0.publish(True)
 
