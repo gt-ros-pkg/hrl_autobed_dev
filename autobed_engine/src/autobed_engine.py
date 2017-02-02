@@ -148,6 +148,7 @@ class AutobedClient():
 
     def diff_motion(self, message):
         '''will send differential command message to websocket'''
+        print message
         try:
             self.ws.send(message)
         except:
@@ -441,6 +442,8 @@ class AutobedClient():
                             #elif autobed_error[self.actuator_number] < 0.:
                             #self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][int(autobed_error[self.actuator_number]/abs(autobed_error[self.actuator_number]))])
                             self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][reference_command])
+                            rate.sleep()
+                            self.diff_motion(AUTOBED_COMMANDS[self.actuator_number][reference_command])
 
                             #print current_filtered
                             #print self.reached_destination
@@ -462,13 +465,17 @@ class AutobedClient():
                         self.actuator_number += 1
                         self.progress_counter = 0
                         self.progress_stalled = False
+                else:
+                    print 'Autobed has reached all goals!'
+                    self.autobed_kill()
+            else:
+                self.abdstatus0.publish(True)        
             #If we have reached the destination position at all the actuators,
             #then publish the error and a boolean that says we have reached
-            else:
-                #self.actuator_number = 0
-                print 'Autobed has reached all goals!'
-                self.autobed_kill()
-                self.abdstatus0.publish(True)
+
+
+
+
 
             rate.sleep()
 
