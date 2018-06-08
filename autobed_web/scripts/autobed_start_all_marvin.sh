@@ -1,6 +1,6 @@
 #!/bin/bash
 
-~/ros_workspace/git/hrl_autobed_dev/autobed_web/scripts/autobed_kill_marvin.sh
+~/catkin_ws/src/hrl_autobed_dev/autobed_web/scripts/autobed_kill_marvin.sh
 
 source ~/.bashrc
 
