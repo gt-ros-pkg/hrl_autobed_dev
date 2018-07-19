@@ -1,0 +1,2 @@
+KERNEL=="ttyACM?", ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{serial}=="9523335313135160F112", ATTRS{idProduct}\
+=="0043", SYMLINK+="autobed/accelerometer_arduino"
