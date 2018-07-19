@@ -1,0 +1,49 @@
+<package>
+  <name>autobed_engine</name>
+  <version>0.0.1</version>
+  <description>autobed_engine</description>
+  <maintainer email="henryclever@gatech.edu">Henry M. Clever</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">https://github.com/gt-ros-pkg/hrl_autobed_dev</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Henry M. Clever</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>rosbridge_server</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>numpy</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>hrl_lib</build_depend>
+  <build_depend>hrl_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>rosbridge_server</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>numpy</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>hrl_lib</run_depend>
+  <run_depend>hrl_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>trajectory_msgs</run_depend>
+
+</package>

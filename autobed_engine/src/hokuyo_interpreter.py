@@ -4,8 +4,9 @@ import math, numpy as np
 import sys, time, random
 
 NAME = 'utm_python_listener'
-import roslib; roslib.load_manifest('autobed_engine')
 import rospy
+import roslib
+roslib.load_manifest('autobed_engine')
 from sensor_msgs.msg import LaserScan
 import threading
 from std_msgs.msg import Float32
