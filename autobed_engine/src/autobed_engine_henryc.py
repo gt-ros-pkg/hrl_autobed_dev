@@ -15,9 +15,6 @@ import autobed_adxl_sharp_driver
 import cPickle as pkl
 from hrl_lib.util import save_pickle, load_pickle
 
-import websocket
-import atexit
-
 from std_msgs.msg import Bool, Float32, String, Int16
 from scipy.signal import remez
 from scipy.signal import lfilter
@@ -157,8 +154,7 @@ class AutobedClient():
             q1 = data.transform.rotation.y
             q2 = data.transform.rotation.z
             q3 = data.transform.rotation.w
-            self.head_angle = 180 + math.atan2(2*(q0*q3 + q1*q2), (1 -
-                                                                   2*(q2**2 + q3**2)))*(180.0/ math.pi)
+            self.head_angle = 180 + math.atan2(2*(q0*q3 + q1*q2), (1 - 2*(q2**2 + q3**2)))*(180.0/ math.pi)
 
     def autobed_leg_angle_cb(self, data):
         '''These angles are the ground truth obtained from the markers placed
@@ -195,6 +191,7 @@ class AutobedClient():
         elif self.SENSOR_TYPE == 'ADXL_and_HOKUYO':
             bed_ht = self.bed_ht
             bed_angles = self.acc_driver.get_sensor_data()
+            bed_angles[0] -= 20
             return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
 
