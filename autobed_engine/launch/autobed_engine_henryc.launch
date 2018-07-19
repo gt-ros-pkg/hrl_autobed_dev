@@ -1,0 +1,20 @@
+<launch>
+
+
+    <arg name="dev" default="/dev/autobed/accelerometer_arduino" />
+    <arg name="param_file" default="$(find autobed_engine)/params/darpa_arm_prox_sensors_link_1.yaml" />
+    <arg name="num_sensors" default="5" />
+    <arg name="baudrate" default="9600" />
+    <arg name="sensor_type" default="ADXL_and_HOKUYO" />
+    <arg name="config_file" default="$(find autobed_engine)/params/autobed_config_data.yaml" />
+    <node name="autobed_engine" pkg="autobed_engine" type="autobed_engine_henryc.py" args="$(arg dev) $(arg baudrate) $(arg param_file) $(arg num_sensors) $(arg config_file) $(arg sensor_type)" output="screen"/>
+
+
+    <node name="height_hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" ns="autobed" output="screen">
+        <param name="port" type="string" value="/dev/sensors/hokuyo_autobed_height" />
+        <remap from="/autobed/scan" to="/autobed/height_hokuyo/scan" />
+    </node>
+
+    <node name="hokuyo_interpreter_node" pkg="autobed_engine" type="hokuyo_interpreter.py" ns="autobed" output="screen">
+    </node>
+</launch>

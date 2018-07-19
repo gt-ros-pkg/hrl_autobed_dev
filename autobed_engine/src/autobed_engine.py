@@ -99,16 +99,10 @@ class AutobedClient():
             rospy.Subscriber("/abd_leg_angle/pose", TransformStamped, 
                              self.autobed_leg_angle_cb)
         elif self.SENSOR_TYPE == 'ADXL_SHARP':
-            self.acc_driver = (
-                autobed_adxl_sharp_driver.AutobedSensorDriver(
-                    2,
-                    dev = self.dev,
-                    baudrate = self.baudrate))
+            self.acc_driver = (autobed_adxl_sharp_driver.AutobedSensorDriver(2, dev = self.dev, baudrate = self.baudrate))
         elif self.SENSOR_TYPE == 'ADXL_and_HOKUYO':
             self.bed_ht = 0
-            self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2,
-                                                                     dev=self.dev,
-                                                                     baudrate=self.baudrate))
+            self.acc_driver = (adxl_accel_driver.AccelerometerDriver(2, dev=self.dev, baudrate=self.baudrate))
             rospy.Subscriber("/bed_ht", Float32, self.hokuyo_bed_ht_cb)
 
         #Let the sensors warm up
