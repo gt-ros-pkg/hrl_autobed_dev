@@ -24,7 +24,7 @@ from geometry_msgs.msg import Transform, Vector3, Quaternion
 
 
 LEGS_OFFSET = -14.
-HEAD_OFFSET = -20.
+HEAD_OFFSET = -16.
 
 #This is the maximum error allowed in our control system.
 ERROR_OFFSET = [2., 0.5, 4.] #[degrees, centimeters , degrees]
@@ -196,7 +196,7 @@ class AutobedClient():
             bed_ht = self.bed_ht
             bed_angles = self.acc_driver.get_sensor_data()
             bed_angles[0] += HEAD_OFFSET
-            bed_angles[2] += LEGS_OFFSET
+            bed_angles[1] += LEGS_OFFSET
             return np.asarray([bed_angles[0], bed_ht, bed_angles[1]])
 
 
